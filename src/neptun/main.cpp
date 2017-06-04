@@ -1,8 +1,14 @@
 #include <iostream>
 
+#include "glm\glm.hpp"
+
 int main()
 {
-	std::cout << "neptune renderer." << std::endl;
+    const glm::vec3 a;
+
+    glm::normalize(a);
+
+    std::cout << "neptune renderer." << std::endl;
 
 	return 0;
 }
