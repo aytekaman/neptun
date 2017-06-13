@@ -12,6 +12,15 @@ source_group ("accelerators\\" FILES
     ${accelerator_sources}
 )
 
+set (math_sources
+    src/neptun/math/ray.h
+    src/neptun/math/ray.cpp
+)
+
+source_group ("math\\" FILES
+    ${math_sources}
+)
+
 set (main_sources
     src/neptun/main/main.cpp
 )
@@ -20,6 +29,10 @@ source_group ("main\\" FILES
     ${main_sources}
 )
 
-add_executable(neptun ${main_sources} ${accelerator_sources})
+add_executable (neptun 
+    ${main_sources}
+    ${accelerator_sources}
+    ${math_sources}
+)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT neptun)
