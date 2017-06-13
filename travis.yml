@@ -1,0 +1,17 @@
+sudo: required
+dist: trusty
+language: cpp
+compiler: gcc
+notifications:
+  email: false
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-5
+    - g++-5
+    - cmake
+
+install: true
+script: mkdir build && cd build && cmake ../ && make -r -j 2
