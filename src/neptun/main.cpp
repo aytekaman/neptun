@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "glm\glm.hpp"
+#include "glm/glm.hpp"
 
 int main()
 {
