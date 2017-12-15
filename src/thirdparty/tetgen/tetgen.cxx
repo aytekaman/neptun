@@ -3265,7 +3265,7 @@ bool tetgenbehavior::parse_commandline(int argc, char **argv)
       } else if (argv[i][j] == 'e') {
         edgesout++;
       } else if (argv[i][j] == 'n') {
-        neighout++;
+        neighout+=2;
       } else if (argv[i][j] == 'v') {
         voroout = 1;
       } else if (argv[i][j] == 'g') {
@@ -11850,6 +11850,7 @@ void tetgenmesh::initialdelaunay(point pa, point pb, point pc, point pd)
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "neptun/main/logger.h"
 
 void tetgenmesh::incrementaldelaunay(clock_t& tv)
 {
@@ -11863,6 +11864,7 @@ void tetgenmesh::incrementaldelaunay(clock_t& tv)
 
   if (!b->quiet) {
     printf("Delaunizing vertices...\n");
+	Logger::Log("Delaunizing vertices...\n");
   }
 
   // Form a random permuation (uniformly at random) of the set of vertices.
@@ -28566,8 +28568,10 @@ void tetgenmesh::statistics()
 
   if (b->plc || b->refine) {
     printf("  Mesh faces on exterior boundary: %ld\n", hullsize);
+	Logger::Log("  Mesh faces on exterior boundary: %ld\n", hullsize);
     if (meshhulledges > 0l) {
       printf("  Mesh edges on exterior boundary: %ld\n", meshhulledges);
+	  Logger::Log("  Mesh edges on exterior boundary: %ld\n", meshhulledges);
     }
     printf("  Mesh faces on input facets: %ld\n", subfaces->items);
     printf("  Mesh edges on input segments: %ld\n", subsegs->items);
