@@ -1,0 +1,32 @@
+MyScene
+0.3 1.3108 61.0135
+0 0 0
+3
+Light
+6 10 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+box
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+box.obj
+box
+0 0 0
+0 0 0
+1.8 1.65 2.1
+#
+#Material
+1 1 1
+#Mesh
+box.obj

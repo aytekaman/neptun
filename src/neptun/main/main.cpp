@@ -741,11 +741,13 @@ void region_sort(int N = 5000)
     std::cout << render_time_with_regions / N << std::endl;
 }
 
+
+
 int main(int argc, char** argv)
 {
+    
     //glm::vec3 n = glm::normalize(glm::vec3(0.5, 1.0, 0.1));
     //std::cout << n.x << " " << n.y << " " << n.z << std::endl;
-
 
     std::vector<std::string> args;
 

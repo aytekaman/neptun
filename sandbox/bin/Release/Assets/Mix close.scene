@@ -1,0 +1,95 @@
+mix.tetmesh
+0.715089 1.2308 9.86604
+0.161378 3.37765 -1.26858
+10
+Light
+16.1953 19.6971 26.3399
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+neptune
+0 2 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+12 2 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+armadillo
+12 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+-12 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+0 0 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+0 0 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+neptune
+-12 2 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+-12 2 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+12 2 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj

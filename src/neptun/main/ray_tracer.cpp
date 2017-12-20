@@ -39,6 +39,11 @@ RayTracer::RayTracer()
 
 void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 {
+    
+    raycast();
+
+    if(scene.tet_mesh)
+        send_to_gpu(*scene.tet_mesh);
     //TetMesh& tet_mesh = *scene.tet_mesh;
 
 	glm::vec3 camTarget = scene.camTarget;

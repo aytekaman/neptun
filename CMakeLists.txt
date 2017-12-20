@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(neptun) #LANGUAGES CXX CUDA
+project(neptun LANGUAGES C CXX CUDA)
 
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
@@ -59,6 +59,14 @@ source_group ("thirdparty\\" FILES
 #source_group ("math\\" FILES
 #    ${math_sources}
 #)
+
+set (cuda_sources
+    src/neptun/cuda/raycaster.cu
+)
+
+source_group ("cuda\\" FILES
+    ${cuda_sources}
+)
 
 set (editor_sources
     src/neptun/editor/editor.h
@@ -121,6 +129,7 @@ set (main_sources
 	src/neptun/main/texture.h
 	src/neptun/main/utils.cpp
 	src/neptun/main/utils.h
+	src/neptun/cuda/raycaster.cu
 )
 
 source_group ("main\\" FILES
@@ -130,6 +139,7 @@ source_group ("main\\" FILES
 add_executable (neptun 
 	${editor_sources}
     ${main_sources}
+    ${cuda_sources}
     ${thirdparty_sources}
 )
 
