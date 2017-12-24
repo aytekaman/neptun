@@ -35,15 +35,34 @@ RayTracer::RayTracer()
 
 	thread_count = std::thread::hardware_concurrency();
 	Logger::Log("Number of threads: %d", thread_count);
+
+    
 }
 
 void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 {
-    
-    raycast();
+    send_to_gpu();
+    int* buff = raycast_gpu();
 
-    if(scene.tet_mesh)
-        send_to_gpu(*scene.tet_mesh);
+    for (int i = 0; i < 640; i++)
+    {
+        for (int j = 0; j < 480; j++)
+        {
+            int index = i * resolution.y + j;
+            if (buff[index] == 7)
+            {
+                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 255, 255));
+                std::cout << "!" << std::endl;
+            }
+                
+            else
+                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 0, 0));
+        }
+    }
+    return;
+
+    //if(scene.tet_mesh)
+    //    send_to_gpu(*scene.tet_mesh);
     //TetMesh& tet_mesh = *scene.tet_mesh;
 
 	glm::vec3 camTarget = scene.camTarget;
@@ -272,6 +291,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 				}
 
 				glm::ivec2 p_idx = glm::ivec2((resolution.y - i - 1), (resolution.x - j - 1));
+
+                
 
                 m_rendered_image->set_pixel(p_idx.x, p_idx.y, color.zyx * 255.0f);
 			}

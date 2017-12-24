@@ -11,7 +11,7 @@
 class Material;
 class Scene;
 
-void raycast();
+int* raycast_gpu();
 
 
 struct Tet
@@ -309,4 +309,4 @@ public:
     std::vector<Tet20> m_tet20s;
 };
 
-void send_to_gpu(const TetMesh& tet_mesh);
+void send_to_gpu();

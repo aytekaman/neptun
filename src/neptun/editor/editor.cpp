@@ -1389,15 +1389,17 @@ void Editor::DrawConsole()
 		//ImGui::EndChild();
 		//ImGui::PopStyleColor();
 	}
-
+    ImGui::PopFont();
 	ImGui::EndChild();
 
 	ImGui::BeginChild("Message Window", ImVec2(0, 0), false, flags);
+    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
 	if(selected_msg_id != -1)
 		ImGui::Text(logs[selected_msg_id].text.c_str());
+    ImGui::PopFont();
 	ImGui::End();
 
-    ImGui::PopFont();
+    
 
 	ImGui::PopStyleColor();
 
