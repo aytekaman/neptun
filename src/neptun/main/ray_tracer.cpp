@@ -60,22 +60,43 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 	if (tet_index < 0)
 		return;
 
-    send_to_gpu(*(TetMesh32*)&(scene.tet_mesh32));
-    int* buff = raycast_gpu(&source_tet);
 
-    for (int i = 0; i < 640; i++)
+	const glm::vec3 forward = glm::normalize(scene.camTarget - cam_pos);
+	const glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+	const glm::vec3 up = glm::cross(forward, right);
+
+	const float aspect = (float)resolution.x / resolution.y;
+	const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+	const glm::vec3 bottom_left = cam_pos + forward - up * scale_y - right * scale_y * aspect;
+	const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)resolution.x;
+	const glm::vec3 up_step = (up * scale_y * 2.0f) / (float)resolution.y;
+
+	CamInfo *cam_info = new CamInfo();
+	cam_info->origin = cam_pos;
+	cam_info->bottom_left = bottom_left;
+	cam_info->right_step = right_step;
+	cam_info->up_step = up_step;
+
+    
+    int* buff = raycast_gpu(&source_tet, cam_info);
+
+    for (int i = 0; i < 480; i++)
     {
-        for (int j = 0; j < 480; j++)
+        for (int j = 0; j < 680; j++)
         {
-            int index = i * resolution.y + j;
-            if (buff[index] == 7)
+            int index = j * resolution.y + i;
+
+			glm::ivec2 p_idx = glm::ivec2((resolution.y - i - 1), (resolution.x - j - 1));
+
+            if (buff[index] == 1)
             {
-                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 255, 255));
-                std::cout << "!" << std::endl;
+                m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::u8vec3(255, 255, 255));
+                
             }
 
             else
-                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 0, 0));
+                m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::u8vec3(255, 0, 0));
         }
     }
 

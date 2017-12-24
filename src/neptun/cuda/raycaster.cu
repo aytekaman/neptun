@@ -12,6 +12,9 @@
 glm::vec3* points;
 Tet32* tets;
 
+SourceTet* source_tet_gpu;
+CamInfo* cam_info_gpu;
+
 int* buffer;
 
 int buffer_cpu[640 * 480];
@@ -55,8 +58,8 @@ void raycast_kernel(int* output, glm::vec3* m_points, Tet32* m_tet32s, CamInfo* 
 
     int outputindex = pixel_coords.x * resolution.y + pixel_coords.y;
 
-    glm::vec3 origin;
-    glm::vec3 dir;
+    glm::vec3 origin = cam_info->origin;
+    glm::vec3 dir = glm::normalize(cam_info->bottom_left + cam_info->right_step * (float)pixel_coords.y + cam_info->up_step * (float)pixel_coords.x - origin);
 
     unsigned int id[4];
     glm::vec2 p[4];
@@ -94,7 +97,7 @@ void raycast_kernel(int* output, glm::vec3* m_points, Tet32* m_tet32s, CamInfo* 
     }
     else
     {
-        buffer[outputindex];
+		output[outputindex] = 0;
         return;
     }
 
@@ -144,7 +147,7 @@ void send_to_gpu(TetMesh32& tet_mesh)
     glm::ivec2 resolution(640, 480);
     //buffer_cpu = new bool[resolution.x * resolution.y];
 
-    std::cout << cudaMalloc(&buffer, resolution.x * resolution.y * sizeof(int));
+    std::cout << cudaMalloc(&buffer, resolution.x * resolution.y * sizeof(int)) << std::endl;
     cudaMemcpy(buffer, buffer_cpu, resolution.x * resolution.y * sizeof(int), cudaMemcpyHostToDevice);
 
     cudaMalloc(&points, tet_mesh.m_points.size() * sizeof(glm::vec3));
@@ -152,15 +155,22 @@ void send_to_gpu(TetMesh32& tet_mesh)
 
     cudaMalloc(&tets, tet_mesh.m_tet32s.size() * sizeof(Tet32));
     cudaMemcpy(tets, tet_mesh.m_tet32s.data(), tet_mesh.m_tet32s.size() * sizeof(Tet32), cudaMemcpyHostToDevice);
+	std::cout << tet_mesh.m_tet32s.size() << std::endl;
+	cudaMalloc(&source_tet_gpu, sizeof(SourceTet));
+	cudaMalloc(&cam_info_gpu, sizeof(CamInfo));
 }
 
 int* raycast_gpu(SourceTet* source_tet, CamInfo* cam_info)
 {
+	
+	cudaMemcpy(source_tet_gpu, source_tet, sizeof(SourceTet), cudaMemcpyHostToDevice);
+	cudaMemcpy(cam_info_gpu, cam_info, sizeof(CamInfo), cudaMemcpyHostToDevice);
+
     glm::ivec2 resolution(640, 480);
     dim3 g(16, 16);
-    raycast_kernel<<<64, g>>>(buffer, points, tets);
+    raycast_kernel<<<1200, g>>>(buffer, points, tets, cam_info_gpu, source_tet_gpu);
 
-    std::cout << cudaThreadSynchronize();
+    std::cout << cudaThreadSynchronize() << std::endl;
 
     cudaMemcpy(buffer_cpu, buffer, resolution.x * resolution.y * sizeof(int), cudaMemcpyDeviceToHost);
  

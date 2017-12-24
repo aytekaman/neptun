@@ -712,14 +712,19 @@ void Editor::DrawTetGen()
 		if (scene->tet_mesh)
 			delete scene->tet_mesh;
 
-		scene->tet_mesh = new TetMesh16(*scene, preserveTriangles, create_bounding_box, quality);
+		//scene->tet_mesh = new TetMesh16(*scene, preserveTriangles, create_bounding_box, quality);
 
-        Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        //Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
 
         //scene->tet_mesh20 = new TetMesh20(*scene->tet_mesh);
 
         //scene->tet_mesh20 = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
-        //scene->tet_mesh32 = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
+        TetMesh32* tm = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
+
+		scene->tet_mesh = tm;
+
+		std::cout << tm->m_tet32s.size() << std::endl;
+		send_to_gpu(*tm);
 	}
 
     

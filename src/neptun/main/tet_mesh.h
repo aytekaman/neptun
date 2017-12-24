@@ -316,5 +316,5 @@ public:
     std::vector<Tet20> m_tet20s;
 };
 
-int* raycast_gpu(SourceTet* source_tet);
+int* raycast_gpu(SourceTet* source_tet, CamInfo* cam_info);
 void send_to_gpu(TetMesh32& tet_mesh);
