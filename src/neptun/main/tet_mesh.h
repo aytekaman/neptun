@@ -11,8 +11,13 @@
 class Material;
 class Scene;
 
-int* raycast_gpu();
-
+struct CamInfo
+{
+    glm::vec3 origin;
+    glm::vec3 bottom_left;
+    glm::vec3 right_step;
+    glm::vec3 up_step;
+};
 
 struct Tet
 {
@@ -59,6 +64,8 @@ enum class SortingMethod
     Hilbert,
     Morton
 };
+
+
 
 class TetMesh
 {
@@ -168,16 +175,16 @@ public:
     const bool m_perturb_points = true;
     const bool m_empty_volume_optimization = false;
 };
-
+struct Tet32
+{
+    unsigned int x;
+    unsigned int v[3];
+    int n[4];
+};
 class TetMesh32 : public TetMesh
 {
 public:
-    struct Tet32
-    {
-        unsigned int x;
-        unsigned int v[3];
-        int n[4];
-    };
+
 
     TetMesh32(
         const Scene &scene,
@@ -309,4 +316,5 @@ public:
     std::vector<Tet20> m_tet20s;
 };
 
-void send_to_gpu();
+int* raycast_gpu(SourceTet* source_tet);
+void send_to_gpu(TetMesh32& tet_mesh);

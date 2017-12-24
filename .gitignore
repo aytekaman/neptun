@@ -1,2 +1,5 @@
 
 build/
+sandbox/bin/
+sandbox/fonts/
+sandbox/shaders/

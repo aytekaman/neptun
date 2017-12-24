@@ -35,36 +35,10 @@ RayTracer::RayTracer()
 
 	thread_count = std::thread::hardware_concurrency();
 	Logger::Log("Number of threads: %d", thread_count);
-
-    
 }
 
 void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 {
-    send_to_gpu();
-    int* buff = raycast_gpu();
-
-    for (int i = 0; i < 640; i++)
-    {
-        for (int j = 0; j < 480; j++)
-        {
-            int index = i * resolution.y + j;
-            if (buff[index] == 7)
-            {
-                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 255, 255));
-                std::cout << "!" << std::endl;
-            }
-                
-            else
-                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 0, 0));
-        }
-    }
-    return;
-
-    //if(scene.tet_mesh)
-    //    send_to_gpu(*scene.tet_mesh);
-    //TetMesh& tet_mesh = *scene.tet_mesh;
-
 	glm::vec3 camTarget = scene.camTarget;
 	glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
 
@@ -85,6 +59,29 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
 	if (tet_index < 0)
 		return;
+
+    send_to_gpu(*(TetMesh32*)&(scene.tet_mesh32));
+    int* buff = raycast_gpu(&source_tet);
+
+    for (int i = 0; i < 640; i++)
+    {
+        for (int j = 0; j < 480; j++)
+        {
+            int index = i * resolution.y + j;
+            if (buff[index] == 7)
+            {
+                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 255, 255));
+                std::cout << "!" << std::endl;
+            }
+
+            else
+                m_rendered_image->set_pixel(j, i, glm::u8vec3(255, 0, 0));
+        }
+    }
+
+    return;
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 
 	std::vector<LightInfo> lightInfos;
 
