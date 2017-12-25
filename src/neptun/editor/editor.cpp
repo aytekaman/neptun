@@ -1288,6 +1288,9 @@ void Editor::DrawRenderedFrame()
     static bool diagnostics = false;
 	ImGui::Checkbox("Render", &render);
 
+	static bool use_gpu = false;
+	ImGui::Checkbox("GPU", &use_gpu);
+
 
 
 	ImGui::Separator();
@@ -1308,7 +1311,11 @@ void Editor::DrawRenderedFrame()
 
 	if (render)
 	{
-		ray_tracer->Render(*scene, diagnostics);
+		if(use_gpu)
+			ray_tracer->render_on_gpu(*scene);
+		else
+			ray_tracer->Render(*scene, diagnostics);
+
 		glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
 

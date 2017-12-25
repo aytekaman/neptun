@@ -78,6 +78,8 @@ public:
 
 	void Render(Scene &scene, const bool is_diagnostic = false);
 
+	void render_on_gpu(Scene &scene);
+
 	void Raytrace_worker(
         Scene &scene,  
         SourceTet source_tet, 

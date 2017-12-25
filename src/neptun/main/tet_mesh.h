@@ -11,6 +11,14 @@
 class Material;
 class Scene;
 
+struct HitData
+{
+	int hit;
+	glm::vec3 point;
+	glm::vec3 normal;
+	int pad;
+};
+
 struct CamInfo
 {
     glm::vec3 origin;
@@ -316,5 +324,5 @@ public:
     std::vector<Tet20> m_tet20s;
 };
 
-int* raycast_gpu(SourceTet* source_tet, CamInfo* cam_info);
+HitData* raycast_gpu(SourceTet* source_tet, CamInfo* cam_info);
 void send_to_gpu(TetMesh32& tet_mesh);
