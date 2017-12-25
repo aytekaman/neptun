@@ -59,7 +59,7 @@ void raycast_kernel(int* output, glm::vec3* m_points, Tet32* m_tet32s, CamInfo* 
     int outputindex = pixel_coords.x * resolution.y + pixel_coords.y;
 
     glm::vec3 origin = cam_info->origin;
-    glm::vec3 dir = glm::normalize(cam_info->bottom_left + cam_info->right_step * (float)pixel_coords.y + cam_info->up_step * (float)pixel_coords.x - origin);
+    glm::vec3 dir = glm::normalize(cam_info->bottom_left + cam_info->right_step * (float)pixel_coords.x + cam_info->up_step * (float)pixel_coords.y - origin);
 
     unsigned int id[4];
     glm::vec2 p[4];
