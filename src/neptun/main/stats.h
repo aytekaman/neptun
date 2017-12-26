@@ -13,6 +13,8 @@ public:
     static float last_render_time;
     static float last_build_time;
 
+    static float best_render_time;
+
 private:
     static std::vector<float> s_render_times;
 };

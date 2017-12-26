@@ -5,6 +5,9 @@ void Stats::add_render_time(float render_time)
     last_render_time = render_time;
 
     s_render_times.push_back(render_time);
+
+    if (render_time < best_render_time)
+        best_render_time = render_time;
 }
 
 float Stats::get_avg_render_time(int frame_count)
@@ -28,5 +31,7 @@ void Stats::add_build_time(float build_time)
 
 float Stats::last_build_time;
 float Stats::last_render_time;
+
+float Stats::best_render_time = 1024.0f;
 
 std::vector<float> Stats::s_render_times;

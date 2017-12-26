@@ -712,7 +712,7 @@ void Editor::DrawTetGen()
 		if (scene->tet_mesh)
 			delete scene->tet_mesh;
 
-		scene->tet_mesh = new TetMesh16(*scene, preserveTriangles, create_bounding_box, quality);
+		scene->tet_mesh = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
 
         Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
 
@@ -727,7 +727,6 @@ void Editor::DrawTetGen()
 	//if (t && t->joinable)
 	//{
 	//	Logger::LogError("!!!");
-
 	//	t->join();
 	//}
 	//else
@@ -745,7 +744,7 @@ void Editor::DrawTetGen()
 
 	if (ImGui::Button("Load"))
 	{
-        TetMesh *tm = new TetMesh16(*scene);
+        TetMesh *tm = new TetMesh20(*scene);
 
         scene->tet_mesh = tm;
 
@@ -1251,7 +1250,7 @@ void Editor::DrawRenderedFrame()
 
 
 	//(printf("Rendered in %.3f seconds. (%.1f FPS)", ray_tracer->last_render_time, 1 / ray_tracer->last_render_time);
-    ImGui::Text("Rendered in %.4f seconds. (%.2f FPS)", Stats::get_avg_render_time(10), 1 / Stats::get_avg_render_time(10));
+    ImGui::Text("Rendered in %.4f seconds. (%.2f FPS)", Stats::best_render_time, 1 / Stats::best_render_time);
 
 
 	//ImGui::Text("Triangle count: %d", scene->tet_mesh->face_count);
