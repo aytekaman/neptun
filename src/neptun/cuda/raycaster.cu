@@ -14,6 +14,7 @@
 glm::vec3* points;
 Tet32* tets;
 ConstrainedFace* faces;
+Face* mesh_faces;
 
 SourceTet* source_tet_gpu;
 CamInfo* cam_info_gpu;
@@ -24,10 +25,10 @@ HitData* hitdata;
 //int buffer_cpu[640 * 480];
 HitData hitdata_cpu[640 * 480];
 
-const int tile_size = 16;
+const int tile_size = 32;
 
 __device__
-void swapvec2(glm::vec2 &a, glm::vec2 &b)
+inline void swapvec2(glm::vec2 &a, glm::vec2 &b)
 {
     glm::vec2 t = a;
     a = b;
@@ -43,7 +44,7 @@ void swapvec2(glm::vec2 &a, glm::vec2 &b)
 //}
 
 __device__
-void swap(unsigned int &a, unsigned int &b)
+inline void swap(unsigned int &a, unsigned int &b)
 {
     unsigned int t = a;
     a = b;
@@ -51,10 +52,10 @@ void swap(unsigned int &a, unsigned int &b)
 }
 
 __device__
-float crossv(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; }
+inline float crossv(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; }
 
 __global__
-void raycast_kernel(HitData* output, glm::vec3* m_points, Tet32* m_tet32s, ConstrainedFace* m_faces, CamInfo* cam_info, SourceTet* source_tet)
+void raycast_kernel(HitData* output, glm::vec3* m_points, Tet32* m_tet32s, ConstrainedFace* m_faces, Face* m_mesh_faces, CamInfo* cam_info, SourceTet* source_tet)
 {
     glm::ivec2 resolution(640, 480);
     glm::ivec2 rect_min = glm::ivec2((blockIdx.x * tile_size) % resolution.x, ((blockIdx.x * tile_size) / resolution.x) * tile_size);
@@ -146,22 +147,22 @@ void raycast_kernel(HitData* output, glm::vec3* m_points, Tet32* m_tet32s, Const
 
 	if (index != -1)
 	{
-		//index = (index & 0x7FFFFFFF);
-		//const Face face = *m_faces[index].face;
+		index = (index & 0x7FFFFFFF);
+		const Face& face = m_mesh_faces[m_faces[index].face_idx];
 
-		//const glm::vec3 *v = face.vertices;
-		//const glm::vec3 *n = face.normals;
-		////const glm::vec2 *t = face.uvs;
+		const glm::vec3 *v = face.vertices;
+		const glm::vec3 *n = face.normals;
+		//const glm::vec2 *t = face.uvs;
 
-		//const glm::vec3 e1 = v[1] - v[0];
-		//const glm::vec3 e2 = v[2] - v[0];
-		//const glm::vec3 s = origin - v[0];
-		//const glm::vec3 q = glm::cross(s, e1);
-		//const glm::vec3 p = glm::cross(dir, e2);
-		//const float f = 1.0f / glm::dot(e1, p);
-		//const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(dir, q));
-		//output[outputindex].point = origin + f * glm::dot(e2, q) * dir;
-		//output[outputindex].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+		const glm::vec3 e1 = v[1] - v[0];
+		const glm::vec3 e2 = v[2] - v[0];
+		const glm::vec3 s = origin - v[0];
+		const glm::vec3 q = glm::cross(s, e1);
+		const glm::vec3 p = glm::cross(dir, e2);
+		const float f = 1.0f / glm::dot(e1, p);
+		const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(dir, q));
+		output[outputindex].point = origin + f * glm::dot(e2, q) * dir;
+		output[outputindex].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
 		//intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
 		//intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
 		//intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
@@ -179,19 +180,30 @@ void send_to_gpu(TetMesh32& tet_mesh)
     glm::ivec2 resolution(640, 480);
     //buffer_cpu = new bool[resolution.x * resolution.y];
 
-    std::cout << cudaMalloc(&hitdata, resolution.x * resolution.y * sizeof(HitData)) << std::endl;
+    cudaFree(hitdata);
+    cudaMalloc(&hitdata, resolution.x * resolution.y * sizeof(HitData));
     //cudaMemcpy(hitdata, hitdata_cpu, resolution.x * resolution.y * sizeof(HitData), cudaMemcpyHostToDevice);
 
+    cudaFree(points);
     cudaMalloc(&points, tet_mesh.m_points.size() * sizeof(glm::vec3));
     cudaMemcpy(points, tet_mesh.m_points.data(), tet_mesh.m_points.size() * sizeof(glm::vec3), cudaMemcpyHostToDevice);
 
+    cudaFree(tets);
     cudaMalloc(&tets, tet_mesh.m_tet32s.size() * sizeof(Tet32));
     cudaMemcpy(tets, tet_mesh.m_tet32s.data(), tet_mesh.m_tet32s.size() * sizeof(Tet32), cudaMemcpyHostToDevice);
 
+    cudaFree(faces);
 	cudaMalloc(&faces, tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace));
 	cudaMemcpy(faces, tet_mesh.m_constrained_faces.data(), tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace), cudaMemcpyHostToDevice);
 
+    cudaFree(mesh_faces);
+    cudaMalloc(&mesh_faces, tet_mesh.faces.size() * sizeof(Face));
+    cudaMemcpy(mesh_faces, tet_mesh.faces.data(), tet_mesh.faces.size() * sizeof(Face), cudaMemcpyHostToDevice);
+    
+    cudaFree(source_tet_gpu);
 	cudaMalloc(&source_tet_gpu, sizeof(SourceTet));
+
+    cudaFree(cam_info_gpu);
 	cudaMalloc(&cam_info_gpu, sizeof(CamInfo));
 }
 
@@ -203,7 +215,7 @@ HitData* raycast_gpu(SourceTet* source_tet, CamInfo* cam_info)
 
     glm::ivec2 resolution(640, 480);
     dim3 g(tile_size, tile_size);
-    raycast_kernel<<<1200, g>>>(hitdata, points, tets, faces, cam_info_gpu, source_tet_gpu);
+    raycast_kernel<<<300, g>>>(hitdata, points, tets, faces, mesh_faces, cam_info_gpu, source_tet_gpu);
 
     //std::cout << cudaThreadSynchronize() << std::endl;
 

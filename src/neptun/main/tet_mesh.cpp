@@ -708,7 +708,7 @@ void TetMesh32::init_acceleration_data()
             if (m_tets[i].face_idx[j] > 0)
             {
                 ConstrainedFace cf;
-                cf.face = &faces[m_tets[i].face_idx[j]-1];
+                cf.face_idx = m_tets[i].face_idx[j]-1;
                 cf.tet_idx = i;
                 cf.other_tet_idx = n;
                 m_constrained_faces.push_back(cf);
@@ -962,7 +962,7 @@ bool TetMesh32::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
     if (index != -1)
     {
         index = (index & 0x7FFFFFFF);
-        const Face& face = *m_constrained_faces[index].face;
+        const Face& face = faces[m_constrained_faces[index].face_idx];
 
         const glm::vec3 *v = face.vertices;
         const glm::vec3 *n = face.normals;
@@ -1040,7 +1040,7 @@ void TetMesh20::init_acceleration_data()
             if (m_tets[i].face_idx[j] > 0)
             {
                 ConstrainedFace cf;
-                cf.face = &faces[m_tets[i].face_idx[j] - 1];
+                cf.face_idx = m_tets[i].face_idx[j] - 1;
                 cf.tet_idx = i;
                 cf.other_tet_idx = n;
                 m_constrained_faces.push_back(cf);
@@ -1321,7 +1321,7 @@ bool TetMesh20::raycast(const Ray & ray, const SourceTet & source_tet, Intersect
     if (index != -1)
     {
         index = (index & 0x7FFFFFFF);
-        const Face& face = *m_constrained_faces[index].face;
+        const Face& face = faces[m_constrained_faces[index].face_idx];
 
         const glm::vec3 *v = face.vertices;
         const glm::vec3 *n = face.normals;
@@ -1406,7 +1406,7 @@ void TetMesh16::init_acceleration_data()
             if (m_tets[i].face_idx[j] > 0 && (other_tet_idx > i || other_tet_idx == -1))
             {
                 ConstrainedFace cf;
-                cf.face = &faces[m_tets[i].face_idx[j] - 1];
+                cf.face_idx = m_tets[i].face_idx[j] - 1;
                 cf.tet_idx = i;
                 cf.other_tet_idx = other_tet_idx;
                 cf.n = (m_constrained_faces.size() + 1) | (1 << 31);
@@ -1426,7 +1426,7 @@ void TetMesh16::init_acceleration_data()
                     }
 
                     ConstrainedFace cf2;
-                    cf2.face = &faces[m_tets[i].face_idx[j] - 1];
+                    cf2.face_idx = m_tets[i].face_idx[j] - 1;
                     cf2.tet_idx = cf.other_tet_idx;
                     cf2.other_tet_idx = cf.tet_idx;
                     cf2.n = (m_constrained_faces.size() - 1) | (1 << 31);
@@ -1760,7 +1760,7 @@ bool TetMesh16::raycast(const Ray & ray, const SourceTet & source_tet, Intersect
     if (index != -1)
     {
         index = (index & 0x7FFFFFFF);
-        const Face& face = *m_constrained_faces[index].face;
+        const Face& face = faces[m_constrained_faces[index].face_idx];
 
         const glm::vec3 *v = face.vertices;
         const glm::vec3 *n = face.normals;

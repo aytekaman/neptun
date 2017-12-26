@@ -131,6 +131,26 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
 void RayTracer::render_on_gpu(Scene & scene)
 {
+    std::vector<LightInfo> lightInfos;
+
+    for (int i = 0; i < scene.sceneObjects.size(); i++)
+    {
+        if (scene.sceneObjects[i]->light)
+        {
+            LightInfo li;
+            li.pos = scene.sceneObjects[i]->pos;
+            li.color = scene.sceneObjects[i]->light->color;
+            li.intensity = scene.sceneObjects[i]->light->intensity;
+
+            SourceTet dummy_source_tet;
+
+            if (scene.tet_mesh)
+                li.tet_index = scene.tet_mesh->find_tet(li.pos, dummy_source_tet);
+            li.point_index = scene.sceneObjects[i]->light->point_index;
+            lightInfos.push_back(li);
+        }
+    }
+
 	glm::vec3 camTarget = scene.camTarget;
 	glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
 
@@ -171,15 +191,10 @@ void RayTracer::render_on_gpu(Scene & scene)
 
 	clock_t start = clock();
 	HitData* hitdata = raycast_gpu(&source_tet, cam_info);
-	clock_t end = clock();
 
-	last_render_time = (float)(end - start) / CLOCKS_PER_SEC;
-
-	Stats::add_render_time(last_render_time);
-
-	for (int i = 0; i < 480; i++)
+    for (int j = 0; j < 640; j++)
 	{
-		for (int j = 0; j < 640; j++)
+        for (int i = 0; i < 480; i++)
 		{
 			int index = j * resolution.y + i;
 
@@ -187,12 +202,34 @@ void RayTracer::render_on_gpu(Scene & scene)
 
 			if (hitdata[index].hit == 1)
 			{
-				m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::u8vec3(255, 255, 255));
+                glm::vec3 color;
+
+                for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                {
+                	// check normals before shooting
+                	//if (!shadows || scene.tet_mesh->Raycast(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
+                	{
+                		glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - hitdata[index].point);
+                		float diffuse = glm::clamp(glm::dot(hitdata[index].normal, to_light), 0.0f, 1.0f);
+                                       //diffuse = 1.0f;
+                		color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                	}
+                }
+
+                color = glm::clamp(color, 0.0f, 1.0f);
+
+				m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::u8vec3(255 * color.r, 255 * color.g, 255 * color.b));
 			}
 			else
 				m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::u8vec3(255, 0, 0));
 		}
 	}
+
+    clock_t end = clock();
+
+    last_render_time = (float)(end - start) / CLOCKS_PER_SEC;
+
+    Stats::add_render_time(last_render_time);
 }
 
 #define NOMINMAX
@@ -242,7 +279,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 			{
 				ray.dir = glm::normalize(bottom_left + right_step * (float)j + up_step * (float)i - ray.origin);
                 
-				glm::vec3 color(1.0,1.0,1.0);
+				glm::vec3 color;
 				//glm::vec2 uv;
 				//Face face;
 
@@ -292,19 +329,19 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 				{
                     //color = glm::vec3(1.0, 1.0, 1.0);
 
-					//for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
-					//{
-					//	Ray shadow_ray(intersection_data.position, glm::normalize(lightInfos[light_idx].pos - intersection_data.position));
+                    
 
-					//	// check normals before shooting
-					//	//if (!shadows || scene.tet_mesh->Raycast(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
-					//	{
-					//		glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersection_data.position);
-					//		float diffuse = glm::clamp(glm::dot(intersection_data.normal, to_light), 0.0f, 1.0f);
-     //                       //diffuse = 1.0f;
-					//		color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
-					//	}
-					//}
+                    for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                    {
+                        // check normals before shooting
+                        //if (!shadows || scene.tet_mesh->Raycast(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
+                        {
+                            glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersection_data.position);
+                            float diffuse = glm::clamp(glm::dot(intersection_data.normal, to_light), 0.0f, 1.0f);
+                            //diffuse = 1.0f;
+                            color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                        }
+                    }
 
 					color = glm::clamp(color, 0.0f, 1.0f);
 

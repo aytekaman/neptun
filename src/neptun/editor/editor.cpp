@@ -791,8 +791,14 @@ void Editor::DrawTetGen()
 		ImGui::Checkbox("Regions", &use_regions);
         ImGui::Checkbox("Swap", &swap);
 
-		if (ImGui::Button("Sort (Hilbert)"))
+        if (ImGui::Button("Sort (Hilbert)"))
+        {
             scene->tet_mesh->sort(SortingMethod::Hilbert, bit_count, use_regions, swap);
+            TetMesh32* tm32 = (TetMesh32*)scene->tet_mesh;
+
+            send_to_gpu(*tm32);
+        }
+            
 
         ImGui::SameLine();
 

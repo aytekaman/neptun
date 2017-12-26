@@ -63,7 +63,7 @@ struct ConstrainedFace
     unsigned int tet_idx;
     unsigned int other_tet_idx;
     int n;
-    Face* face;
+    int face_idx;
 };
 
 enum class SortingMethod
