@@ -750,11 +750,13 @@ void Editor::DrawTetGen()
 
 	if (ImGui::Button("Load"))
 	{
-        TetMesh *tm = new TetMesh16(*scene);
+        TetMesh32 *tm = new TetMesh32(*scene);
 
         scene->tet_mesh = tm;
 
         Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+
+        send_to_gpu(*tm);
 	}
 
 	ImGui::Separator();

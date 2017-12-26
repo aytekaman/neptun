@@ -24,7 +24,7 @@ HitData* hitdata;
 //int buffer_cpu[640 * 480];
 HitData hitdata_cpu[640 * 480];
 
-const int tile_size = 32;
+const int tile_size = 16;
 
 __device__
 void swapvec2(glm::vec2 &a, glm::vec2 &b)
@@ -202,8 +202,8 @@ HitData* raycast_gpu(SourceTet* source_tet, CamInfo* cam_info)
 	cudaMemcpy(cam_info_gpu, cam_info, sizeof(CamInfo), cudaMemcpyHostToDevice);
 
     glm::ivec2 resolution(640, 480);
-    dim3 g(32, 32);
-    raycast_kernel<<<300, g>>>(hitdata, points, tets, faces, cam_info_gpu, source_tet_gpu);
+    dim3 g(tile_size, tile_size);
+    raycast_kernel<<<1200, g>>>(hitdata, points, tets, faces, cam_info_gpu, source_tet_gpu);
 
     //std::cout << cudaThreadSynchronize() << std::endl;
 
