@@ -732,7 +732,6 @@ void Editor::DrawTetGen()
 	//if (t && t->joinable)
 	//{
 	//	Logger::LogError("!!!");
-
 	//	t->join();
 	//}
 	//else
@@ -1264,7 +1263,7 @@ void Editor::DrawRenderedFrame()
 
 
 	//(printf("Rendered in %.3f seconds. (%.1f FPS)", ray_tracer->last_render_time, 1 / ray_tracer->last_render_time);
-    ImGui::Text("Rendered in %.4f seconds. (%.2f FPS)", Stats::get_avg_render_time(10), 1 / Stats::get_avg_render_time(10));
+    ImGui::Text("Rendered in %.4f seconds. (%.2f FPS)", Stats::best_render_time, 1 / Stats::best_render_time);
 
 
 	//ImGui::Text("Triangle count: %d", scene->tet_mesh->face_count);
