@@ -66,10 +66,18 @@ void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 
 void Editor::InitSkin()
 {
+    ImGui::StyleColorsDark();
+
+    
+
 	ImGuiStyle& style = ImGui::GetStyle();
 
 	style.WindowRounding = 0.0f;
-	style.FramePadding = ImVec2(4, style.FramePadding.y);
+	//style.FramePadding = ImVec2(4, style.FramePadding.y);
+ //   style.WindowBorderSize = 1;
+ //   style.FrameBorderSize = 1;
+
+    return;
 
 	style.Colors[ImGuiCol_Text] = ImVec4(0.9f, 0.9f, 0.9f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
@@ -89,7 +97,7 @@ void Editor::InitSkin()
 	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
-	style.Colors[ImGuiCol_ComboBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.99f);
+	//style.Colors[ImGuiCol_PopupBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.99f);
 	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.6f, 0.6f, 0.6f, 0.99f);
 	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.6f, 0.6f, 0.6f, 0.99f);
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.7f, 0.7f, 0.7f, 0.99f);
@@ -151,6 +159,8 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
 	}
 
 	glfwSetDropCallback(window, Editor::DropCallback);
+
+    ImGui::CreateContext();
 
 	ImGui_ImplGlfwGL3_Init(window, true);
 
@@ -493,7 +503,7 @@ void Editor::DrawInspector()
 	int display_w, display_h;
 	glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
 	ImGui::GetStyle().WindowTitleAlign = ImVec2(0.025f, 0.5f);
 	ImGui::Begin("Inspector", 0, flags);
@@ -584,7 +594,7 @@ void Editor::DrawHierarchy()
 	int display_w, display_h;
 	glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
 	ImGui::GetStyle().WindowTitleAlign = ImVec2(0.1f, 0.5f);
 	ImGui::Begin("Scene Objects", 0, flags);
@@ -668,10 +678,15 @@ bool iss_point_inside_tet(glm::vec3 v[4], glm::vec3 point)
 
 void Editor::DrawTetGen()
 {
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyle().Colors[ImGuiCol_TitleBg]);
+
 	int display_w, display_h;
 	glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders;
+	ImGuiWindowFlags flags = 
+        ImGuiWindowFlags_NoResize | 
+        ImGuiWindowFlags_NoMove | 
+        ImGuiWindowFlags_NoCollapse;
 
 	
 	//ImGui::OpenPopup("Modal window");
@@ -1018,6 +1033,8 @@ void Editor::DrawTetGen()
   //          }
 		//}
 	}
+
+    ImGui::PopStyleColor();
 }
 
 void Editor::DrawScene()
@@ -1236,9 +1253,9 @@ void Editor::DrawRenderedFrame()
 	if (!show_rendered_frame_window)
 		return;
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_ShowBorders;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse;// = ImGuiWindowFlags_ShowBorders;
 
-	ImGui::Begin("Rendered Frame", 0, flags);
+	ImGui::Begin("Rendered Frame", &show_rendered_frame_window, flags);
 
 	float cw = ImGui::GetContentRegionAvailWidth() * 0.65f;
 
@@ -1246,7 +1263,7 @@ void Editor::DrawRenderedFrame()
 
 	ImGui::Image((ImTextureID)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
 	ImGui::SameLine();
-	ImGui::BeginChild("asd", ImVec2(0, 0), false, flags);
+	ImGui::BeginChild("asd", ImVec2(0, 0));
 
 
 	//(printf("Rendered in %.3f seconds. (%.1f FPS)", ray_tracer->last_render_time, 1 / ray_tracer->last_render_time);
@@ -1316,7 +1333,7 @@ void Editor::DrawRenderedFrame()
 
 	ImGui::End();
 
-    ImGui::Begin("Diag", 0, flags);
+    ImGui::Begin("Diag");
     ImGui::Image((ImTextureID)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
     ImGui::SameLine();
     ImGui::Image((ImTextureID)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
@@ -1328,7 +1345,7 @@ void Editor::DrawConsole()
 	if (!show_console_window)
 		return;
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_ShowBorders;
+    ImGuiWindowFlags flags;// = ImGuiWindowFlags_ShowBorders;
 
 	ImGui::Begin("Console", 0, flags);
 
@@ -1346,7 +1363,7 @@ void Editor::DrawConsole()
 
 	float h = ImGui::GetContentRegionAvail().y  - 100;
 
-	ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor(0.1f, 0.1f, 0.1f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
 	ImGui::BeginChild("Message List", ImVec2(0, h), false, flags);
 
@@ -1368,9 +1385,9 @@ void Editor::DrawConsole()
 		ImGui::PushID(i);
 
 		if (logs[i].type == 1)
-			ImGui::PushStyleColor(ImGuiCol_Text, ImColor(1.0f, 0.92f, 0.016f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.92f, 0.016f, 1.0f));
 		if (logs[i].type == 2)
-			ImGui::PushStyleColor(ImGuiCol_Text, ImColor(1.0f, 0.0f, 0.0f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 		if (ImGui::Selectable(logs[i].text.c_str(), selected_msg_id == i))
 		{
