@@ -505,7 +505,7 @@ void Editor::DrawInspector()
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
-	ImGui::GetStyle().WindowTitleAlign = ImVec2(0.025f, 0.5f);
+	//ImGui::GetStyle().WindowTitleAlign = ImVec2(0.025f, 0.5f);
 	ImGui::Begin("Inspector", 0, flags);
 
 	ImGui::SetWindowSize(ImVec2(240, (display_h - 20) / 2));
@@ -596,7 +596,7 @@ void Editor::DrawHierarchy()
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
-	ImGui::GetStyle().WindowTitleAlign = ImVec2(0.1f, 0.5f);
+	//ImGui::GetStyle().WindowTitleAlign = ImVec2(0.1f, 0.5f);
 	ImGui::Begin("Scene Objects", 0, flags);
 	ImGui::SetWindowSize(ImVec2(120.0f, (display_h - 20) / 2.0f));
 	ImGui::SetWindowPos(ImVec2(display_w - 360.0f, 20.0f));
@@ -1345,9 +1345,9 @@ void Editor::DrawConsole()
 	if (!show_console_window)
 		return;
 
-    ImGuiWindowFlags flags;// = ImGuiWindowFlags_ShowBorders;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse;// = ImGuiWindowFlags_ShowBorders;
 
-	ImGui::Begin("Console", 0, flags);
+	ImGui::Begin("Console", &show_console_window, flags);
 
 	if (ImGui::Button("Clear"))
 		Logger::Clear();
