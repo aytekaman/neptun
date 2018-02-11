@@ -158,6 +158,14 @@ add_custom_command(
 	COMMENT "copying fonts"
 	VERBATIM)
 
+add_custom_command(
+	TARGET neptun
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	"${CMAKE_SOURCE_DIR}/src/neptun/editor/fonts" "${CMAKE_SOURCE_DIR}/sandbox/fonts"
+	COMMENT "copying fonts"
+	VERBATIM)
+
 if(UNIX)
 	set_target_properties(
 		neptun 
