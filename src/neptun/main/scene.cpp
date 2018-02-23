@@ -177,6 +177,11 @@ void Scene::clear()
     sceneObjects.clear();
 }
 
+bool Scene::has_accelerator() const
+{
+    return kd_tree || bvh || tet_mesh;
+}
+
 int Scene::get_triangle_count(bool ignore_hidden_scene_objects)
 {
     int triangle_count = 0;
