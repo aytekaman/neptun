@@ -11,8 +11,6 @@
 class Material;
 class Scene;
 
-
-
 struct Tet
 {
     unsigned int v[4];
@@ -119,7 +117,7 @@ public:
     // Otherwise, returns -1. Output 'tet' is filled with this tetrahedron data.
     virtual int find_tet(const glm::vec3& point, SourceTet& tet) = 0;
 
-    // Returns the index of th tet that contains the 'point'.
+    // Returns the index of the tet that contains the 'point'.
     // int  find_tet_idx(const glm::vec3& point);
 
     // Casts a ray from a point inside the 'tet'.
@@ -141,7 +139,8 @@ public:
         const int& target_tet_idx = 0) = 0;
 
     bool raycast_stats(
-        const Ray& ray, 
+        const Ray& ray,
+        const SourceTet& tet,
         IntersectionData& intersection_data, 
         DiagnosticData& diagnostic_data);
 
