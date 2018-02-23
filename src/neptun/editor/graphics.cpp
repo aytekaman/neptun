@@ -28,7 +28,7 @@ void Graphics::Init()
 {
 	programID = LoadShaders("../../shaders/vertexShader.glsl", "../../shaders/fragmentShader.glsl");
 
-	Texture *texture = AssetImporter::ImportTexture("ball.jpg");
+	//Texture *texture = AssetImporter::ImportTexture("ball.jpg");
 
 	// line drawing
 	linesProgramID = LoadShaders("../../shaders/lineVertexShader.glsl", "../../shaders/lineFragmentShader.glsl");
