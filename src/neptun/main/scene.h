@@ -2,7 +2,6 @@
 
 #include <vector>
 
-
 #include "sceneObject.h"
 
 #include <iostream>
@@ -27,6 +26,8 @@ public:
 	void add_scene_object(SceneObject *sceneObject);
     void clear();
 
+    bool has_accelerator() const;
+
     int  get_triangle_count(bool ignore_hidden_scene_objects = true);
 
     void build_bvh(int maxPrimsInNode = 1, SplitMethod splitMethod = (SplitMethod)0);
@@ -47,6 +48,4 @@ public:
     Bvh*     bvh      = nullptr;
     KdTree*  kd_tree  = nullptr;
     TetMesh* tet_mesh = nullptr;
-    TetMesh* tet_mesh20 = nullptr;
-    TetMesh* tet_mesh32 = nullptr;
 };
