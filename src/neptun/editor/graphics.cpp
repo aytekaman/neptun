@@ -66,7 +66,7 @@ void Graphics::Init()
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void Graphics::Render(Scene *scene, bool show_tetrahedrons)
+void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode rendering_mode)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -216,6 +216,9 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons)
 
 		GLuint textured = glGetUniformLocation(programID, "textured");
 		glUniform1i(textured, mesh->uvs.size() > 0 && texture);
+
+        GLuint rendering_mode_glsl = glGetUniformLocation(programID, "rendering_mode");
+        glUniform1i(rendering_mode_glsl, rendering_mode == RenderingMode::SolidWireframe);
 
 		glBindVertexArray(renderData.vertexArrayID);
 		
@@ -373,9 +376,9 @@ void Graphics::CreateRenderData(Mesh * mesh)
 	RenderData renderData;
 
 	glGenVertexArrays(1, &(renderData.vertexArrayID));
-	glGenBuffers(3, renderData.vertexBufferIDs);
+	glGenBuffers(4, renderData.vertexBufferIDs);
 
-	glBindVertexArray(renderData.vertexArrayID);
+    glBindVertexArray(renderData.vertexArrayID);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[0]);
@@ -391,6 +394,10 @@ void Graphics::CreateRenderData(Mesh * mesh)
 		glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[2]);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	}
+
+    glEnableVertexAttribArray(3);
+    glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[3]);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	std::pair<Mesh*, RenderData> pair(mesh, renderData);
 
@@ -416,6 +423,13 @@ void Graphics::SendMeshData(Mesh *mesh)
 		glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[2]);
 		glBufferData(GL_ARRAY_BUFFER, mesh->vertexCount * sizeof(glm::vec2), (void*)&mesh->uvs[0].x, GL_STATIC_DRAW);
 	}
+
+    std::vector<glm::vec3> bary(mesh->vertexCount);
+    for (size_t i = 0; i < mesh->vertexCount; ++i)
+        bary[i][i % 3] = 1;
+
+    glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[3]);
+    glBufferData(GL_ARRAY_BUFFER, mesh->vertexCount * sizeof(glm::vec3), (void*)&bary[0].x, GL_STATIC_DRAW);
 }
 
 void Graphics::CreateTextureData(Texture * texture)

@@ -42,6 +42,8 @@ public:
 	bool show_console_window;
 	bool show_grid = true;
 
+    //RenderingMode m_rendering_mode;
+
 	std::vector<SceneObject*> selected_scene_objects;
 
 	SceneObject *selected_scene_object = nullptr;

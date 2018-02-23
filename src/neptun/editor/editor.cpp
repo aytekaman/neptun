@@ -1047,6 +1047,13 @@ void Editor::DrawScene()
 	if (!KeysDownPrev[GLFW_KEY_G] && ImGui::GetIO().KeysDown[GLFW_KEY_G])
 		show_grid = !show_grid;
 
+    static RenderingMode renderingMode = RenderingMode::Solid;
+
+    if (!KeysDownPrev[GLFW_KEY_W] && ImGui::GetIO().KeysDown[GLFW_KEY_W])
+    {
+        renderingMode = renderingMode == RenderingMode::Solid ? RenderingMode::SolidWireframe : RenderingMode::Solid;
+    }
+
 	if (!KeysDownPrev[GLFW_KEY_H] && ImGui::GetIO().KeysDown[GLFW_KEY_H])
 	{
 		for (int i = 0; i < scene->sceneObjects.size(); i++)
@@ -1232,17 +1239,12 @@ void Editor::DrawScene()
         graphics->DrawLine(sorted[i], sorted[i+1]);
     }*/
 
-
-    
-
-
-
 	int display_w, display_h;
 	glfwGetFramebufferSize(window, &display_w, &display_h);
 
 	glViewport(0, 0, display_w - 360, display_h - 20);
 
-	graphics->Render(scene, show_tetrahedrons);
+	graphics->Render(scene, show_tetrahedrons, renderingMode);
 
 	glViewport(0, 0, display_w, display_h);
 	//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);

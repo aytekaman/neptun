@@ -16,7 +16,14 @@ struct GLFWwindow;
 struct RenderData
 {
 	GLuint vertexArrayID;
-	GLuint vertexBufferIDs[3];
+	GLuint vertexBufferIDs[4];
+};
+
+enum class RenderingMode
+{
+    Solid,
+    WireFrame,
+    SolidWireframe
 };
 
 class Graphics
@@ -25,7 +32,7 @@ public:
 	Graphics();
 
 	void Init();
-	void Render(Scene *scene, bool show_tetrahedrons);
+	void Render(Scene *scene, bool show_tetrahedrons, RenderingMode rendering_mode);
 
 	void DrawLine(glm::vec3 start, glm::vec3 end, glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 1.0));
 	void DrawTri(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 1.0));
