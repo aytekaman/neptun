@@ -548,6 +548,9 @@ void Editor::DrawInspector()
 		if (selected_scene_object->mesh)
 		{
 			ImGui::Text("Mesh");
+
+            ImGui::Text("Vertex count: %d", selected_scene_object->mesh->vertexCount);
+
 			//if (ImGui::Button("Center Pivot Point"))
 			//{
 			//	selected_scene_object->mesh->CenterPivot();
@@ -727,9 +730,9 @@ void Editor::DrawTetGen()
 		if (scene->tet_mesh)
 			delete scene->tet_mesh;
 
-		scene->tet_mesh = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
+		scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
 
-        Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
 
         //scene->tet_mesh20 = new TetMesh20(*scene->tet_mesh);
 
@@ -759,7 +762,7 @@ void Editor::DrawTetGen()
 
 	if (ImGui::Button("Load"))
 	{
-        TetMesh *tm = new TetMesh20(*scene);
+        TetMesh *tm = new TetMesh32(*scene);
 
         scene->tet_mesh = tm;
 
@@ -1299,6 +1302,12 @@ void Editor::DrawRenderedFrame()
     static bool diagnostics = false;
 	ImGui::Checkbox("Render", &render);
 
+    if (render && !scene->has_accelerator())
+    {
+        Logger::LogWarning("can't render because there is no accelerator in the scene.");
+        render = false;
+    }
+        
 
 
 	ImGui::Separator();
@@ -1317,7 +1326,7 @@ void Editor::DrawRenderedFrame()
         ray_tracer->save_to_disk("last.png");
 	ImGui::EndChild();
 
-	if (render)
+	if (render && scene->has_accelerator())
 	{
 		ray_tracer->Render(*scene, diagnostics);
 		glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
@@ -1363,15 +1372,16 @@ void Editor::DrawConsole()
 
 	float h = ImGui::GetContentRegionAvail().y  - 100;
 
+    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
 	ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
 	ImGui::BeginChild("Message List", ImVec2(0, h), false, flags);
 
-	std::vector<Msg> &logs = Logger::logs;
+	const std::vector<Msg> &logs = Logger::logs;
 
 	static int selected_msg_id = -1;
 
-    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+    
 
 	for (size_t i = 0; i < logs.size(); i++)
 	{

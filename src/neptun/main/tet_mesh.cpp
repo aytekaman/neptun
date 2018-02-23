@@ -7,12 +7,12 @@
 #include <set>
 #include <vector>
 
-#include <glm\glm.hpp>
-#include <glm\gtx\euler_angles.hpp>
-#include <glm\gtx\intersect.hpp>
-#include <glm\gtx\norm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/intersect.hpp>
+#include <glm/gtx/norm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "basis.h"
 #include "tetgen/tetgen.h"
@@ -194,8 +194,8 @@ void TetMesh::build_from_scene(
 	int bbox_vertex_count = 8 * create_bbox;
 	int bbox_facet_count = 6 * create_bbox;
 
-	glm::vec3 bb_min(-50, -50, -50);
-	glm::vec3 bb_max(50, 50, 50);
+	glm::vec3 bb_min(-500, -500, -500);
+	glm::vec3 bb_max(500, 500, 500);
 
 	glm::vec3 bbox_vertices[8];
 
@@ -360,8 +360,6 @@ void TetMesh::build_from_scene(
 	Logger::Log("Tet Mesh is generated in %f seconds.", float(end - start) / CLOCKS_PER_SEC);
 	Logger::Log("Air region ID: %d", m_air_region_id);
     Logger::Log("Constrained face count: %d", m_constrained_face_count);
-
-
 }
 
 void TetMesh::sort(const SortingMethod sorting_method, const unsigned int bit_count, const bool use_regions, const bool swap)
@@ -575,7 +573,7 @@ void TetMesh::compute_weight()
 {
 	m_weight = 0;
 
-	for (auto tet : m_tets)
+	for (auto& tet : m_tets)
 	{
 		glm::vec3 v[4];
 
@@ -690,6 +688,8 @@ int TetMesh32::get_size_in_bytes()
 
 void TetMesh32::init_acceleration_data()
 {
+    clock_t start = clock();
+
     m_tet32s.resize(m_tets.size());
 
     for (int i = 0; i < m_tets.size(); i++)
@@ -726,14 +726,18 @@ void TetMesh32::init_acceleration_data()
         m_source_tet.n[i] = m_tet32s[0].n[i];
     }
 
-    for (int i = 0; i < m_tet32s.size(); i++)
-    {
-        int a = rand() % 3;
-        int b = rand() % 3;
+    clock_t end = clock();
 
-        std::swap(m_tet32s[i].v[a], m_tet32s[i].v[b]);
-        std::swap(m_tet32s[i].n[a], m_tet32s[i].n[b]);
-    }
+    Logger::Log("Acceleration data is initialized in %.2f seconds.", float(end - start) / CLOCKS_PER_SEC);
+
+    //for (int i = 0; i < m_tet32s.size(); i++)
+    //{
+    //    int a = rand() % 3;
+    //    int b = rand() % 3;
+
+    //    std::swap(m_tet32s[i].v[a], m_tet32s[i].v[b]);
+    //    std::swap(m_tet32s[i].n[a], m_tet32s[i].n[b]);
+    //}
 
     Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
 }
@@ -1082,7 +1086,7 @@ void TetMesh20::init_acceleration_data()
     Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
 }
 
-int TetMesh20::find_tet(const glm::vec3 & point, SourceTet & tet)
+int TetMesh20::find_tet(const glm::vec3& point, SourceTet & tet)
 {
     int index = 0;
     Ray ray;
@@ -1225,7 +1229,7 @@ int TetMesh20::find_tet(const glm::vec3 & point, SourceTet & tet)
     return -1;
 }
 
-bool TetMesh20::raycast(const Ray & ray, const SourceTet & source_tet, IntersectionData & intersection_data)
+bool TetMesh20::raycast(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
     unsigned int id[4];
     glm::vec2 p[4];
@@ -1344,18 +1348,18 @@ bool TetMesh20::raycast(const Ray & ray, const SourceTet & source_tet, Intersect
         return false;
 }
 
-bool TetMesh20::raycast(const Ray & ray, const TetFace & tet_face, IntersectionData & intersection_data)
+bool TetMesh20::raycast(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
 {
     return false;
 }
 
-bool TetMesh20::raycast(const Ray & ray, const TetFace & tet_face, const int & target_tet_idx)
+bool TetMesh20::raycast(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
 }
 
 TetMesh16::TetMesh16(
-    const Scene & scene,
+    const Scene& scene,
     const bool preserve_triangles,
     const bool create_bbox,
     const float quality) :
@@ -1662,7 +1666,7 @@ int TetMesh16::find_tet(const glm::vec3& point, SourceTet& tet)
     return -1;
 }
 
-bool TetMesh16::raycast(const Ray & ray, const SourceTet & source_tet, IntersectionData & intersection_data)
+bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
     unsigned int id[4];
     glm::vec2 p[4];
@@ -1785,12 +1789,12 @@ bool TetMesh16::raycast(const Ray & ray, const SourceTet & source_tet, Intersect
         return false;
 }
 
-bool TetMesh16::raycast(const Ray & ray, const TetFace & tet_face, IntersectionData & intersection_data)
+bool TetMesh16::raycast(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
 {
     return false;
 }
 
-bool TetMesh16::raycast(const Ray & ray, const TetFace & tet_face, const int & target_tet_idx)
+bool TetMesh16::raycast(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
 }
