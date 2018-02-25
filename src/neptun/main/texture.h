@@ -5,10 +5,10 @@
 class Texture
 {
 public:
-	glm::vec3 GetPixelBilinear(float u, float v);
+    glm::vec3 GetPixelBilinear(float u, float v);
 
-	bool is_dirty = true;
+    bool is_dirty = true;
 
-	unsigned char *pixels;
+    unsigned char *pixels;
     int w, h;
 };
