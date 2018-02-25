@@ -41,6 +41,7 @@ public:
 	bool show_rendered_frame_window;
 	bool show_console_window;
 	bool show_grid = true;
+    bool edged_faces = false;
 
     //RenderingMode m_rendering_mode;
 

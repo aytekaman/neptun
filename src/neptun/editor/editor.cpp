@@ -1065,6 +1065,8 @@ void Editor::DrawScene()
 	{
 		SceneObject *clone = new SceneObject(*selected_scene_object);
 
+        clone->randomize_color();
+
 		if (selected_scene_object->mesh)
 		{
 			Mesh *mesh = new Mesh(*clone->mesh);
@@ -1244,6 +1246,11 @@ void Editor::DrawScene()
 
 	glViewport(0, 0, display_w - 360, display_h - 20);
 
+    if (edged_faces)
+        renderingMode = RenderingMode::SolidWireframe;
+    else
+        renderingMode = RenderingMode::Solid;
+
 	graphics->Render(scene, show_tetrahedrons, renderingMode);
 
 	glViewport(0, 0, display_w, display_h);
@@ -1251,6 +1258,14 @@ void Editor::DrawScene()
 
 	for (int i = 0; i < 512; i++)
 		KeysDownPrev[i] = ImGui::GetIO().KeysDown[i];
+
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4());
+    ImGui::SetNextWindowPos(ImVec2(0, 20));
+    ImGui::Begin("Scene Options", NULL, ImVec2(-1, 0), 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    ImGui::Checkbox("Grid", &show_grid);
+    ImGui::Checkbox("Edged Faces", &edged_faces);
+    ImGui::End();
+    ImGui::PopStyleColor();
 }
 
 void Editor::DrawRenderedFrame()

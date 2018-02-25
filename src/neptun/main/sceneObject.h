@@ -12,8 +12,11 @@ class Mesh;
 class SceneObject
 {
 public:
+
 	SceneObject(std::string name);
 	~SceneObject();
+
+    void randomize_color();
 
 	void LookAt(glm::vec3 target, glm::vec3 up = glm::vec3(0, 1, 0));
 

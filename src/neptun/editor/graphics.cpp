@@ -43,13 +43,13 @@ void Graphics::Init()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, linesVertexBufferIDs[1]);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, linesVertexBufferIDs[1]);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// tri drawing
 	trisProgramID = LoadShaders("../../shaders/triVertexShader.glsl", "../../shaders/triFragmentShader.glsl");
-	glGenVertexArrays(1, &trisVertexArrayID);
-	glGenBuffers(3, trisVertexBufferIDs);
+    glGenVertexArrays(1, &trisVertexArrayID);
+	glGenBuffers(4, trisVertexBufferIDs);
 
 	glBindVertexArray(trisVertexArrayID);
 
@@ -64,6 +64,10 @@ void Graphics::Init()
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, trisVertexBufferIDs[2]);
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnableVertexAttribArray(3);
+    glBindBuffer(GL_ARRAY_BUFFER, trisVertexBufferIDs[3]);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode rendering_mode)
@@ -201,7 +205,7 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode render
 
 		s[3][3] = 1;
 
-		mvp = p * v * t * r * s;
+        mvp = p * v * t * r * s;
 
 		GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
@@ -219,6 +223,9 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode render
 
         GLuint rendering_mode_glsl = glGetUniformLocation(programID, "rendering_mode");
         glUniform1i(rendering_mode_glsl, rendering_mode == RenderingMode::SolidWireframe);
+
+        GLuint wire_color_glsl = glGetUniformLocation(programID, "wire_color");
+        glUniform3fv(wire_color_glsl, 1, &(scene->sceneObjects[i]->color.x));
 
 		glBindVertexArray(renderData.vertexArrayID);
 		
@@ -338,6 +345,13 @@ void Graphics::UpdateTetMeshData(const Scene* scene)
 
         glBindBuffer(GL_ARRAY_BUFFER, trisVertexBufferIDs[2]);
         glBufferData(GL_ARRAY_BUFFER, triColors.size() * sizeof(glm::vec4), (void*)&triColors[0].x, GL_DYNAMIC_DRAW);
+
+        std::vector<glm::vec3> bary(triVertices.size());
+        for (size_t i = 0; i < triVertices.size(); ++i)
+            bary[i][i % 3] = 1;
+
+        glBindBuffer(GL_ARRAY_BUFFER, trisVertexBufferIDs[3]);
+        glBufferData(GL_ARRAY_BUFFER, triVertices.size() * sizeof(glm::vec3), (void*)&bary[0].x, GL_STATIC_DRAW);
     }
 
     tet_mesh->is_dirty = false;

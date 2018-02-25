@@ -88,7 +88,7 @@ public:
 
 	GLuint trisProgramID;
 	GLuint trisVertexArrayID;
-	GLuint trisVertexBufferIDs[3];
+	GLuint trisVertexBufferIDs[4];
 
 	GLuint textureID;
 };
