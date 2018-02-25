@@ -16,14 +16,14 @@ class TetMesh;
 class Scene
 {
 public:
-	Scene();
-	~Scene();
+    Scene();
+    ~Scene();
 
     void load_from_file(const std::string& file_name);
     void save_to_file(const std::string& file_name);
     void save_to_file();
 
-	void add_scene_object(SceneObject *sceneObject);
+    void add_scene_object(SceneObject *sceneObject);
     void clear();
 
     bool has_accelerator() const;
@@ -35,11 +35,11 @@ public:
     void build_tet_mesh(bool preserve_triangles, bool create_bounding_box, float quality = 5.0f);
 
     // Scene objects.
-	std::vector<SceneObject*> sceneObjects;
+    std::vector<SceneObject*> sceneObjects;
 
-	// Camera params
-	glm::vec3 camTarget;
-	float camOrbitX, camOrbitY, camDist;
+    // Camera params
+    glm::vec3 camTarget;
+    float camOrbitX, camOrbitY, camDist;
 
     std::string name;
     std::string tet_mesh_file_name;

@@ -15,7 +15,7 @@ struct Tet
 {
     unsigned int v[4];
     int n[4];
-	int face_idx[4];
+    int face_idx[4];
     int region_id;
 };
 
@@ -52,7 +52,7 @@ struct ConstrainedFace
 
 enum class SortingMethod
 {
-	Default, // no sorting.
+    Default, // no sorting.
     Hilbert,
     Morton
 };
@@ -73,7 +73,7 @@ public:
         m_points = tet_mesh.m_points;
     }
 
-	~TetMesh();
+    ~TetMesh();
 
     void clear();
 

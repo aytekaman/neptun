@@ -5,14 +5,14 @@
 class Light
 {
 public:
-	Light();
-	~Light();
+    Light();
+    ~Light();
 
-	bool isDirty = true;
+    bool isDirty = true;
 
-	glm::vec3 color;
+    glm::vec3 color;
 
-	float intensity;
+    float intensity;
 
-	int point_index;
+    int point_index;
 };

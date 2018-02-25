@@ -10,5 +10,5 @@ public:
 	bool is_dirty = true;
 
 	unsigned char *pixels;
-	int w, h;
+    int w, h;
 };

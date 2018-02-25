@@ -5,8 +5,8 @@
 class Component
 {
 public:
-	Component();
-	~Component();
+    Component();
+    ~Component();
 
-	SceneObject *scene_object;
+    SceneObject *scene_object;
 };

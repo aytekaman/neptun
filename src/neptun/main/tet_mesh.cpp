@@ -52,7 +52,7 @@ TetMesh::TetMesh(const Scene& scene)
 
 TetMesh::~TetMesh()
 {
-	clear();
+    clear();
 }
 
 void TetMesh::read_from_file(std::string file_name)
@@ -60,48 +60,48 @@ void TetMesh::read_from_file(std::string file_name)
     std::string path = "./Assets/";
     path.append(file_name);
 
-	//const char* FILENAME = "tet_mesh.txt";
-	std::ifstream i(path, std::ios::binary);
+    //const char* FILENAME = "tet_mesh.txt";
+    std::ifstream i(path, std::ios::binary);
 
-	// read points
+    // read points
     size_t point_count = m_points.size();
-	i.read((char*)&point_count, sizeof(point_count));
-	m_points.resize(point_count);
-	i.read((char*)&m_points[0], sizeof(glm::vec3) * point_count);
+    i.read((char*)&point_count, sizeof(point_count));
+    m_points.resize(point_count);
+    i.read((char*)&m_points[0], sizeof(glm::vec3) * point_count);
 
-	// read tets;
+    // read tets;
     size_t tet_count = m_tets.size();
-	i.read((char*)&tet_count, sizeof(tet_count));
-	m_tets.resize(tet_count);
-	i.read((char*)&m_tets[0], sizeof(Tet) * tet_count);
+    i.read((char*)&tet_count, sizeof(tet_count));
+    m_tets.resize(tet_count);
+    i.read((char*)&m_tets[0], sizeof(Tet) * tet_count);
 
-	// read other data
-	i.read((char*)&m_air_region_id, sizeof(m_air_region_id));
+    // read other data
+    i.read((char*)&m_air_region_id, sizeof(m_air_region_id));
     i.read((char*)&m_constrained_face_count, sizeof(m_constrained_face_count));
 
-	i.close();
+    i.close();
 }
 
 void TetMesh::write_to_file()
 {
-	const char* FILENAME = "./Assets/tet_mesh.tetmesh";
-	std::ofstream o(FILENAME, std::ios::binary);
+    const char* FILENAME = "./Assets/tet_mesh.tetmesh";
+    std::ofstream o(FILENAME, std::ios::binary);
 
-	// write points
+    // write points
     size_t point_count = m_points.size();
-	o.write((char*)&point_count, sizeof(point_count));
-	o.write((char*)&m_points[0], sizeof(glm::vec3) * point_count);
+    o.write((char*)&point_count, sizeof(point_count));
+    o.write((char*)&m_points[0], sizeof(glm::vec3) * point_count);
 
-	// write tets
+    // write tets
     size_t tet_count = m_tets.size();
-	o.write((char*)&tet_count, sizeof(tet_count));
-	o.write((char*)&m_tets[0], sizeof(Tet) * tet_count);
+    o.write((char*)&tet_count, sizeof(tet_count));
+    o.write((char*)&m_tets[0], sizeof(Tet) * tet_count);
 
-	// write other data
-	o.write((char*)&m_air_region_id, sizeof(m_air_region_id));
+    // write other data
+    o.write((char*)&m_air_region_id, sizeof(m_air_region_id));
     o.write((char*)&m_constrained_face_count, sizeof(m_constrained_face_count));
 
-	o.close();
+    o.close();
 }
 
 void TetMesh::build_from_scene(
@@ -112,237 +112,237 @@ void TetMesh::build_from_scene(
 {
     init_faces(scene);
 
-	struct VertexId
-	{
-		glm::vec3 vertex;
-		int id;
-	};
+    struct VertexId
+    {
+        glm::vec3 vertex;
+        int id;
+    };
 
-	std::vector<glm::vec3> vertices;
-	std::vector<int> triangles;
+    std::vector<glm::vec3> vertices;
+    std::vector<int> triangles;
 
-	int cell_count = 20;
-	float cell_size = 1;
-	float grid_size = cell_count * cell_size;
+    int cell_count = 20;
+    float cell_size = 1;
+    float grid_size = cell_count * cell_size;
 
-	std::vector<VertexId> *vertexIds = new std::vector<VertexId>[cell_count * cell_count * cell_count];
+    std::vector<VertexId> *vertexIds = new std::vector<VertexId>[cell_count * cell_count * cell_count];
 
-	clock_t start = clock();
+    clock_t start = clock();
 
-	int last_given_id = -1;
+    int last_given_id = -1;
 
-	for (int i = 0; i < faces.size(); i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			glm::vec3 vertex = faces[i].vertices[j];
-			bool found = false;
+    for (int i = 0; i < faces.size(); i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            glm::vec3 vertex = faces[i].vertices[j];
+            bool found = false;
 
-			glm::ivec3 idx = ((glm::mod(vertex, grid_size)) / grid_size) * (float)cell_count;
+            glm::ivec3 idx = ((glm::mod(vertex, grid_size)) / grid_size) * (float)cell_count;
 
-			std::vector<VertexId> &cell = vertexIds[idx.x * cell_count * cell_count + idx.y * cell_count + idx.z];
+            std::vector<VertexId> &cell = vertexIds[idx.x * cell_count * cell_count + idx.y * cell_count + idx.z];
 
-			for (int k = 0; k < cell.size(); k++)
-			{
-				if (vertex == cell[k].vertex)
-				{
-					triangles.push_back(cell[k].id);
-					found = true;
-					break;
-				}
-			}
+            for (int k = 0; k < cell.size(); k++)
+            {
+                if (vertex == cell[k].vertex)
+                {
+                    triangles.push_back(cell[k].id);
+                    found = true;
+                    break;
+                }
+            }
 
-			if (!found)
-			{
-				//glm::ivec3 idx = ((glm::mod(vertex, grid_size)) / grid_size) * (float)cell_count;
+            if (!found)
+            {
+                //glm::ivec3 idx = ((glm::mod(vertex, grid_size)) / grid_size) * (float)cell_count;
 
-				VertexId vid;
-				vid.vertex = vertex;
-				vid.id = ++last_given_id;
-				vertexIds[idx.x * cell_count * cell_count + idx.y * cell_count + idx.z].push_back(vid);
+                VertexId vid;
+                vid.vertex = vertex;
+                vid.id = ++last_given_id;
+                vertexIds[idx.x * cell_count * cell_count + idx.y * cell_count + idx.z].push_back(vid);
 
-				vertices.push_back(vertex);
-				triangles.push_back(last_given_id);
-			}
-		}
-	}
+                vertices.push_back(vertex);
+                triangles.push_back(last_given_id);
+            }
+        }
+    }
 
-	delete[] vertexIds;
+    delete[] vertexIds;
 
-	clock_t end = clock();
+    clock_t end = clock();
 
-	Logger::Log("Duplicate vertices are merged in %.2f seconds.", (float)(end - start) / CLOCKS_PER_SEC);
+    Logger::Log("Duplicate vertices are merged in %.2f seconds.", (float)(end - start) / CLOCKS_PER_SEC);
 
-	//Logger::LogError("This is an error message");
+    //Logger::LogError("This is an error message");
 
-	tetgenio data;
+    tetgenio data;
 
-	int num_lights = 0;
+    int num_lights = 0;
 
-	std::vector<glm::vec3> light_positions;
+    std::vector<glm::vec3> light_positions;
 
-	//for (int i = 0; i < scene.sceneObjects.size(); i++)
-	//{
-	//	if (scene.sceneObjects[i]->light)
-	//	{
-	//		light_positions.push_back(scene.sceneObjects[i]->pos);
-	//		scene.sceneObjects[i]->light->point_index = vertices.size() + num_lights;
-	//		num_lights++;
-	//	}
-	//}
+    //for (int i = 0; i < scene.sceneObjects.size(); i++)
+    //{
+    //	if (scene.sceneObjects[i]->light)
+    //	{
+    //		light_positions.push_back(scene.sceneObjects[i]->pos);
+    //		scene.sceneObjects[i]->light->point_index = vertices.size() + num_lights;
+    //		num_lights++;
+    //	}
+    //}
 
-	int bbox_vertex_count = 8 * create_bbox;
-	int bbox_facet_count = 6 * create_bbox;
+    int bbox_vertex_count = 8 * create_bbox;
+    int bbox_facet_count = 6 * create_bbox;
 
-	glm::vec3 bb_min(-500, -500, -500);
-	glm::vec3 bb_max(500, 500, 500);
+    glm::vec3 bb_min(-500, -500, -500);
+    glm::vec3 bb_max(500, 500, 500);
 
-	glm::vec3 bbox_vertices[8];
+    glm::vec3 bbox_vertices[8];
 
-	glm::vec3 rot = glm::radians((float)m_perturb_points * glm::vec3(0.01f, 0.01f, 0.01f));
-	glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
+    glm::vec3 rot = glm::radians((float)m_perturb_points * glm::vec3(0.01f, 0.01f, 0.01f));
+    glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
 
-	for (int i = 0; i < 8; i++)
-	{
-		bbox_vertices[i].x = (i / 4) % 2 ? bb_min.x : bb_max.x;
-		bbox_vertices[i].y = (i / 2) % 2 ? bb_min.y : bb_max.y;
-		bbox_vertices[i].z = (i / 1) % 2 ? bb_min.z : bb_max.z;
+    for (int i = 0; i < 8; i++)
+    {
+        bbox_vertices[i].x = (i / 4) % 2 ? bb_min.x : bb_max.x;
+        bbox_vertices[i].y = (i / 2) % 2 ? bb_min.y : bb_max.y;
+        bbox_vertices[i].z = (i / 1) % 2 ? bb_min.z : bb_max.z;
 
-		bbox_vertices[i] = glm::vec3(r * glm::vec4(bbox_vertices[i], 1));
-	}
+        bbox_vertices[i] = glm::vec3(r * glm::vec4(bbox_vertices[i], 1));
+    }
 
-	data.numberofpoints = (int)vertices.size() + bbox_vertex_count;
-	data.pointlist = new REAL[data.numberofpoints * 3];
-	data.numberoffacets = (int)triangles.size() / 3 + bbox_facet_count;
-	data.facetlist = new tetgenio::facet[data.numberoffacets];
+    data.numberofpoints = (int)vertices.size() + bbox_vertex_count;
+    data.pointlist = new REAL[data.numberofpoints * 3];
+    data.numberoffacets = (int)triangles.size() / 3 + bbox_facet_count;
+    data.facetlist = new tetgenio::facet[data.numberoffacets];
 
-	for (size_t i = 0; i < vertices.size(); i++)
-	{
-		data.pointlist[3 * i + 0] = vertices[i].x;
-		data.pointlist[3 * i + 1] = vertices[i].y;
-		data.pointlist[3 * i + 2] = vertices[i].z;
-	}
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        data.pointlist[3 * i + 0] = vertices[i].x;
+        data.pointlist[3 * i + 1] = vertices[i].y;
+        data.pointlist[3 * i + 2] = vertices[i].z;
+    }
 
-	for (size_t i = vertices.size(), j = 0; i < vertices.size() + bbox_vertex_count; i++, j++)
-	{
-		data.pointlist[3 * i + 0] = bbox_vertices[j].x;
-		data.pointlist[3 * i + 1] = bbox_vertices[j].y;
-		data.pointlist[3 * i + 2] = bbox_vertices[j].z;
-	}
+    for (size_t i = vertices.size(), j = 0; i < vertices.size() + bbox_vertex_count; i++, j++)
+    {
+        data.pointlist[3 * i + 0] = bbox_vertices[j].x;
+        data.pointlist[3 * i + 1] = bbox_vertices[j].y;
+        data.pointlist[3 * i + 2] = bbox_vertices[j].z;
+    }
 
-	//int j = 0;
+    //int j = 0;
 
-	//for (int i = vertices.size(); i < vertices.size() + 8; i++)
-	//{
-	//	data.pointlist[3 * i + 0] = ((j % 8) > 4) ? 20 : -20;
-	//	data.pointlist[3 * i + 1] = ((j % 4) > 2) ? 20 : -20;
-	//	data.pointlist[3 * i + 2] = ((j % 2) > 1) ? 20 : -20;
+    //for (int i = vertices.size(); i < vertices.size() + 8; i++)
+    //{
+    //	data.pointlist[3 * i + 0] = ((j % 8) > 4) ? 20 : -20;
+    //	data.pointlist[3 * i + 1] = ((j % 4) > 2) ? 20 : -20;
+    //	data.pointlist[3 * i + 2] = ((j % 2) > 1) ? 20 : -20;
 
-	//	j++;
-	//}
-
-
-	//for (int i = 0; i < num_lights; i++)
-	//{
-	//	data.pointlist[3 * (i + vertices.size()) + 0] = light_positions[i].x;
-	//	data.pointlist[3 * (i + vertices.size()) + 1] = light_positions[i].y;
-	//	data.pointlist[3 * (i + vertices.size()) + 2] = light_positions[i].z;
-	//}
-
-	data.facetmarkerlist = new int[data.numberoffacets];
+    //	j++;
+    //}
 
 
+    //for (int i = 0; i < num_lights; i++)
+    //{
+    //	data.pointlist[3 * (i + vertices.size()) + 0] = light_positions[i].x;
+    //	data.pointlist[3 * (i + vertices.size()) + 1] = light_positions[i].y;
+    //	data.pointlist[3 * (i + vertices.size()) + 2] = light_positions[i].z;
+    //}
 
-	for (int i = 0; i < data.numberoffacets - bbox_facet_count; i++)
-	{
+    data.facetmarkerlist = new int[data.numberoffacets];
+
+
+
+    for (int i = 0; i < data.numberoffacets - bbox_facet_count; i++)
+    {
         data.facetmarkerlist[i] = i + 1;
-		tetgenio::facet *f = &data.facetlist[i];
-		f->numberofpolygons = 1;
-		f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-		f->numberofholes = 0;
-		f->holelist = NULL;
-		tetgenio::polygon *p = &f->polygonlist[0];
-		p->numberofvertices = 3;
-		p->vertexlist = new int[p->numberofvertices];
-		p->vertexlist[0] = triangles[3 * i + 2];
-		p->vertexlist[1] = triangles[3 * i + 1];
-		p->vertexlist[2] = triangles[3 * i + 0];
-	}
+        tetgenio::facet *f = &data.facetlist[i];
+        f->numberofpolygons = 1;
+        f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+        f->numberofholes = 0;
+        f->holelist = NULL;
+        tetgenio::polygon *p = &f->polygonlist[0];
+        p->numberofvertices = 3;
+        p->vertexlist = new int[p->numberofvertices];
+        p->vertexlist[0] = triangles[3 * i + 2];
+        p->vertexlist[1] = triangles[3 * i + 1];
+        p->vertexlist[2] = triangles[3 * i + 0];
+    }
 
-	for (int i = data.numberoffacets - bbox_facet_count, j = 0; i < data.numberoffacets; i++, j++)
-	{
-		data.facetmarkerlist[i] = 0;
+    for (int i = data.numberoffacets - bbox_facet_count, j = 0; i < data.numberoffacets; i++, j++)
+    {
+        data.facetmarkerlist[i] = 0;
 
-		tetgenio::facet *f = &data.facetlist[i];
-		f->numberofpolygons = 1;
-		f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-		f->numberofholes = 0;
-		f->holelist = NULL;
-		tetgenio::polygon *p = &f->polygonlist[0];
-		p->numberofvertices = 4;
-		p->vertexlist = new int[p->numberofvertices];
+        tetgenio::facet *f = &data.facetlist[i];
+        f->numberofpolygons = 1;
+        f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+        f->numberofholes = 0;
+        f->holelist = NULL;
+        tetgenio::polygon *p = &f->polygonlist[0];
+        p->numberofvertices = 4;
+        p->vertexlist = new int[p->numberofvertices];
 
-		int axis = j / 2;
-		int side = j % 2;
-		if (axis == 0)
-		{
-			p->vertexlist[0] = (int)vertices.size() + 0 + side * 4;
-			p->vertexlist[1] = (int)vertices.size() + 1 + side * 4;
-			p->vertexlist[2] = (int)vertices.size() + 3 + side * 4;
-			p->vertexlist[3] = (int)vertices.size() + 2 + side * 4;
-		}					    			   
-		else if (axis == 1)	    			   
-		{					    			   
-			p->vertexlist[0] = (int)vertices.size() + 0 + side * 2;
-			p->vertexlist[1] = (int)vertices.size() + 1 + side * 2;
-			p->vertexlist[2] = (int)vertices.size() + 5 + side * 2;
-			p->vertexlist[3] = (int)vertices.size() + 4 + side * 2;
-		}					   				   
-		else if (axis == 2)	   				   
-		{					   				   
-			p->vertexlist[0] = (int)vertices.size() + 0 + side * 1;
-			p->vertexlist[1] = (int)vertices.size() + 4 + side * 1;
-			p->vertexlist[2] = (int)vertices.size() + 6 + side * 1;
-			p->vertexlist[3] = (int)vertices.size() + 2 + side * 1;
-		}
-	}
+        int axis = j / 2;
+        int side = j % 2;
+        if (axis == 0)
+        {
+            p->vertexlist[0] = (int)vertices.size() + 0 + side * 4;
+            p->vertexlist[1] = (int)vertices.size() + 1 + side * 4;
+            p->vertexlist[2] = (int)vertices.size() + 3 + side * 4;
+            p->vertexlist[3] = (int)vertices.size() + 2 + side * 4;
+        }					    			   
+        else if (axis == 1)	    			   
+        {					    			   
+            p->vertexlist[0] = (int)vertices.size() + 0 + side * 2;
+            p->vertexlist[1] = (int)vertices.size() + 1 + side * 2;
+            p->vertexlist[2] = (int)vertices.size() + 5 + side * 2;
+            p->vertexlist[3] = (int)vertices.size() + 4 + side * 2;
+        }					   				   
+        else if (axis == 2)	   				   
+        {					   				   
+            p->vertexlist[0] = (int)vertices.size() + 0 + side * 1;
+            p->vertexlist[1] = (int)vertices.size() + 4 + side * 1;
+            p->vertexlist[2] = (int)vertices.size() + 6 + side * 1;
+            p->vertexlist[3] = (int)vertices.size() + 2 + side * 1;
+        }
+    }
 
-	tetgenio out;
+    tetgenio out;
 
-	try
-	{
-		if (preserve_triangles)
-		{
-			char str[128];
+    try
+    {
+        if (preserve_triangles)
+        {
+            char str[128];
 
-			sprintf_s(str, 128, "q%.2fYnAf", quality);
-			
-			tetrahedralize(str, &data, &out);
-		}	
-		else
-			tetrahedralize("qnnAf", &data, &out);
-	}
-	catch (int a)
-	{
-		std::cout << "Error: " << a << std::endl;
-	}
+            sprintf_s(str, 128, "q%.2fYnAf", quality);
+            
+            tetrahedralize(str, &data, &out);
+        }	
+        else
+            tetrahedralize("qnnAf", &data, &out);
+    }
+    catch (int a)
+    {
+        std::cout << "Error: " << a << std::endl;
+    }
 
     m_points.resize(out.numberofpoints);
-	m_tets.resize(out.numberoftetrahedra);
+    m_tets.resize(out.numberoftetrahedra);
 
-	for (int i = 0; i < out.numberofpoints; i++)
-	{
-		m_points[i] = glm::make_vec3(&out.pointlist[3 * i]);
-	}
+    for (int i = 0; i < out.numberofpoints; i++)
+    {
+        m_points[i] = glm::make_vec3(&out.pointlist[3 * i]);
+    }
 
     m_constrained_face_count = 0;
 
-	for (int i = 0; i < out.numberoftetrahedra; i++)
-	{
-		m_tets[i].region_id = (int)out.tetrahedronattributelist[i];
+    for (int i = 0; i < out.numberoftetrahedra; i++)
+    {
+        m_tets[i].region_id = (int)out.tetrahedronattributelist[i];
 
-		for (int j = 0; j < 4; j++)
-		{
+        for (int j = 0; j < 4; j++)
+        {
             m_tets[i].v[j] = out.tetrahedronlist[4 * i + j];
             m_tets[i].n[j] = out.neighborlist[4 * i + j];
             m_tets[i].face_idx[j] = out.trifacemarkerlist[out.tet2facelist[4*i+j]];
@@ -350,22 +350,22 @@ void TetMesh::build_from_scene(
             if (m_tets[i].face_idx[j] > 0)
                 ++m_constrained_face_count;
 
-			if (m_tets[i].n[j] == -1)
-				m_air_region_id = m_tets[i].region_id;
-		}
-	}
+            if (m_tets[i].n[j] == -1)
+                m_air_region_id = m_tets[i].region_id;
+        }
+    }
 
-	end = clock();
+    end = clock();
 
-	Logger::Log("Tet Mesh is generated in %f seconds.", float(end - start) / CLOCKS_PER_SEC);
-	Logger::Log("Air region ID: %d", m_air_region_id);
+    Logger::Log("Tet Mesh is generated in %f seconds.", float(end - start) / CLOCKS_PER_SEC);
+    Logger::Log("Air region ID: %d", m_air_region_id);
     Logger::Log("Constrained face count: %d", m_constrained_face_count);
 }
 
 void TetMesh::sort(const SortingMethod sorting_method, const unsigned int bit_count, const bool use_regions, const bool swap)
 {
-	if (sorting_method == SortingMethod::Default)
-		return;
+    if (sorting_method == SortingMethod::Default)
+        return;
 
     sort_points(sorting_method, bit_count, use_regions);
     sort_tets(sorting_method, bit_count, use_regions, swap);
@@ -375,7 +375,7 @@ void TetMesh::sort(const SortingMethod sorting_method, const unsigned int bit_co
 
 void TetMesh::sort_tets(const SortingMethod sorting_method, const unsigned int bit_count, const bool use_regions, const bool swap)
 {
-	//SortTets();
+    //SortTets();
 
     glm::vec3 bb_min(-51, -51, -51);
     glm::vec3 bb_max(51, 51, 51);
@@ -398,11 +398,11 @@ void TetMesh::sort_tets(const SortingMethod sorting_method, const unsigned int b
         else if (sorting_method == SortingMethod::Morton)
             index = SfcUtils::morton_idx(bb_min, bb_max, center, bit_count);
 
-		if (use_regions)
-		{
-			bitmask_t region_id = m_tets[i].region_id;
-			index |= (region_id << (3 * bit_count));
-		}
+        if (use_regions)
+        {
+            bitmask_t region_id = m_tets[i].region_id;
+            index |= (region_id << (3 * bit_count));
+        }
 
         std::pair<bitmask_t, int> pair(index, i);
 
@@ -416,7 +416,7 @@ void TetMesh::sort_tets(const SortingMethod sorting_method, const unsigned int b
 
     int *sort_idx = new int[m_tets.size()];
     Tet* sorted_tets = new Tet[m_tets.size()];
-	
+    
     for (int i = 0; i < m_tets.size(); i++)
     {
         sorted_tets[i] = m_tets[pairs[i].second];
@@ -571,24 +571,24 @@ void TetMesh::init_faces(const Scene& scene)
 
 void TetMesh::compute_weight()
 {
-	m_weight = 0;
+    m_weight = 0;
 
-	for (auto& tet : m_tets)
-	{
-		glm::vec3 v[4];
+    for (auto& tet : m_tets)
+    {
+        glm::vec3 v[4];
 
-		for (int j = 0; j < 4; j++)
-		{
-			v[j] = m_points[tet.v[j]];
-		}
+        for (int j = 0; j < 4; j++)
+        {
+            v[j] = m_points[tet.v[j]];
+        }
 
-		for (int j = 0; j < 4; j++)
-		{
-			const float area = glm::length(glm::cross(v[(j + 2) % 4] - v[(j + 1) % 4], v[(j + 3) % 4] - v[(j + 1) % 4])) / 2;
+        for (int j = 0; j < 4; j++)
+        {
+            const float area = glm::length(glm::cross(v[(j + 2) % 4] - v[(j + 1) % 4], v[(j + 3) % 4] - v[(j + 1) % 4])) / 2;
 
             m_weight += area * ((tet.n[j] == -1) + 1);
-		}
-	}
+        }
+    }
 }
 
 int TetMesh::find_tet_brute_force(const glm::vec3& point)

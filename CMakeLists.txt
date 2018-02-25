@@ -74,53 +74,53 @@ source_group ("editor\\" FILES
 )
 
 set (main_sources
-	src/neptun/main/accelerator.cpp
-	src/neptun/main/accelerator.h
-	src/neptun/main/asset_importer.cpp
-	src/neptun/main/asset_importer.h
-	src/neptun/main/basis.h
-	src/neptun/main/bounds.cpp
-	src/neptun/main/bounds.h
-	src/neptun/main/bvh.cpp
-	src/neptun/main/bvh.h
-	src/neptun/main/color.cpp
-	src/neptun/main/color.h
-	src/neptun/main/component.cpp
-	src/neptun/main/component.h
-	src/neptun/main/face.h
-	src/neptun/main/hilbert.c
-	src/neptun/main/hilbert.h
-	src/neptun/main/image.cpp
-	src/neptun/main/image.h
-	src/neptun/main/kd_tree.cpp
-	src/neptun/main/kd_tree.h
-	src/neptun/main/light.cpp
-	src/neptun/main/light.h
-	src/neptun/main/logger.cpp
-	src/neptun/main/logger.h
-	src/neptun/main/main.cpp
-	src/neptun/main/material.h
-	src/neptun/main/memory.cpp
-	src/neptun/main/memory.h
-	src/neptun/main/mesh.cpp
-	src/neptun/main/mesh.h
-	src/neptun/main/ray.h
-	src/neptun/main/ray_tracer.cpp
-	src/neptun/main/ray_tracer.h
-	src/neptun/main/scene.cpp
-	src/neptun/main/scene.h
-	src/neptun/main/sceneObject.cpp
-	src/neptun/main/sceneObject.h
-	src/neptun/main/sfc_utils.cpp
-	src/neptun/main/sfc_utils.h
-	src/neptun/main/stats.cpp
-	src/neptun/main/stats.h
-	src/neptun/main/tet_mesh.cpp
-	src/neptun/main/tet_mesh.h
-	src/neptun/main/texture.cpp
-	src/neptun/main/texture.h
-	src/neptun/main/utils.cpp
-	src/neptun/main/utils.h
+    src/neptun/main/accelerator.cpp
+    src/neptun/main/accelerator.h
+    src/neptun/main/asset_importer.cpp
+    src/neptun/main/asset_importer.h
+    src/neptun/main/basis.h
+    src/neptun/main/bounds.cpp
+    src/neptun/main/bounds.h
+    src/neptun/main/bvh.cpp
+    src/neptun/main/bvh.h
+    src/neptun/main/color.cpp
+    src/neptun/main/color.h
+    src/neptun/main/component.cpp
+    src/neptun/main/component.h
+    src/neptun/main/face.h
+    src/neptun/main/hilbert.c
+    src/neptun/main/hilbert.h
+    src/neptun/main/image.cpp
+    src/neptun/main/image.h
+    src/neptun/main/kd_tree.cpp
+    src/neptun/main/kd_tree.h
+    src/neptun/main/light.cpp
+    src/neptun/main/light.h
+    src/neptun/main/logger.cpp
+    src/neptun/main/logger.h
+    src/neptun/main/main.cpp
+    src/neptun/main/material.h
+    src/neptun/main/memory.cpp
+    src/neptun/main/memory.h
+    src/neptun/main/mesh.cpp
+    src/neptun/main/mesh.h
+    src/neptun/main/ray.h
+    src/neptun/main/ray_tracer.cpp
+    src/neptun/main/ray_tracer.h
+    src/neptun/main/scene.cpp
+    src/neptun/main/scene.h
+    src/neptun/main/sceneObject.cpp
+    src/neptun/main/sceneObject.h
+    src/neptun/main/sfc_utils.cpp
+    src/neptun/main/sfc_utils.h
+    src/neptun/main/stats.cpp
+    src/neptun/main/stats.h
+    src/neptun/main/tet_mesh.cpp
+    src/neptun/main/tet_mesh.h
+    src/neptun/main/texture.cpp
+    src/neptun/main/texture.h
+    src/neptun/main/utils.cpp
+    src/neptun/main/utils.h
 )
 
 source_group ("main\\" FILES
@@ -128,7 +128,7 @@ source_group ("main\\" FILES
 )
 
 add_executable (neptun 
-	${editor_sources}
+    ${editor_sources}
     ${main_sources}
     ${thirdparty_sources}
 )
@@ -143,41 +143,41 @@ target_link_libraries(neptun glfw)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT neptun)
 
 add_custom_command(
-	TARGET neptun
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	"${CMAKE_SOURCE_DIR}/src/neptun/editor/shaders" "${CMAKE_SOURCE_DIR}/sandbox/shaders"
-	COMMENT "copying shaders"
-	VERBATIM)
+    TARGET neptun
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/src/neptun/editor/shaders" "${CMAKE_SOURCE_DIR}/sandbox/shaders"
+    COMMENT "copying shaders"
+    VERBATIM)
 
 add_custom_command(
-	TARGET neptun
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	"${CMAKE_SOURCE_DIR}/src/thirdparty/imgui/extra_fonts" "${CMAKE_SOURCE_DIR}/sandbox/fonts"
-	COMMENT "copying fonts"
-	VERBATIM)
+    TARGET neptun
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/src/thirdparty/imgui/extra_fonts" "${CMAKE_SOURCE_DIR}/sandbox/fonts"
+    COMMENT "copying fonts"
+    VERBATIM)
 
 add_custom_command(
-	TARGET neptun
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	"${CMAKE_SOURCE_DIR}/src/neptun/editor/fonts" "${CMAKE_SOURCE_DIR}/sandbox/fonts"
-	COMMENT "copying fonts"
-	VERBATIM)
+    TARGET neptun
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/src/neptun/editor/fonts" "${CMAKE_SOURCE_DIR}/sandbox/fonts"
+    COMMENT "copying fonts"
+    VERBATIM)
 
 if(UNIX)
-	set_target_properties(
-		neptun 
-		PROPERTIES
-		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin/Release")
+    set_target_properties(
+        neptun 
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin/Release")
 else()
-	set_target_properties(
-		neptun 
-		PROPERTIES
-		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin")
+    set_target_properties(
+        neptun 
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin")
 endif()
 
 set_target_properties(
-	neptun
-	PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY  "${CMAKE_SOURCE_DIR}/sandbox/bin/$(Configuration)")
+    neptun
+    PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY  "${CMAKE_SOURCE_DIR}/sandbox/bin/$(Configuration)")

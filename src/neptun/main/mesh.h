@@ -8,27 +8,27 @@
 class Mesh
 {
 public:
-	Mesh();
-	//Mesh(const Mesh& mesh);
-	~Mesh();
+    Mesh();
+    //Mesh(const Mesh& mesh);
+    ~Mesh();
 
-	void CenterPivot();
+    void CenterPivot();
 
-	void SetVertices();
-	void SetNormals();
-	void SetColors();
+    void SetVertices();
+    void SetNormals();
+    void SetColors();
 
-	bool isDirty = true;
+    bool isDirty = true;
 
-	int faceCount;
-	int vertexCount;
+    int faceCount;
+    int vertexCount;
 
-	glm::vec3 min, max;
+    glm::vec3 min, max;
 
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> normals;
-	std::vector<glm::vec3> colors;
-	std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> colors;
+    std::vector<glm::vec2> uvs;
 
     std::string file_name;
 };

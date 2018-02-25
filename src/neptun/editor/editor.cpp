@@ -46,22 +46,22 @@
 
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
-	for (int i = 0; i < count; i++)
-	{
-		char dummy[2048];
-		char name[2048];
+    for (int i = 0; i < count; i++)
+    {
+        char dummy[2048];
+        char name[2048];
 
-		_splitpath_s(paths[i], dummy, dummy, name, dummy);
+        _splitpath_s(paths[i], dummy, dummy, name, dummy);
 
-		//SceneObject *sceneObject = new SceneObject(name);
+        //SceneObject *sceneObject = new SceneObject(name);
 
-		//sceneObject->mesh = AssetImporter::ImportMesh(paths[i]);
+        //sceneObject->mesh = AssetImporter::ImportMesh(paths[i]);
 
-		//instance->scene->add_scene_object(sceneObject);
+        //instance->scene->add_scene_object(sceneObject);
 
-		SceneObject *sceneObject = AssetImporter::CreateFromObj(paths[i]);
-		instance->scene->add_scene_object(sceneObject);
-	}
+        SceneObject *sceneObject = AssetImporter::CreateFromObj(paths[i]);
+        instance->scene->add_scene_object(sceneObject);
+    }
 }
 
 void Editor::InitSkin()
@@ -70,108 +70,108 @@ void Editor::InitSkin()
 
     
 
-	ImGuiStyle& style = ImGui::GetStyle();
+    ImGuiStyle& style = ImGui::GetStyle();
 
-	style.WindowRounding = 0.0f;
-	//style.FramePadding = ImVec2(4, style.FramePadding.y);
+    style.WindowRounding = 0.0f;
+    //style.FramePadding = ImVec2(4, style.FramePadding.y);
  //   style.WindowBorderSize = 1;
  //   style.FrameBorderSize = 1;
 
     return;
 
-	style.Colors[ImGuiCol_Text] = ImVec4(0.9f, 0.9f, 0.9f, 1.00f);
-	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
-	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-	style.Colors[ImGuiCol_PopupBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
-	style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
-	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
-	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
-	style.Colors[ImGuiCol_TitleBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
-	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
-	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
-	//style.Colors[ImGuiCol_PopupBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.99f);
-	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.6f, 0.6f, 0.6f, 0.99f);
-	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.6f, 0.6f, 0.6f, 0.99f);
-	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.7f, 0.7f, 0.7f, 0.99f);
-	style.Colors[ImGuiCol_Button] = ImVec4(0.35f, 0.35f, 0.35f, 1.0f);
-	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
-	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.35f, 0.35f, 0.35f, 1.0f);
+    style.Colors[ImGuiCol_Text] = ImVec4(0.9f, 0.9f, 0.9f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+    style.Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+    style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
+    //style.Colors[ImGuiCol_PopupBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.99f);
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.6f, 0.6f, 0.6f, 0.99f);
+    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.6f, 0.6f, 0.6f, 0.99f);
+    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.7f, 0.7f, 0.7f, 0.99f);
+    style.Colors[ImGuiCol_Button] = ImVec4(0.35f, 0.35f, 0.35f, 1.0f);
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.35f, 0.35f, 0.35f, 1.0f);
 
-	style.Colors[ImGuiCol_Header] = ImVec4(0.9f, 0.5f, 0.0f, 1.0f);
-	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.9f, 0.5f, 0.0f, 1.0f);
-	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.9f, 0.5f, 0.0f, 1.0f);
+    style.Colors[ImGuiCol_Header] = ImVec4(0.9f, 0.5f, 0.0f, 1.0f);
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.9f, 0.5f, 0.0f, 1.0f);
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.9f, 0.5f, 0.0f, 1.0f);
 
-	style.Colors[ImGuiCol_Header] = ImVec4(0.17f, 0.57f, 0.69f, 1.0f);
-	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.17f, 0.57f, 0.69f, 1.0f);
-	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.17f, 0.57f, 0.69f, 1.0f);
+    style.Colors[ImGuiCol_Header] = ImVec4(0.17f, 0.57f, 0.69f, 1.0f);
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.17f, 0.57f, 0.69f, 1.0f);
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.17f, 0.57f, 0.69f, 1.0f);
 
-	style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-	style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
-	style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.8f, 0.4f, 0.0f, 1.0f);
-	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
-	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-	style.Colors[ImGuiCol_CloseButton] = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
-	style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-	style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-	style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
-	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.8f, 0.4f, 0.0f, 1.0f);
-	style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+    style.Colors[ImGuiCol_Column] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+    style.Colors[ImGuiCol_ColumnHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.78f);
+    style.Colors[ImGuiCol_ColumnActive] = ImVec4(0.8f, 0.4f, 0.0f, 1.0f);
+    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
+    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+    style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+    style.Colors[ImGuiCol_CloseButton] = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
+    style.Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+    style.Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
+    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+    style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.8f, 0.4f, 0.0f, 1.0f);
+    style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
 }
 
 Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : scene(scene_), graphics(graphics_), ray_tracer(ray_tracer_)
 {
-	if (!glfwInit())
-	{
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		return;
-	}
+    if (!glfwInit())
+    {
+        fprintf(stderr, "Failed to initialize GLFW\n");
+        return;
+    }
 
-	glfwWindowHint(GLFW_MAXIMIZED, GL_TRUE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_MAXIMIZED, GL_TRUE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
-	window = glfwCreateWindow(1200, 600, "neptun", NULL, NULL);
+    window = glfwCreateWindow(1200, 600, "neptun", NULL, NULL);
 
-	if (window == NULL)
-	{
-		fprintf(stderr, "Failed to open GLFW window.");
-		glfwTerminate();
-		return;
-	}
+    if (window == NULL)
+    {
+        fprintf(stderr, "Failed to open GLFW window.");
+        glfwTerminate();
+        return;
+    }
 
-	glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(window);
 
-	if (gl3wInit() != GL3W_OK)
-	{
-		fprintf(stderr, "Failed to initialize GLEW.");
-		return;
-	}
+    if (gl3wInit() != GL3W_OK)
+    {
+        fprintf(stderr, "Failed to initialize GLEW.");
+        return;
+    }
 
-	glfwSetDropCallback(window, Editor::DropCallback);
+    glfwSetDropCallback(window, Editor::DropCallback);
 
     ImGui::CreateContext();
 
-	ImGui_ImplGlfwGL3_Init(window, true);
+    ImGui_ImplGlfwGL3_Init(window, true);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
-	glGenTextures(1, &rendered_frame_texture_id);
-	glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glGenTextures(1, &rendered_frame_texture_id);
+    glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     glGenTextures(1, &visited_tets_texture_id);
     glBindTexture(GL_TEXTURE_2D, visited_tets_texture_id);
@@ -185,57 +185,57 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	glm::vec4 clear_color(0.1, 0.1, 0.1, 1.0);
+    glm::vec4 clear_color(0.1, 0.1, 0.1, 1.0);
 
-	glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
+    glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
 
-	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
-	ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
 
     
-	io.Fonts->AddFontFromFileTTF("../../fonts/DroidSans.ttf", 14);
+    io.Fonts->AddFontFromFileTTF("../../fonts/DroidSans.ttf", 14);
     io.Fonts->AddFontFromFileTTF("../../fonts/Consolas.ttf", 12);
     
 
-	glEnable(GL_MULTISAMPLE);
+    glEnable(GL_MULTISAMPLE);
 
-	InitSkin();
+    InitSkin();
 
-	graphics->Init();
+    graphics->Init();
 
-	graphics->window = window;
+    graphics->window = window;
 
-	Logger::Log("Tetrosity is started.");
-	Logger::Log("Welcome.");
+    Logger::Log("Tetrosity is started.");
+    Logger::Log("Welcome.");
 
-	instance = this;
+    instance = this;
 
-	std::wstring path(AssetImporter::assets_folder_path.begin(), AssetImporter::assets_folder_path.end());
+    std::wstring path(AssetImporter::assets_folder_path.begin(), AssetImporter::assets_folder_path.end());
 
-	tinydir_dir dir;
-	tinydir_open(&dir, path.c_str());
+    tinydir_dir dir;
+    tinydir_open(&dir, path.c_str());
 
-	while (dir.has_next)
-	{
-		tinydir_file file;
-		tinydir_readfile(&dir, &file);
+    while (dir.has_next)
+    {
+        tinydir_file file;
+        tinydir_readfile(&dir, &file);
 
-		std::wstring wstr(file.name);
+        std::wstring wstr(file.name);
 
-		//file.name
-		std::string tmp(wstr.begin(), wstr.end());
+        //file.name
+        std::string tmp(wstr.begin(), wstr.end());
 
-		//std::wstring string_to_convert(file.name);
-		//using convert_type = std::codecvt_utf8<wchar_t>;
-		//std::wstring_convert<convert_type, wchar_t> converter;
-		//std::string converted_str = converter.to_bytes(string_to_convert);
+        //std::wstring string_to_convert(file.name);
+        //using convert_type = std::codecvt_utf8<wchar_t>;
+        //std::wstring_convert<convert_type, wchar_t> converter;
+        //std::string converted_str = converter.to_bytes(string_to_convert);
 
-		if (tmp.find(".obj") != std::string::npos)
-		{
-			std::string file_name = tmp.substr(0, tmp.size() - 4);
-			asset_file_names.push_back(file_name);
-		}
+        if (tmp.find(".obj") != std::string::npos)
+        {
+            std::string file_name = tmp.substr(0, tmp.size() - 4);
+            asset_file_names.push_back(file_name);
+        }
 
         if (tmp.find(".scene") != std::string::npos)
         {
@@ -245,49 +245,49 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
 
 
 
-		tinydir_next(&dir);
-	}
+        tinydir_next(&dir);
+    }
 
-	tinydir_close(&dir);
+    tinydir_close(&dir);
 }
 
 void Editor::Run()
 {
-	do
-	{
-		Draw();
-	} while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
+    do
+    {
+        Draw();
+    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 }
 
 void Editor::Draw()
 {
-	glfwPollEvents();
-	ImGui_ImplGlfwGL3_NewFrame();
+    glfwPollEvents();
+    ImGui_ImplGlfwGL3_NewFrame();
 
-	ImGuizmo::BeginFrame();
+    ImGuizmo::BeginFrame();
 
-	HandleTransformGizmos();
+    HandleTransformGizmos();
 
-	DrawMainMenuBar();
-	DrawHierarchy();
-	DrawInspector();
-	DrawTetGen();
-	DrawScene();
+    DrawMainMenuBar();
+    DrawHierarchy();
+    DrawInspector();
+    DrawTetGen();
+    DrawScene();
 
-	DrawRenderedFrame();
-	DrawConsole();
+    DrawRenderedFrame();
+    DrawConsole();
 
-	HandleSelectionGizmos();
-	ImGui::Render();
-	glfwSwapBuffers(window);
+    HandleSelectionGizmos();
+    ImGui::Render();
+    glfwSwapBuffers(window);
 }
 
 void Editor::DrawMainMenuBar()
 {
-	if (ImGui::BeginMainMenuBar())
-	{
-		if (ImGui::BeginMenu("File"))
-		{
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
             if (ImGui::MenuItem("Save")) 
             {
                 scene->save_to_file();
@@ -298,32 +298,32 @@ void Editor::DrawMainMenuBar()
                 selected_scene_object = nullptr;
             }
 
-			if (ImGui::MenuItem("Reset"))
+            if (ImGui::MenuItem("Reset"))
             {
                 scene->clear();
                 selected_scene_object = nullptr;
             }
 
-			if (ImGui::MenuItem("Exit", "ALT+F4")) {}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Edit"))
-		{
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y")) {}  // Disabled item
-			ImGui::Separator();
-			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-			ImGui::Separator();
+            if (ImGui::MenuItem("Exit", "ALT+F4")) {}
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Edit"))
+        {
+            if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+            if (ImGui::MenuItem("Redo", "CTRL+Y")) {}  // Disabled item
+            ImGui::Separator();
+            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+            ImGui::Separator();
 
-			if (ImGui::MenuItem("Preferences")) {}
+            if (ImGui::MenuItem("Preferences")) {}
 
-			ImGui::EndMenu();
-		}
+            ImGui::EndMenu();
+        }
 
-		if (ImGui::BeginMenu("Create"))
-		{
+        if (ImGui::BeginMenu("Create"))
+        {
             if (ImGui::BeginMenu("Scene"))
             {
                 for (std::string &file_name : scene_file_names)
@@ -353,79 +353,79 @@ void Editor::DrawMainMenuBar()
                 ImGui::EndMenu();
             }
 
-			if (ImGui::BeginMenu("OBJ"))
-			{
-				for (std::string &file_name : asset_file_names)
-				{
-					if (ImGui::MenuItem(file_name.c_str()))
-					{
-						std::string tmp_file_name = file_name;
-						tmp_file_name.append(".obj");
+            if (ImGui::BeginMenu("OBJ"))
+            {
+                for (std::string &file_name : asset_file_names)
+                {
+                    if (ImGui::MenuItem(file_name.c_str()))
+                    {
+                        std::string tmp_file_name = file_name;
+                        tmp_file_name.append(".obj");
 
-						SceneObject *scene_object = AssetImporter::CreateFromObj(tmp_file_name.c_str());
-						scene->add_scene_object(scene_object);
+                        SceneObject *scene_object = AssetImporter::CreateFromObj(tmp_file_name.c_str());
+                        scene->add_scene_object(scene_object);
 
-						if (scene->sceneObjects.size() > 0)
-							selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-					}
-				}
+                        if (scene->sceneObjects.size() > 0)
+                            selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+                    }
+                }
 
-				ImGui::EndMenu();
-			}
-				
-			if (ImGui::MenuItem("Armadillo")) 
-			{
-				Mesh *armadillo_mesh = AssetImporter::ImportMesh("armadillo.obj");
-				armadillo_mesh->CenterPivot();
+                ImGui::EndMenu();
+            }
+                
+            if (ImGui::MenuItem("Armadillo")) 
+            {
+                Mesh *armadillo_mesh = AssetImporter::ImportMesh("armadillo.obj");
+                armadillo_mesh->CenterPivot();
 
-				SceneObject *armadillo = new SceneObject("Armadillo");
-				armadillo->mesh = armadillo_mesh;
-				//armadillo->scale = 0.1f;
-				armadillo->rot.y = 180;
-				scene->add_scene_object(armadillo);
+                SceneObject *armadillo = new SceneObject("Armadillo");
+                armadillo->mesh = armadillo_mesh;
+                //armadillo->scale = 0.1f;
+                armadillo->rot.y = 180;
+                scene->add_scene_object(armadillo);
 
-				if (scene->sceneObjects.size() > 0)
-					selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-			}
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            }
 
-			if (ImGui::MenuItem("Floor")) 
-			{ 
-				Mesh *floor_mesh = AssetImporter::ImportMesh("floor.obj");
-				floor_mesh->CenterPivot();
+            if (ImGui::MenuItem("Floor")) 
+            { 
+                Mesh *floor_mesh = AssetImporter::ImportMesh("floor.obj");
+                floor_mesh->CenterPivot();
 
-				SceneObject *floor = new SceneObject("Floor");
-				floor->mesh = floor_mesh;
-				scene->add_scene_object(floor);
+                SceneObject *floor = new SceneObject("Floor");
+                floor->mesh = floor_mesh;
+                scene->add_scene_object(floor);
 
-				if (scene->sceneObjects.size() > 0)
-					selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-			}
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            }
 
-			if (ImGui::MenuItem("Torus Knot")) 
-			{ 
-				Mesh *torus_knot_mesh = AssetImporter::ImportMesh("torus_knot.obj");
+            if (ImGui::MenuItem("Torus Knot")) 
+            { 
+                Mesh *torus_knot_mesh = AssetImporter::ImportMesh("torus_knot.obj");
 
-				int min = 0;
-				int max = 1;
+                int min = 0;
+                int max = 1;
 
-				for (int i = min; i < max; i++)
-				{
-					for (int j = min; j < max; j++)
-					{
-						for (int k = min; k < max; k++)
-						{
-							SceneObject *torus_knot = new SceneObject("Torus Knot");
-							torus_knot->mesh = new Mesh(*torus_knot_mesh);
-							torus_knot->pos = glm::vec3(i, j, k) * 5.0f;
-							//torus_knot->scale = 0.02f;
-							scene->add_scene_object(torus_knot);
-						}
-					}
-				}
+                for (int i = min; i < max; i++)
+                {
+                    for (int j = min; j < max; j++)
+                    {
+                        for (int k = min; k < max; k++)
+                        {
+                            SceneObject *torus_knot = new SceneObject("Torus Knot");
+                            torus_knot->mesh = new Mesh(*torus_knot_mesh);
+                            torus_knot->pos = glm::vec3(i, j, k) * 5.0f;
+                            //torus_knot->scale = 0.02f;
+                            scene->add_scene_object(torus_knot);
+                        }
+                    }
+                }
 
-				if (scene->sceneObjects.size() > 0)
-					selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-			}
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            }
 
             if (ImGui::MenuItem("Torus Knots"))
             {
@@ -453,205 +453,205 @@ void Editor::DrawMainMenuBar()
                     selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
             }
 
-			ImGui::Separator();
-			//
-			if (ImGui::MenuItem("Light"))
-			{
-				SceneObject *light = new SceneObject("Light");
-				light->light = new Light();
-				scene->add_scene_object(light);
-				light->pos = glm::vec3(0, 10, 0);
-				light->light->intensity = 1.0f;
+            ImGui::Separator();
+            //
+            if (ImGui::MenuItem("Light"))
+            {
+                SceneObject *light = new SceneObject("Light");
+                light->light = new Light();
+                scene->add_scene_object(light);
+                light->pos = glm::vec3(0, 10, 0);
+                light->light->intensity = 1.0f;
 
-				if (scene->sceneObjects.size() > 0)
-					selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-			}
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            }
 
-			if (ImGui::MenuItem("Sky Dome"))
-			{
-				for (int i = 0; i < 256; i++)
-				{
-					SceneObject *light = new SceneObject("Light");
-					light->light = new Light();
-					scene->add_scene_object(light);
-					light->pos = glm::sphericalRand(49.0f);
-					light->pos.y = glm::abs(light->pos.y);
-					light->light->intensity = 1.0f / (256.0f / (3.14f / 2.0f));
-				}
-			}
-			//if (ImGui::MenuItem("Paste")) {}
-			ImGui::EndMenu();
-		}
+            if (ImGui::MenuItem("Sky Dome"))
+            {
+                for (int i = 0; i < 256; i++)
+                {
+                    SceneObject *light = new SceneObject("Light");
+                    light->light = new Light();
+                    scene->add_scene_object(light);
+                    light->pos = glm::sphericalRand(49.0f);
+                    light->pos.y = glm::abs(light->pos.y);
+                    light->light->intensity = 1.0f / (256.0f / (3.14f / 2.0f));
+                }
+            }
+            //if (ImGui::MenuItem("Paste")) {}
+            ImGui::EndMenu();
+        }
 
-		if (ImGui::BeginMenu("View"))
-		{
-			ImGui::MenuItem("Rendered Frame", 0, &show_rendered_frame_window, true);
-			ImGui::MenuItem("Console", 0, &show_console_window, true);
-			ImGui::MenuItem("Visualization");
+        if (ImGui::BeginMenu("View"))
+        {
+            ImGui::MenuItem("Rendered Frame", 0, &show_rendered_frame_window, true);
+            ImGui::MenuItem("Console", 0, &show_console_window, true);
+            ImGui::MenuItem("Visualization");
 
-			ImGui::EndMenu();
-		}
+            ImGui::EndMenu();
+        }
 
 
 
-		ImGui::EndMainMenuBar();
-	}
+        ImGui::EndMainMenuBar();
+    }
 }
 
 void Editor::DrawInspector()
 {
-	int display_w, display_h;
-	glfwGetFramebufferSize(window, &display_w, &display_h);
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
-	//ImGui::GetStyle().WindowTitleAlign = ImVec2(0.025f, 0.5f);
-	ImGui::Begin("Inspector", 0, flags);
+    //ImGui::GetStyle().WindowTitleAlign = ImVec2(0.025f, 0.5f);
+    ImGui::Begin("Inspector", 0, flags);
 
-	ImGui::SetWindowSize(ImVec2(240, (display_h - 20) / 2));
-	ImGui::SetWindowPos(ImVec2(display_w - 240, 20));
+    ImGui::SetWindowSize(ImVec2(240, (display_h - 20) / 2));
+    ImGui::SetWindowPos(ImVec2(display_w - 240, 20));
 
-	if (selected_scene_object)
-	{
-		ImGui::Checkbox("", &selected_scene_object->isVisible);
+    if (selected_scene_object)
+    {
+        ImGui::Checkbox("", &selected_scene_object->isVisible);
 
-		ImGui::SameLine();
+        ImGui::SameLine();
 
-		ImGui::Text(selected_scene_object->name.c_str());
-		
-		ImGui::Separator();
+        ImGui::Text(selected_scene_object->name.c_str());
+        
+        ImGui::Separator();
 
-		ImGui::Text("Transform");
+        ImGui::Text("Transform");
 
-		if (ImGui::Button("P##1"))selected_scene_object->pos = glm::vec3();
-		ImGui::SameLine();
-		ImGui::DragFloat3("##4", &(selected_scene_object->pos.x), 0.05f, 0, 0, "%.3f");
+        if (ImGui::Button("P##1"))selected_scene_object->pos = glm::vec3();
+        ImGui::SameLine();
+        ImGui::DragFloat3("##4", &(selected_scene_object->pos.x), 0.05f, 0, 0, "%.3f");
 
-		if (ImGui::Button("R##2"))selected_scene_object->rot = glm::vec3();
-		ImGui::SameLine();
-		ImGui::DragFloat3("##5", &(selected_scene_object->rot.x), 0.25f, 0, 0, "%.3f");
+        if (ImGui::Button("R##2"))selected_scene_object->rot = glm::vec3();
+        ImGui::SameLine();
+        ImGui::DragFloat3("##5", &(selected_scene_object->rot.x), 0.25f, 0, 0, "%.3f");
 
-		if (ImGui::Button("S##3"))selected_scene_object->scale = glm::vec3(1,1,1);
-		ImGui::SameLine();
-		ImGui::DragFloat3("##6", &(selected_scene_object->scale.x), 0.05f, 0, 0, "%.3f");
+        if (ImGui::Button("S##3"))selected_scene_object->scale = glm::vec3(1,1,1);
+        ImGui::SameLine();
+        ImGui::DragFloat3("##6", &(selected_scene_object->scale.x), 0.05f, 0, 0, "%.3f");
 
-		ImGui::Separator();
+        ImGui::Separator();
 
-		if (selected_scene_object->light)
-		{
-			ImGui::Text("Light");
-			ImGui::ColorEdit3("Color", &selected_scene_object->light->color.x);
-			ImGui::DragFloat("Intensity", &selected_scene_object->light->intensity);
-			ImGui::Separator();
-		}
+        if (selected_scene_object->light)
+        {
+            ImGui::Text("Light");
+            ImGui::ColorEdit3("Color", &selected_scene_object->light->color.x);
+            ImGui::DragFloat("Intensity", &selected_scene_object->light->intensity);
+            ImGui::Separator();
+        }
 
-		if (selected_scene_object->mesh)
-		{
-			ImGui::Text("Mesh");
+        if (selected_scene_object->mesh)
+        {
+            ImGui::Text("Mesh");
 
             ImGui::Text("Vertex count: %d", selected_scene_object->mesh->vertexCount);
 
-			//if (ImGui::Button("Center Pivot Point"))
-			//{
-			//	selected_scene_object->mesh->CenterPivot();
-			//	selected_scene_object->mesh->isDirty = true;
-			//}
+            //if (ImGui::Button("Center Pivot Point"))
+            //{
+            //	selected_scene_object->mesh->CenterPivot();
+            //	selected_scene_object->mesh->isDirty = true;
+            //}
 
-			ImGui::Separator();
-		}
+            ImGui::Separator();
+        }
 
-		if (selected_scene_object->material)
-		{
-			ImGui::Text("Material");
-			ImGui::ColorEdit3("Diffuse", &selected_scene_object->material->diffuse.r);
+        if (selected_scene_object->material)
+        {
+            ImGui::Text("Material");
+            ImGui::ColorEdit3("Diffuse", &selected_scene_object->material->diffuse.r);
 
-			ImGui::Separator();
+            ImGui::Separator();
 
-			Material *material = selected_scene_object->material;
+            Material *material = selected_scene_object->material;
 
-			if (material->texture)
-			{
-				std::unordered_map<Texture*, GLuint>::const_iterator result = graphics->texture_handles.find(material->texture);
+            if (material->texture)
+            {
+                std::unordered_map<Texture*, GLuint>::const_iterator result = graphics->texture_handles.find(material->texture);
 
-				if (result != graphics->texture_handles.end())
-				{
-					float aspect = (float)material->texture->w / material->texture->h;
+                if (result != graphics->texture_handles.end())
+                {
+                    float aspect = (float)material->texture->w / material->texture->h;
 
-					ImVec2 size(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth() / aspect);
+                    ImVec2 size(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth() / aspect);
 
-					ImGui::Image((ImTextureID)result->second, size);
-				}
-			}
-		}
+                    ImGui::Image((ImTextureID)result->second, size);
+                }
+            }
+        }
 
-		//ImGui::ShowStyleEditor();
+        //ImGui::ShowStyleEditor();
 
-		//ImGui::Button("Add Component");
-	}
+        //ImGui::Button("Add Component");
+    }
 
-	ImGui::End();
+    ImGui::End();
 }
 
 void Editor::DrawHierarchy()
 {
-	int display_w, display_h;
-	glfwGetFramebufferSize(window, &display_w, &display_h);
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse;
 
-	//ImGui::GetStyle().WindowTitleAlign = ImVec2(0.1f, 0.5f);
-	ImGui::Begin("Scene Objects", 0, flags);
-	ImGui::SetWindowSize(ImVec2(120.0f, (display_h - 20) / 2.0f));
-	ImGui::SetWindowPos(ImVec2(display_w - 360.0f, 20.0f));
+    //ImGui::GetStyle().WindowTitleAlign = ImVec2(0.1f, 0.5f);
+    ImGui::Begin("Scene Objects", 0, flags);
+    ImGui::SetWindowSize(ImVec2(120.0f, (display_h - 20) / 2.0f));
+    ImGui::SetWindowPos(ImVec2(display_w - 360.0f, 20.0f));
 
-	static ImVec2 rect_min, rect_max;
+    static ImVec2 rect_min, rect_max;
 
-	for (int i = 0; i < scene->sceneObjects.size(); i++)
-	{
-		if (scene->sceneObjects[i]->hide_in_editor)
-			continue;
+    for (int i = 0; i < scene->sceneObjects.size(); i++)
+    {
+        if (scene->sceneObjects[i]->hide_in_editor)
+            continue;
 
-		ImGui::PushID(i);
+        ImGui::PushID(i);
 
-		if (ImGui::Selectable(scene->sceneObjects[i]->name.c_str(), selected_scene_object == scene->sceneObjects[i]))
-		{
-			selected_scene_object = scene->sceneObjects[i];
-			rect_min = ImGui::GetItemRectMin();
-			rect_max = ImGui::GetItemRectMax();
-		}
-			
-		ImGui::PopID();
-	}
+        if (ImGui::Selectable(scene->sceneObjects[i]->name.c_str(), selected_scene_object == scene->sceneObjects[i]))
+        {
+            selected_scene_object = scene->sceneObjects[i];
+            rect_min = ImGui::GetItemRectMin();
+            rect_max = ImGui::GetItemRectMax();
+        }
+            
+        ImGui::PopID();
+    }
 
-	if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsMouseHoveringRect(rect_min, rect_max) && selected_scene_object)
-	{
-		cam_target = selected_scene_object->pos;
-	}
+    if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsMouseHoveringRect(rect_min, rect_max) && selected_scene_object)
+    {
+        cam_target = selected_scene_object->pos;
+    }
 
-	if (ImGui::GetIO().KeysDown[GLFW_KEY_F])
-	{
-		if (selected_scene_object)
-			cam_target = selected_scene_object->pos;
-		else
-			cam_target = glm::vec3();
-	}
+    if (ImGui::GetIO().KeysDown[GLFW_KEY_F])
+    {
+        if (selected_scene_object)
+            cam_target = selected_scene_object->pos;
+        else
+            cam_target = glm::vec3();
+    }
 
-	if (ImGui::GetIO().KeysDown[GLFW_KEY_DELETE])
-	{
-		for (int i = 0; i < scene->sceneObjects.size(); i++)
-		{
-			if (selected_scene_object == scene->sceneObjects[i])
-			{
-				scene->sceneObjects.erase(scene->sceneObjects.begin() + i);
-				selected_scene_object = NULL;
-				break;
-			}
-		}
-	}
+    if (ImGui::GetIO().KeysDown[GLFW_KEY_DELETE])
+    {
+        for (int i = 0; i < scene->sceneObjects.size(); i++)
+        {
+            if (selected_scene_object == scene->sceneObjects[i])
+            {
+                scene->sceneObjects.erase(scene->sceneObjects.begin() + i);
+                selected_scene_object = NULL;
+                break;
+            }
+        }
+    }
 
-	scene->camTarget = glm::mix(scene->camTarget, cam_target, 0.1);
+    scene->camTarget = glm::mix(scene->camTarget, cam_target, 0.1);
 
-	ImGui::End();
+    ImGui::End();
 }
 
 bool iss_point_inside_tet(glm::vec3 v[4], glm::vec3 point)
@@ -683,54 +683,54 @@ void Editor::DrawTetGen()
 {
     ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyle().Colors[ImGuiCol_TitleBg]);
 
-	int display_w, display_h;
-	glfwGetFramebufferSize(window, &display_w, &display_h);
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	ImGuiWindowFlags flags = 
+    ImGuiWindowFlags flags = 
         ImGuiWindowFlags_NoResize | 
         ImGuiWindowFlags_NoMove | 
         ImGuiWindowFlags_NoCollapse;
 
-	
-	//ImGui::OpenPopup("Modal window");
+    
+    //ImGui::OpenPopup("Modal window");
 
-	//bool open = true;
-	//if (ImGui::BeginPopupModal("Modal window", &open))
-	//{
-	//	ImGui::Text("Hello dsjfhds fhjs hfj dshfj hds");
-	//	/*if (ImGui::Button("Close"))
-	//		ImGui::CloseCurrentPopup();*/
-	//	ImGui::EndPopup();
-	//}
+    //bool open = true;
+    //if (ImGui::BeginPopupModal("Modal window", &open))
+    //{
+    //	ImGui::Text("Hello dsjfhds fhjs hfj dshfj hds");
+    //	/*if (ImGui::Button("Close"))
+    //		ImGui::CloseCurrentPopup();*/
+    //	ImGui::EndPopup();
+    //}
 
-	ImGui::Begin("TetGen", 0, flags);
+    ImGui::Begin("TetGen", 0, flags);
 
-	static bool preserveTriangles = true;
-	static bool process_light_sources = false;
-	static bool create_bounding_box = true;
-	static float quality = 5.0f;
+    static bool preserveTriangles = true;
+    static bool process_light_sources = false;
+    static bool create_bounding_box = true;
+    static float quality = 5.0f;
 
-	ImGui::Checkbox("Preserve Triangles", &preserveTriangles);
-	//ImGui::Checkbox("Preserve Triangles", &preserveTriangles);
-	ImGui::Checkbox("Create Bounding Box", &create_bounding_box);
-	ImGui::SliderFloat("Quality", &quality, 1.0, 10.0, "%.2f");
+    ImGui::Checkbox("Preserve Triangles", &preserveTriangles);
+    //ImGui::Checkbox("Preserve Triangles", &preserveTriangles);
+    ImGui::Checkbox("Create Bounding Box", &create_bounding_box);
+    ImGui::SliderFloat("Quality", &quality, 1.0, 10.0, "%.2f");
 
     static bool show_points = false;
-	//static 
+    //static 
 
-	std::thread *t = nullptr;
+    std::thread *t = nullptr;
 
-	if (ImGui::Button("Build"))
-	{
-		//t = new std::thread(&TetMesh::BuildFromScene, tet_mesh, *scene, preserveTriangles, create_bounding_box);
-		//t->detach();
-		
+    if (ImGui::Button("Build"))
+    {
+        //t = new std::thread(&TetMesh::BuildFromScene, tet_mesh, *scene, preserveTriangles, create_bounding_box);
+        //t->detach();
+        
 
-		//t.join();
-		if (scene->tet_mesh)
-			delete scene->tet_mesh;
+        //t.join();
+        if (scene->tet_mesh)
+            delete scene->tet_mesh;
 
-		scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
+        scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
 
         Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
 
@@ -738,70 +738,70 @@ void Editor::DrawTetGen()
 
         //scene->tet_mesh20 = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
         //scene->tet_mesh32 = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
-	}
+    }
 
     
 
-	//if (t && t->joinable)
-	//{
-	//	Logger::LogError("!!!");
-	//	t->join();
-	//}
-	//else
-	//	
-		
+    //if (t && t->joinable)
+    //{
+    //	Logger::LogError("!!!");
+    //	t->join();
+    //}
+    //else
+    //	
+        
 
-	ImGui::SameLine();
+    ImGui::SameLine();
 
-	if (ImGui::Button("Save"))
-	{
+    if (ImGui::Button("Save"))
+    {
         scene->tet_mesh->write_to_file();
-	}
+    }
 
-	ImGui::SameLine();
+    ImGui::SameLine();
 
-	if (ImGui::Button("Load"))
-	{
+    if (ImGui::Button("Load"))
+    {
         TetMesh *tm = new TetMesh32(*scene);
 
         scene->tet_mesh = tm;
 
         Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
-	}
+    }
 
-	ImGui::Separator();
+    ImGui::Separator();
 
-	static bool show_ffd = false;
+    static bool show_ffd = false;
 
-	//static float slicer = 0.0f;
+    //static float slicer = 0.0f;
 
-	if (scene->tet_mesh)
-	{
-		ImGui::Text("Statistics:");
-		ImGui::Text("Number of points:");
-		ImGui::SameLine(180);
-		ImGui::Text("%d", scene->tet_mesh->m_points.size());
+    if (scene->tet_mesh)
+    {
+        ImGui::Text("Statistics:");
+        ImGui::Text("Number of points:");
+        ImGui::SameLine(180);
+        ImGui::Text("%d", scene->tet_mesh->m_points.size());
 
-		ImGui::Text("Number of tetrahedrons:");
-		ImGui::SameLine(180);
-		ImGui::Text("%d", scene->tet_mesh->m_tets.size());
+        ImGui::Text("Number of tetrahedrons:");
+        ImGui::SameLine(180);
+        ImGui::Text("%d", scene->tet_mesh->m_tets.size());
 
-		ImGui::Text("Weight:");
-		ImGui::SameLine(180);
-		ImGui::Text("%.2f", scene->tet_mesh->m_weight);
+        ImGui::Text("Weight:");
+        ImGui::SameLine(180);
+        ImGui::Text("%.2f", scene->tet_mesh->m_weight);
 
-		//ImGui::Text("Number of triangles:");
-		//ImGui::SameLine(180);
-		//ImGui::Text("%d", out.numberoffacets);
+        //ImGui::Text("Number of triangles:");
+        //ImGui::SameLine(180);
+        //ImGui::Text("%d", out.numberoffacets);
 
-		static int bit_count = 16U;
-		static bool use_regions = false;
+        static int bit_count = 16U;
+        static bool use_regions = false;
         static bool swap = false;
-		ImGui::SliderInt("Bits", &bit_count, 1U, 21U);
-		ImGui::Checkbox("Regions", &use_regions);
+        ImGui::SliderInt("Bits", &bit_count, 1U, 21U);
+        ImGui::Checkbox("Regions", &use_regions);
         ImGui::Checkbox("Swap", &swap);
 
-		if (ImGui::Button("Sort (Hilbert)"))
+        if (ImGui::Button("Sort (Hilbert)"))
             scene->tet_mesh->sort(SortingMethod::Hilbert, bit_count, use_regions, swap);
 
         ImGui::SameLine();
@@ -810,15 +810,15 @@ void Editor::DrawTetGen()
             scene->tet_mesh->sort(SortingMethod::Morton, bit_count, use_regions);
 
 
-		ImGui::Separator();
+        ImGui::Separator();
         ImGui::Checkbox("Show points", &show_points);
-		ImGui::Checkbox("Show tetrahedrons", &show_tetrahedrons);
-		ImGui::SameLine();
-		ImGui::SliderFloat("Slice", &scene->tet_mesh->slice, -51, 51);
+        ImGui::Checkbox("Show tetrahedrons", &show_tetrahedrons);
+        ImGui::SameLine();
+        ImGui::SliderFloat("Slice", &scene->tet_mesh->slice, -51, 51);
 
-		//ImGui::Checkbox("Deformation", &deformation);
-		ImGui::Checkbox("FFD", &show_ffd);
-	}
+        //ImGui::Checkbox("Deformation", &deformation);
+        ImGui::Checkbox("FFD", &show_ffd);
+    }
 
 
 
@@ -835,51 +835,51 @@ void Editor::DrawTetGen()
     //    //}
     //}
 
-	if (ImGui::Button("Build kd-tree"))
-		scene->build_kd_tree();
+    if (ImGui::Button("Build kd-tree"))
+        scene->build_kd_tree();
 
-	if (ImGui::Button("Build BVH"))
-		scene->build_bvh();
+    if (ImGui::Button("Build BVH"))
+        scene->build_bvh();
 
-	ImGui::SetWindowSize(ImVec2(360, (display_h - 20) / 2));
-	ImGui::SetWindowPos(ImVec2(display_w - 360, 20 + (display_h - 20) / 2));
-	ImGui::End();
+    ImGui::SetWindowSize(ImVec2(360, (display_h - 20) / 2));
+    ImGui::SetWindowPos(ImVec2(display_w - 360, 20 + (display_h - 20) / 2));
+    ImGui::End();
 
-	// Free Form Deformation
-	/*static bool ffd_created = false;
-	static SceneObject *ffd[4][4][4];
+    // Free Form Deformation
+    /*static bool ffd_created = false;
+    static SceneObject *ffd[4][4][4];
 
-	if (!ffd_created)
-	{
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < 4; j++)
-				for (int k = 0; k < 4; k++)
-				{
-					ffd[i][j][k] = new SceneObject("FFD Node");
-					ffd[i][j][k]->pos = glm::vec3(i, j, k);
-					ffd[i][j][k]->hide_in_editor = true;
-					ffd[i][j][k]->color = Color::orange;
-					scene->add_scene_object(ffd[i][j][k]);
-				}
+    if (!ffd_created)
+    {
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                for (int k = 0; k < 4; k++)
+                {
+                    ffd[i][j][k] = new SceneObject("FFD Node");
+                    ffd[i][j][k]->pos = glm::vec3(i, j, k);
+                    ffd[i][j][k]->hide_in_editor = true;
+                    ffd[i][j][k]->color = Color::orange;
+                    scene->add_scene_object(ffd[i][j][k]);
+                }
 
-		ffd_created = true;
-	}
-	else
-	{
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < 4; j++)
-				for (int k = 0; k < 4; k++)
-				{
-					ffd[i][j][k]->pickable = show_ffd;
+        ffd_created = true;
+    }
+    else
+    {
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                for (int k = 0; k < 4; k++)
+                {
+                    ffd[i][j][k]->pickable = show_ffd;
 
-					if (show_ffd && i < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i + 1][j][k]->pos, Color::orange);
-					if (show_ffd && j < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i][j + 1][k]->pos, Color::orange);
-					if (show_ffd && k < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i][j][k + 1]->pos, Color::orange);
+                    if (show_ffd && i < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i + 1][j][k]->pos, Color::orange);
+                    if (show_ffd && j < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i][j + 1][k]->pos, Color::orange);
+                    if (show_ffd && k < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i][j][k + 1]->pos, Color::orange);
 
-					if (!show_ffd && selected_scene_object == ffd[i][j][k])
-						selected_scene_object = false;
-				}
-	}*/
+                    if (!show_ffd && selected_scene_object == ffd[i][j][k])
+                        selected_scene_object = false;
+                }
+    }*/
     glm::vec4 colors[5] = { Color::turquoise, Color::orchid, Color::yolk, Color::melon, Color::berry };
 
     //if (show_points)
@@ -1002,50 +1002,50 @@ void Editor::DrawTetGen()
 
     }
 
-	if (show_tetrahedrons)
-	{
-	    
-		//for (int index = 0; index < scene->tet_mesh->num_tets; index++)
-		//{
-		//	glm::vec3 c;
+    if (show_tetrahedrons)
+    {
+        
+        //for (int index = 0; index < scene->tet_mesh->num_tets; index++)
+        //{
+        //	glm::vec3 c;
 
-		//	for (int i = 0; i < 4; i++)
-		//	{
-		//		c += scene->tet_mesh->points[scene->tet_mesh->tets[index].vertices[i]] * 0.25f;
-		//	}
+        //	for (int i = 0; i < 4; i++)
+        //	{
+        //		c += scene->tet_mesh->points[scene->tet_mesh->tets[index].vertices[i]] * 0.25f;
+        //	}
 
-		//	glm::vec4 color = colors[(scene->tet_mesh->tets[index].region_id + 1) % 5];
+        //	glm::vec4 color = colors[(scene->tet_mesh->tets[index].region_id + 1) % 5];
 
-		//	glm::vec3 p[4];
+        //	glm::vec3 p[4];
 
-		//	for (int i = 0; i < 4; i++)
-		//	{
-		//		p[i] = scene->tet_mesh->points[scene->tet_mesh->tets[index].vertices[i]];
-		//	}
+        //	for (int i = 0; i < 4; i++)
+        //	{
+        //		p[i] = scene->tet_mesh->points[scene->tet_mesh->tets[index].vertices[i]];
+        //	}
 
-		//	//if (tet_mesh->tets[index].region_id == tet_mesh->air_region_id && c.z < slicer)
-		//	//	graphics->DrawTet(p, glm::vec4(1,1,1,1));
+        //	//if (tet_mesh->tets[index].region_id == tet_mesh->air_region_id && c.z < slicer)
+        //	//	graphics->DrawTet(p, glm::vec4(1,1,1,1));
 
-		//	//if (tet_mesh->tets[index].region_id != tet_mesh->air_region_id)
-		//	//	//DrawTetrahedron(index, graphics, color);
-		//	//	graphics->DrawTet(p, color);
+        //	//if (tet_mesh->tets[index].region_id != tet_mesh->air_region_id)
+        //	//	//DrawTetrahedron(index, graphics, color);
+        //	//	graphics->DrawTet(p, color);
 
   //          if (c.z < slicer)
   //          {
   //              graphics->DrawTet(p, Color::lerp(Color::turquoise, Color::yellow, Color::melon, (float)index/ scene->tet_mesh->num_tets));
   //          }
-		//}
-	}
+        //}
+    }
 
     ImGui::PopStyleColor();
 }
 
 void Editor::DrawScene()
 {
-	static bool KeysDownPrev[512];
+    static bool KeysDownPrev[512];
 
-	if (!KeysDownPrev[GLFW_KEY_G] && ImGui::GetIO().KeysDown[GLFW_KEY_G])
-		show_grid = !show_grid;
+    if (!KeysDownPrev[GLFW_KEY_G] && ImGui::GetIO().KeysDown[GLFW_KEY_G])
+        show_grid = !show_grid;
 
     static RenderingMode renderingMode = RenderingMode::Solid;
 
@@ -1054,162 +1054,162 @@ void Editor::DrawScene()
         renderingMode = renderingMode == RenderingMode::Solid ? RenderingMode::SolidWireframe : RenderingMode::Solid;
     }
 
-	if (!KeysDownPrev[GLFW_KEY_H] && ImGui::GetIO().KeysDown[GLFW_KEY_H])
-	{
-		for (int i = 0; i < scene->sceneObjects.size(); i++)
-			scene->sceneObjects[i]->isVisible = false;
-	}
-		
+    if (!KeysDownPrev[GLFW_KEY_H] && ImGui::GetIO().KeysDown[GLFW_KEY_H])
+    {
+        for (int i = 0; i < scene->sceneObjects.size(); i++)
+            scene->sceneObjects[i]->isVisible = false;
+    }
+        
 
-	if (!KeysDownPrev[GLFW_KEY_D] && ImGui::GetIO().KeysDown[GLFW_KEY_D] && selected_scene_object)
-	{
-		SceneObject *clone = new SceneObject(*selected_scene_object);
+    if (!KeysDownPrev[GLFW_KEY_D] && ImGui::GetIO().KeysDown[GLFW_KEY_D] && selected_scene_object)
+    {
+        SceneObject *clone = new SceneObject(*selected_scene_object);
 
         clone->randomize_color();
 
-		if (selected_scene_object->mesh)
-		{
-			Mesh *mesh = new Mesh(*clone->mesh);
-			clone->mesh = mesh;
-			mesh->isDirty = true;
-		}
+        if (selected_scene_object->mesh)
+        {
+            Mesh *mesh = new Mesh(*clone->mesh);
+            clone->mesh = mesh;
+            mesh->isDirty = true;
+        }
 
-		if (selected_scene_object->light)
-		{
-			Light *light = new Light(*clone->light);
-			clone->light = light;
-			light->isDirty = true;
-		}
+        if (selected_scene_object->light)
+        {
+            Light *light = new Light(*clone->light);
+            clone->light = light;
+            light->isDirty = true;
+        }
 
-		scene->add_scene_object(clone);
-		selected_scene_object = clone;
-	}
+        scene->add_scene_object(clone);
+        selected_scene_object = clone;
+    }
 
 
-	float grid_scale = 1;
+    float grid_scale = 1;
 
-	static ImVec2 lastMousePos[5];
+    static ImVec2 lastMousePos[5];
 
-	if(!ImGui::GetIO().WantCaptureMouse)
-		scene->camDist -= ImGui::GetIO().MouseWheel * scene->camDist * 0.05;
-	scene->camDist = glm::clamp(scene->camDist, 1.0f, 10000.0f);
+    if(!ImGui::GetIO().WantCaptureMouse)
+        scene->camDist -= ImGui::GetIO().MouseWheel * scene->camDist * 0.05;
+    scene->camDist = glm::clamp(scene->camDist, 1.0f, 10000.0f);
 
-	for (int i = 0; i < 5; i++)
-		if (ImGui::GetIO().MouseClicked[i])
-			lastMousePos[i] = ImGui::GetIO().MousePos;
+    for (int i = 0; i < 5; i++)
+        if (ImGui::GetIO().MouseClicked[i])
+            lastMousePos[i] = ImGui::GetIO().MousePos;
 
-	if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_ALT])
-		ImGuizmo::Enable(false);
+    if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_ALT])
+        ImGuizmo::Enable(false);
 
-	if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_ALT] && !ImGuizmo::IsUsing() && ImGui::GetIO().MouseDown[0] && !ImGui::GetIO().WantCaptureMouse)
-	{
-		ImVec2 mousePos = ImGui::GetIO().MousePos;
+    if (ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_ALT] && !ImGuizmo::IsUsing() && ImGui::GetIO().MouseDown[0] && !ImGui::GetIO().WantCaptureMouse)
+    {
+        ImVec2 mousePos = ImGui::GetIO().MousePos;
 
-		float xDelta = mousePos.x - lastMousePos[0].x;
-		float yDelta = mousePos.y - lastMousePos[0].y;
+        float xDelta = mousePos.x - lastMousePos[0].x;
+        float yDelta = mousePos.y - lastMousePos[0].y;
 
-		scene->camOrbitY += xDelta * 0.01f;
-		scene->camOrbitX += yDelta * 0.01f;
+        scene->camOrbitY += xDelta * 0.01f;
+        scene->camOrbitX += yDelta * 0.01f;
 
-		scene->camOrbitX = glm::clamp(scene->camOrbitX, -glm::half_pi<float>() * 0.99f, glm::half_pi<float>() * 0.99f);
+        scene->camOrbitX = glm::clamp(scene->camOrbitX, -glm::half_pi<float>() * 0.99f, glm::half_pi<float>() * 0.99f);
 
-		lastMousePos[0] = mousePos;
-	}
+        lastMousePos[0] = mousePos;
+    }
 
-	if (ImGui::GetIO().MouseDown[2] && !ImGui::GetIO().WantCaptureMouse)
-	{
-		ImVec2 mousePos = ImGui::GetIO().MousePos;
+    if (ImGui::GetIO().MouseDown[2] && !ImGui::GetIO().WantCaptureMouse)
+    {
+        ImVec2 mousePos = ImGui::GetIO().MousePos;
 
-		float xDelta = mousePos.x - lastMousePos[2].x;
-		float yDelta = mousePos.y - lastMousePos[2].y;
+        float xDelta = mousePos.x - lastMousePos[2].x;
+        float yDelta = mousePos.y - lastMousePos[2].y;
 
-		glm::vec3 dir = glm::vec3(glm::cos(scene->camOrbitY), 0, glm::sin(scene->camOrbitY));
+        glm::vec3 dir = glm::vec3(glm::cos(scene->camOrbitY), 0, glm::sin(scene->camOrbitY));
 
-		dir = dir * glm::cos(scene->camOrbitX);
+        dir = dir * glm::cos(scene->camOrbitX);
 
-		dir.y = glm::sin(scene->camOrbitX);
+        dir.y = glm::sin(scene->camOrbitX);
 
-		glm::vec3 right = glm::cross(dir, glm::vec3(0, 1, 0));
-		glm::vec3 up = glm::cross(right, dir);
+        glm::vec3 right = glm::cross(dir, glm::vec3(0, 1, 0));
+        glm::vec3 up = glm::cross(right, dir);
 
-		cam_target += (right * xDelta + up * yDelta) * 0.01f;
-		scene->camTarget = cam_target;
+        cam_target += (right * xDelta + up * yDelta) * 0.01f;
+        scene->camTarget = cam_target;
 
-		lastMousePos[2] = mousePos;
-	}
+        lastMousePos[2] = mousePos;
+    }
 
-	//if (show_grid)
-	//	DrawLights(graphics);
+    //if (show_grid)
+    //	DrawLights(graphics);
 
-	if (show_grid)
-	{
-		glm::vec3 grid_color(0.5, 0.5, 0.5);
+    if (show_grid)
+    {
+        glm::vec3 grid_color(0.5, 0.5, 0.5);
 
-		for (int i = -50; i <= 50; i++)
-			graphics->DrawLine(glm::vec3(i, 0, -50) * grid_scale, glm::vec3(i, 0, 50) * grid_scale, glm::vec4(grid_color * (float)(i % 10 != 0), 0.5f));
+        for (int i = -50; i <= 50; i++)
+            graphics->DrawLine(glm::vec3(i, 0, -50) * grid_scale, glm::vec3(i, 0, 50) * grid_scale, glm::vec4(grid_color * (float)(i % 10 != 0), 0.5f));
 
-		for (int i = -50; i <= 50; i++)
-			graphics->DrawLine(glm::vec3(-50, 0, i) * grid_scale, glm::vec3(50, 0, i) * grid_scale, glm::vec4(grid_color * (float)(i % 10 != 0), 0.5f));
-	}
+        for (int i = -50; i <= 50; i++)
+            graphics->DrawLine(glm::vec3(-50, 0, i) * grid_scale, glm::vec3(50, 0, i) * grid_scale, glm::vec4(grid_color * (float)(i % 10 != 0), 0.5f));
+    }
 
-	if(show_grid)
-		for (int i = 0; i < scene->sceneObjects.size(); i++)
-		{
-			if (selected_scene_object == scene->sceneObjects[i] && selected_scene_object->mesh)
-			{
-				glm::mat4 t = glm::translate(glm::mat4(1.0f), scene->sceneObjects[i]->pos);
-				glm::vec3 rot = glm::radians(scene->sceneObjects[i]->rot);
-				glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
-				glm::mat4 s = glm::scale(glm::mat4(1.0), scene->sceneObjects[i]->scale);
+    if(show_grid)
+        for (int i = 0; i < scene->sceneObjects.size(); i++)
+        {
+            if (selected_scene_object == scene->sceneObjects[i] && selected_scene_object->mesh)
+            {
+                glm::mat4 t = glm::translate(glm::mat4(1.0f), scene->sceneObjects[i]->pos);
+                glm::vec3 rot = glm::radians(scene->sceneObjects[i]->rot);
+                glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
+                glm::mat4 s = glm::scale(glm::mat4(1.0), scene->sceneObjects[i]->scale);
 
-				s[3][3] = 1;
+                s[3][3] = 1;
 
-				glm::mat4 m = t * r * s;
+                glm::mat4 m = t * r * s;
 
-				glm::vec3 min = selected_scene_object->mesh->min;
-				glm::vec3 max = selected_scene_object->mesh->max;
+                glm::vec3 min = selected_scene_object->mesh->min;
+                glm::vec3 max = selected_scene_object->mesh->max;
 
-				//glm::vec3 a = glm::vec3(m * glm::vec4(selected_scene_object->mesh->min, 1));
-				//glm::vec3 b = glm::vec3(m * glm::vec4(selected_scene_object->mesh->max, 1));
+                //glm::vec3 a = glm::vec3(m * glm::vec4(selected_scene_object->mesh->min, 1));
+                //glm::vec3 b = glm::vec3(m * glm::vec4(selected_scene_object->mesh->max, 1));
 
-				glm::vec4 color = selected_scene_object->color * 0.4f;
-				color = Color::orange;
+                glm::vec4 color = selected_scene_object->color * 0.4f;
+                color = Color::orange;
 
-				glm::vec3 a(min.x, min.y, min.z);
-				glm::vec3 b(min.x, min.y, max.z);
-				glm::vec3 c(max.x, min.y, max.z);
-				glm::vec3 d(max.x, min.y, min.z);
+                glm::vec3 a(min.x, min.y, min.z);
+                glm::vec3 b(min.x, min.y, max.z);
+                glm::vec3 c(max.x, min.y, max.z);
+                glm::vec3 d(max.x, min.y, min.z);
 
-				glm::vec3 e(min.x, max.y, min.z);
-				glm::vec3 f(min.x, max.y, max.z);
-				glm::vec3 g(max.x, max.y, max.z);
-				glm::vec3 h(max.x, max.y, min.z);
+                glm::vec3 e(min.x, max.y, min.z);
+                glm::vec3 f(min.x, max.y, max.z);
+                glm::vec3 g(max.x, max.y, max.z);
+                glm::vec3 h(max.x, max.y, min.z);
 
-				a = glm::vec3(m * glm::vec4(a, 1));
-				b = glm::vec3(m * glm::vec4(b, 1));
-				c = glm::vec3(m * glm::vec4(c, 1));
-				d = glm::vec3(m * glm::vec4(d, 1));
-				e = glm::vec3(m * glm::vec4(e, 1));
-				f = glm::vec3(m * glm::vec4(f, 1));
-				g = glm::vec3(m * glm::vec4(g, 1));
-				h = glm::vec3(m * glm::vec4(h, 1));
+                a = glm::vec3(m * glm::vec4(a, 1));
+                b = glm::vec3(m * glm::vec4(b, 1));
+                c = glm::vec3(m * glm::vec4(c, 1));
+                d = glm::vec3(m * glm::vec4(d, 1));
+                e = glm::vec3(m * glm::vec4(e, 1));
+                f = glm::vec3(m * glm::vec4(f, 1));
+                g = glm::vec3(m * glm::vec4(g, 1));
+                h = glm::vec3(m * glm::vec4(h, 1));
 
-				graphics->DrawLine(a, b, color);
-				graphics->DrawLine(b, c, color);
-				graphics->DrawLine(c, d, color);
-				graphics->DrawLine(d, a, color);
-							
-				graphics->DrawLine(e, f, color);
-				graphics->DrawLine(f, g, color);
-				graphics->DrawLine(g, h, color);
-				graphics->DrawLine(h, e, color);
-								  
-				graphics->DrawLine(a, e, color);
-				graphics->DrawLine(b, f, color);
-				graphics->DrawLine(c, g, color);
-				graphics->DrawLine(d, h, color);
-			}
-		}
+                graphics->DrawLine(a, b, color);
+                graphics->DrawLine(b, c, color);
+                graphics->DrawLine(c, d, color);
+                graphics->DrawLine(d, a, color);
+                            
+                graphics->DrawLine(e, f, color);
+                graphics->DrawLine(f, g, color);
+                graphics->DrawLine(g, h, color);
+                graphics->DrawLine(h, e, color);
+                                  
+                graphics->DrawLine(a, e, color);
+                graphics->DrawLine(b, f, color);
+                graphics->DrawLine(c, g, color);
+                graphics->DrawLine(d, h, color);
+            }
+        }
 
  /*   const int bits = 3;
     const int dim = 8;
@@ -1241,23 +1241,23 @@ void Editor::DrawScene()
         graphics->DrawLine(sorted[i], sorted[i+1]);
     }*/
 
-	int display_w, display_h;
-	glfwGetFramebufferSize(window, &display_w, &display_h);
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	glViewport(0, 0, display_w - 360, display_h - 20);
+    glViewport(0, 0, display_w - 360, display_h - 20);
 
     if (edged_faces)
         renderingMode = RenderingMode::SolidWireframe;
     else
         renderingMode = RenderingMode::Solid;
 
-	graphics->Render(scene, show_tetrahedrons, renderingMode);
+    graphics->Render(scene, show_tetrahedrons, renderingMode);
 
-	glViewport(0, 0, display_w, display_h);
-	//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+    glViewport(0, 0, display_w, display_h);
+    //glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 
-	for (int i = 0; i < 512; i++)
-		KeysDownPrev[i] = ImGui::GetIO().KeysDown[i];
+    for (int i = 0; i < 512; i++)
+        KeysDownPrev[i] = ImGui::GetIO().KeysDown[i];
 
     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4());
     ImGui::SetNextWindowPos(ImVec2(0, 20));
@@ -1270,54 +1270,54 @@ void Editor::DrawScene()
 
 void Editor::DrawRenderedFrame()
 {
-	if (!show_rendered_frame_window)
-		return;
+    if (!show_rendered_frame_window)
+        return;
 
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse;// = ImGuiWindowFlags_ShowBorders;
 
-	ImGui::Begin("Rendered Frame", &show_rendered_frame_window, flags);
+    ImGui::Begin("Rendered Frame", &show_rendered_frame_window, flags);
 
-	float cw = ImGui::GetContentRegionAvailWidth() * 0.65f;
+    float cw = ImGui::GetContentRegionAvailWidth() * 0.65f;
 
-	float image_scale = 1;
+    float image_scale = 1;
 
-	ImGui::Image((ImTextureID)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
-	ImGui::SameLine();
-	ImGui::BeginChild("asd", ImVec2(0, 0));
+    ImGui::Image((ImTextureID)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::SameLine();
+    ImGui::BeginChild("asd", ImVec2(0, 0));
 
 
-	//(printf("Rendered in %.3f seconds. (%.1f FPS)", ray_tracer->last_render_time, 1 / ray_tracer->last_render_time);
+    //(printf("Rendered in %.3f seconds. (%.1f FPS)", ray_tracer->last_render_time, 1 / ray_tracer->last_render_time);
     ImGui::Text("Rendered in %.4f seconds. (%.2f FPS)", Stats::get_avg_render_time(10), 1 / Stats::get_avg_render_time(10));
 
 
-	//ImGui::Text("Triangle count: %d", scene->tet_mesh->face_count);
+    //ImGui::Text("Triangle count: %d", scene->tet_mesh->face_count);
     ImGui::InputInt("Thread count", &ray_tracer->thread_count);
 
-	//ImGui::Checkbox("Multi-threading", &ray_tracer->multi_threading);
+    //ImGui::Checkbox("Multi-threading", &ray_tracer->multi_threading);
 
-	static glm::ivec2 res = ray_tracer->resolution;
+    static glm::ivec2 res = ray_tracer->resolution;
     
-	ImGui::InputInt2("Resolution", &res.x);
-	//ImGui::InputInt("Size", &ray_tracer->tile_size);
-	ImGui::Checkbox("Shadows", &ray_tracer->shadows);
+    ImGui::InputInt2("Resolution", &res.x);
+    //ImGui::InputInt("Size", &ray_tracer->tile_size);
+    ImGui::Checkbox("Shadows", &ray_tracer->shadows);
 
-	const char* reps[] = { "Default", "ScTP", "Fast Basis", "kd-tree", "BVH"};
-	ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 5);
+    const char* reps[] = { "Default", "ScTP", "Fast Basis", "kd-tree", "BVH"};
+    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 5);
 
-	if (res != ray_tracer->resolution)
-	{
-		ray_tracer->resolution = res;
+    if (res != ray_tracer->resolution)
+    {
+        ray_tracer->resolution = res;
 
-		//delete[] ray_tracer->pixels;
+        //delete[] ray_tracer->pixels;
 
-		//ray_tracer->pixels = new glm::u8vec3[ray_tracer->resolution.x * ray_tracer->resolution.y];
-		//glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->pixels);
-	}
+        //ray_tracer->pixels = new glm::u8vec3[ray_tracer->resolution.x * ray_tracer->resolution.y];
+        //glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
+        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->pixels);
+    }
 
-	static bool render = false;
+    static bool render = false;
     static bool diagnostics = false;
-	ImGui::Checkbox("Render", &render);
+    ImGui::Checkbox("Render", &render);
 
     if (render && !scene->has_accelerator())
     {
@@ -1327,37 +1327,37 @@ void Editor::DrawRenderedFrame()
         
 
 
-	ImGui::Separator();
-	ImGui::Checkbox("Diagnostics", &diagnostics);
-	ImGui::Text("Avg. intersection test count:");
-	ImGui::SameLine(180);
-	ImGui::Text("%.1f", ray_tracer->avg_test_count);
+    ImGui::Separator();
+    ImGui::Checkbox("Diagnostics", &diagnostics);
+    ImGui::Text("Avg. intersection test count:");
+    ImGui::SameLine(180);
+    ImGui::Text("%.1f", ray_tracer->avg_test_count);
 
     ImGui::Text("L1 hit count:");
     ImGui::SameLine(180);
     ImGui::Text("%d", ray_tracer->L1_count);
 
-	//ImGui::Checkbox("Visualize cost", &ray_tracer.show_traversed_tet_count);
-	//ImGui::SliderInt("Scale: ", &cost_scale, 64, 512);
+    //ImGui::Checkbox("Visualize cost", &ray_tracer.show_traversed_tet_count);
+    //ImGui::SliderInt("Scale: ", &cost_scale, 64, 512);
     if (ImGui::Button("Save"))
         ray_tracer->save_to_disk("last.png");
-	ImGui::EndChild();
+    ImGui::EndChild();
 
-	if (render && scene->has_accelerator())
-	{
-		ray_tracer->Render(*scene, diagnostics);
-		glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
+    if (render && scene->has_accelerator())
+    {
+        ray_tracer->Render(*scene, diagnostics);
+        glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
 
         glBindTexture(GL_TEXTURE_2D, visited_tets_texture_id);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_RGB, GL_UNSIGNED_BYTE, ray_tracer->m_visited_tets_image->get_pixels());
 
         glBindTexture(GL_TEXTURE_2D, locality_texture_id);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_RGB, GL_UNSIGNED_BYTE, ray_tracer->m_locality_image->get_pixels());
-	}
+    }
 
 
-	ImGui::End();
+    ImGui::End();
 
     ImGui::Begin("Diag");
     ImGui::Image((ImTextureID)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
@@ -1368,194 +1368,194 @@ void Editor::DrawRenderedFrame()
 
 void Editor::DrawConsole()
 {
-	if (!show_console_window)
-		return;
+    if (!show_console_window)
+        return;
 
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse;// = ImGuiWindowFlags_ShowBorders;
 
-	ImGui::Begin("Console", &show_console_window, flags);
+    ImGui::Begin("Console", &show_console_window, flags);
 
-	if (ImGui::Button("Clear"))
-		Logger::Clear();
+    if (ImGui::Button("Clear"))
+        Logger::Clear();
     
-	static bool show_logs = true, show_warnings = true, show_errors = true;
+    static bool show_logs = true, show_warnings = true, show_errors = true;
 
-	ImGui::SameLine();
-	ImGui::Checkbox("Show Logs", &show_logs);
-	ImGui::SameLine();
-	ImGui::Checkbox("Show Warnings", &show_warnings);
-	ImGui::SameLine();
-	ImGui::Checkbox("Show Errors", &show_errors);
+    ImGui::SameLine();
+    ImGui::Checkbox("Show Logs", &show_logs);
+    ImGui::SameLine();
+    ImGui::Checkbox("Show Warnings", &show_warnings);
+    ImGui::SameLine();
+    ImGui::Checkbox("Show Errors", &show_errors);
 
-	float h = ImGui::GetContentRegionAvail().y  - 100;
+    float h = ImGui::GetContentRegionAvail().y  - 100;
 
     ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-	ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
-	ImGui::BeginChild("Message List", ImVec2(0, h), false, flags);
+    ImGui::BeginChild("Message List", ImVec2(0, h), false, flags);
 
-	const std::vector<Msg> &logs = Logger::logs;
+    const std::vector<Msg> &logs = Logger::logs;
 
-	static int selected_msg_id = -1;
+    static int selected_msg_id = -1;
 
     
 
-	for (size_t i = 0; i < logs.size(); i++)
-	{
-		if (!show_logs && logs[i].type == 0)
-			continue;
-		if (!show_warnings && logs[i].type == 1)
-			continue;
-		if (!show_errors && logs[i].type == 2)
-			continue;
+    for (size_t i = 0; i < logs.size(); i++)
+    {
+        if (!show_logs && logs[i].type == 0)
+            continue;
+        if (!show_warnings && logs[i].type == 1)
+            continue;
+        if (!show_errors && logs[i].type == 2)
+            continue;
 
-		ImGui::PushID(i);
+        ImGui::PushID(i);
 
-		if (logs[i].type == 1)
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.92f, 0.016f, 1.0f));
-		if (logs[i].type == 2)
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        if (logs[i].type == 1)
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.92f, 0.016f, 1.0f));
+        if (logs[i].type == 2)
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-		if (ImGui::Selectable(logs[i].text.c_str(), selected_msg_id == i))
-		{
-			selected_msg_id = i;
-		}
+        if (ImGui::Selectable(logs[i].text.c_str(), selected_msg_id == i))
+        {
+            selected_msg_id = i;
+        }
 
-		if (logs[i].type > 0)
-			ImGui::PopStyleColor();
+        if (logs[i].type > 0)
+            ImGui::PopStyleColor();
 
-		ImGui::PopID();
+        ImGui::PopID();
 
-		//ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor(0.1f, 0.1f, 0.1f, 0.1f));
-		//ImGui::BeginChild(msgs[i].c_str(), ImVec2(0, 30), false);
-		//ImGui::Text(msgs[i].c_str());
-		//ImGui::EndChild();
-		//ImGui::PopStyleColor();
-	}
+        //ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor(0.1f, 0.1f, 0.1f, 0.1f));
+        //ImGui::BeginChild(msgs[i].c_str(), ImVec2(0, 30), false);
+        //ImGui::Text(msgs[i].c_str());
+        //ImGui::EndChild();
+        //ImGui::PopStyleColor();
+    }
 
-	ImGui::EndChild();
+    ImGui::EndChild();
 
-	ImGui::BeginChild("Message Window", ImVec2(0, 0), false, flags);
-	if(selected_msg_id != -1)
-		ImGui::Text(logs[selected_msg_id].text.c_str());
-	ImGui::End();
+    ImGui::BeginChild("Message Window", ImVec2(0, 0), false, flags);
+    if(selected_msg_id != -1)
+        ImGui::Text(logs[selected_msg_id].text.c_str());
+    ImGui::End();
 
     ImGui::PopFont();
 
-	ImGui::PopStyleColor();
+    ImGui::PopStyleColor();
 
-	ImGui::End();
+    ImGui::End();
 }
 
 void Editor::HandleSelectionGizmos()
 {
-	if (!show_grid)
-		return;
+    if (!show_grid)
+        return;
 
-	ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
 
-	ImGui::Begin("pick", NULL, io.DisplaySize, 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    ImGui::Begin("pick", NULL, io.DisplaySize, 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-	int display_w, display_h;
-	glfwGetFramebufferSize(window, &display_w, &display_h);
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
 
-	glm::mat4 p = glm::perspective(glm::radians(45.0f), (float)(display_w - 360) / (display_h - 20), 0.1f, 1000.0f);
-	glm::vec3 camTarget = scene->camTarget;
-	glm::vec3 dir = glm::vec3(glm::cos(scene->camOrbitY), 0, glm::sin(scene->camOrbitY));
-	dir = dir * glm::cos(scene->camOrbitX);
-	dir.y = glm::sin(scene->camOrbitX);
-	glm::vec3 camPos = camTarget + dir * scene->camDist;
-	glm::mat4 v = glm::lookAt(camPos, camTarget, glm::vec3(0, 1, 0));
+    glm::mat4 p = glm::perspective(glm::radians(45.0f), (float)(display_w - 360) / (display_h - 20), 0.1f, 1000.0f);
+    glm::vec3 camTarget = scene->camTarget;
+    glm::vec3 dir = glm::vec3(glm::cos(scene->camOrbitY), 0, glm::sin(scene->camOrbitY));
+    dir = dir * glm::cos(scene->camOrbitX);
+    dir.y = glm::sin(scene->camOrbitX);
+    glm::vec3 camPos = camTarget + dir * scene->camDist;
+    glm::mat4 v = glm::lookAt(camPos, camTarget, glm::vec3(0, 1, 0));
 
-	int miss_count = 0;
+    int miss_count = 0;
 
-	for (int i = 0; i < scene->sceneObjects.size(); i++)
-	{
-		if (!scene->sceneObjects[i]->pickable)
-			continue;
+    for (int i = 0; i < scene->sceneObjects.size(); i++)
+    {
+        if (!scene->sceneObjects[i]->pickable)
+            continue;
 
-		glm::mat4 t = glm::translate(glm::mat4(1.0f), scene->sceneObjects[i]->pos);
-		glm::vec3 rot = glm::radians(scene->sceneObjects[i]->rot);
-		glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
-		glm::mat4 mvp = p * v * t;
+        glm::mat4 t = glm::translate(glm::mat4(1.0f), scene->sceneObjects[i]->pos);
+        glm::vec3 rot = glm::radians(scene->sceneObjects[i]->rot);
+        glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
+        glm::mat4 mvp = p * v * t;
 
-		float x = (display_w - 360) * (mvp[3][0] / mvp[3][3] + 1.0f) * 0.5f;
-		float y = display_h - (display_h - 20) * (mvp[3][1] / mvp[3][3] + 1.0f) * 0.5f;
+        float x = (display_w - 360) * (mvp[3][0] / mvp[3][3] + 1.0f) * 0.5f;
+        float y = display_h - (display_h - 20) * (mvp[3][1] / mvp[3][3] + 1.0f) * 0.5f;
 
-		//std::cout << x << " "  << y << std::endl;
+        //std::cout << x << " "  << y << std::endl;
 
-		glm::vec2 mouse(ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
-		glm::vec2 point(x, y);
+        glm::vec2 mouse(ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+        glm::vec2 point(x, y);
 
-		glm::vec4 color = scene->sceneObjects[i]->color;
+        glm::vec4 color = scene->sceneObjects[i]->color;
 
-		if (glm::distance(mouse, point) < 10 && !ImGuizmo::IsOver())
-		{
-			//color |= 0xFF000000;
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5), ImColor(color.r, color.g, color.b, 1.0f), 2);
+        if (glm::distance(mouse, point) < 10 && !ImGuizmo::IsOver())
+        {
+            //color |= 0xFF000000;
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5), ImColor(color.r, color.g, color.b, 1.0f), 2);
 
-			//ImGui::GetWindowDrawList()->AddCircle(ImVec2(x, y), 5, ImColor(color.r, color.g, color.b, 1.0f), 12, 6);
+            //ImGui::GetWindowDrawList()->AddCircle(ImVec2(x, y), 5, ImColor(color.r, color.g, color.b, 1.0f), 12, 6);
 
-			if (ImGui::IsMouseClicked(0))
-			{
-				selected_scene_object = scene->sceneObjects[i];
-			}
-		}
-		else
-		{
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5), ImColor(color.r, color.g, color.b, 0.6f), 2);
-		}
+            if (ImGui::IsMouseClicked(0))
+            {
+                selected_scene_object = scene->sceneObjects[i];
+            }
+        }
+        else
+        {
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(x - 5, y - 5), ImVec2(x + 5, y + 5), ImColor(color.r, color.g, color.b, 0.6f), 2);
+        }
 
-		//if (glm::distance(mouse, point) > 5 && !ImGuizmo::IsOver() && ImGui::IsMouseClicked(0))
-		//	miss_count++;
+        //if (glm::distance(mouse, point) > 5 && !ImGuizmo::IsOver() && ImGui::IsMouseClicked(0))
+        //	miss_count++;
 
-		//if (ImGui::IsMouseClicked(0) && miss_count == scene->sceneObjects.size())
-		//	selected_scene_object = NULL;
+        //if (ImGui::IsMouseClicked(0) && miss_count == scene->sceneObjects.size())
+        //	selected_scene_object = NULL;
 
-		bool sth_is_selected = false;
-	}
+        bool sth_is_selected = false;
+    }
 
-	if (ImGui::IsMouseClicked(1))
-		selected_scene_object = NULL;
+    if (ImGui::IsMouseClicked(1))
+        selected_scene_object = NULL;
 
-	ImGui::End();
+    ImGui::End();
 }
 
 void Editor::HandleTransformGizmos()
 {
-	if (!show_grid)
-		return;
+    if (!show_grid)
+        return;
 
-	static bool can_use_gizmo = false;
+    static bool can_use_gizmo = false;
 
-	if (ImGui::GetIO().MouseClicked[0] && ImGuizmo::IsOver())
-		can_use_gizmo = true;
+    if (ImGui::GetIO().MouseClicked[0] && ImGuizmo::IsOver())
+        can_use_gizmo = true;
 
-	glm::mat4 m = glm::mat4(1.0f);
-	if (selected_scene_object)
-	{
-		ImGuizmo::Enable(true);
+    glm::mat4 m = glm::mat4(1.0f);
+    if (selected_scene_object)
+    {
+        ImGuizmo::Enable(true);
 
-		m[3] = glm::vec4(selected_scene_object->pos, 1);
+        m[3] = glm::vec4(selected_scene_object->pos, 1);
 
-		float *snap = ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_CONTROL] ? new float[3]{ 1,1,1 } : NULL;
+        float *snap = ImGui::GetIO().KeysDown[GLFW_KEY_LEFT_CONTROL] ? new float[3]{ 1,1,1 } : NULL;
 
-		ImGuizmo::Manipulate(&graphics->v[0][0], &graphics->p[0][0], ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::WORLD, &m[0][0], 0, snap);
+        ImGuizmo::Manipulate(&graphics->v[0][0], &graphics->p[0][0], ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::WORLD, &m[0][0], 0, snap);
 
-		delete[] snap;
+        delete[] snap;
 
-		if (can_use_gizmo)
-		{
-			selected_scene_object->pos = glm::vec3(m[3]);
-		}
-	}
-	else
-	{
-		ImGuizmo::Enable(false);
-	}
+        if (can_use_gizmo)
+        {
+            selected_scene_object->pos = glm::vec3(m[3]);
+        }
+    }
+    else
+    {
+        ImGuizmo::Enable(false);
+    }
 
-	if (!ImGuizmo::IsUsing())
-		can_use_gizmo = false;
+    if (!ImGuizmo::IsUsing())
+        can_use_gizmo = false;
 }
 
 Editor *Editor::instance = nullptr;

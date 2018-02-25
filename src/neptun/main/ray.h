@@ -5,8 +5,8 @@
 
 struct Ray
 {
-	glm::vec3 origin;
-	glm::vec3 dir;
+    glm::vec3 origin;
+    glm::vec3 dir;
 
     union
     {
@@ -14,9 +14,9 @@ struct Ray
         int tet_idx;
     };
 
-	Ray(glm::vec3 origin_ = glm::vec3(0, 0, 0), glm::vec3 dir_ = glm::vec3(0, 0, 0))
-	{
-		origin = origin_;
-		dir = dir_;
-	}
+    Ray(glm::vec3 origin_ = glm::vec3(0, 0, 0), glm::vec3 dir_ = glm::vec3(0, 0, 0))
+    {
+        origin = origin_;
+        dir = dir_;
+    }
 };

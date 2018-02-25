@@ -15,16 +15,16 @@
 
 Scene::Scene() : camOrbitX(0), camOrbitY(glm::pi<float>() / 2.0f), camDist(20)
 {
-	for (int i = 0; i < 1; i++)
-	{
-		SceneObject *light = new SceneObject("Light");
-		light->light = new Light();
-		add_scene_object(light); 
-		//light->pos = glm::sphericalRand(32.0f);
-		//light->pos.y = glm::abs(light->pos.y);
-		light->pos = glm::vec3(6, 10, 8);
-		light->light->intensity = 1.0f;
-	}
+    for (int i = 0; i < 1; i++)
+    {
+        SceneObject *light = new SceneObject("Light");
+        light->light = new Light();
+        add_scene_object(light); 
+        //light->pos = glm::sphericalRand(32.0f);
+        //light->pos.y = glm::abs(light->pos.y);
+        light->pos = glm::vec3(6, 10, 8);
+        light->light->intensity = 1.0f;
+    }
 }
 
 Scene::~Scene()
@@ -166,7 +166,7 @@ void Scene::save_to_file()
 
 void Scene::add_scene_object(SceneObject *sceneObject)
 {
-	sceneObjects.push_back(sceneObject);
+    sceneObjects.push_back(sceneObject);
 }
 
 void Scene::clear()

@@ -7,7 +7,7 @@ void Logger::Clear()
 
 void Logger::Log(const char * fmt, ...)
 {
-	char buffer[1024];
+    char buffer[1024];
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf(buffer, 1024, fmt, args);
