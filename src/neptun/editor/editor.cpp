@@ -1,18 +1,12 @@
 #include "editor.h"
 
-#define UNICODE
-#define _UNICODE
 #define NOMINMAX
 
 #include "tinydir/tinydir.h"
 
-
-
-#include <codecvt>
-#include <locale>
-#include <tchar.h>
-#include <thread>
-#include <unordered_map>
+#define NOC_FILE_DIALOG_IMPLEMENTATION
+#define NOC_FILE_DIALOG_WIN32
+#include "noc/noc_file_dialog.h"
 
 #include "imgui/imgui.h"
 #include "imgui_impl_glfw_gl3.h"
@@ -211,7 +205,7 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
 
     instance = this;
 
-    std::wstring path(AssetImporter::assets_folder_path.begin(), AssetImporter::assets_folder_path.end());
+    std::string path(AssetImporter::assets_folder_path.begin(), AssetImporter::assets_folder_path.end());
 
     tinydir_dir dir;
     tinydir_open(&dir, path.c_str());
@@ -221,7 +215,7 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
         tinydir_file file;
         tinydir_readfile(&dir, &file);
 
-        std::wstring wstr(file.name);
+        std::string wstr(file.name);
 
         //file.name
         std::string tmp(wstr.begin(), wstr.end());
@@ -288,20 +282,47 @@ void Editor::DrawMainMenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Save")) 
+            if (ImGui::MenuItem("Save scene")) 
             {
                 scene->save_to_file();
             }
-            if (ImGui::MenuItem("Load"))
+
+            if (ImGui::MenuItem("Save scene as"))
             {
-                scene->load_from_file("scene.txt");
-                selected_scene_object = nullptr;
+                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_SAVE, nullptr, nullptr, nullptr);
+                Logger::Log("scene is saved as %s", file_name);
+            }
+
+            if (ImGui::MenuItem("Load scene"))
+            {
+                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_OPEN, nullptr, ".\\Assets\\", nullptr);
+                if (file_name)
+                {
+                    scene->load_from_file(file_name);
+                    selected_scene_object = nullptr;
+                    cam_target = scene->camTarget;
+                }
             }
 
             if (ImGui::MenuItem("Reset"))
             {
                 scene->clear();
                 selected_scene_object = nullptr;
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Import OBJ file"))
+            {
+                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_OPEN, nullptr, ".\\Assets\\", nullptr);
+                if (file_name)
+                {
+                    SceneObject *scene_object = AssetImporter::CreateFromObj(file_name);
+                    scene->add_scene_object(scene_object);
+
+                    if (scene->sceneObjects.size() > 0)
+                        selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+                }
             }
 
             if (ImGui::MenuItem("Exit", "ALT+F4")) {}
@@ -324,136 +345,136 @@ void Editor::DrawMainMenuBar()
 
         if (ImGui::BeginMenu("Create"))
         {
-            if (ImGui::BeginMenu("Scene"))
-            {
-                for (std::string &file_name : scene_file_names)
-                {
-                    if (ImGui::MenuItem(file_name.c_str()))
-                    {
-                        //std::string tmp_file_name = file_name;
-                        //tmp_file_name.append(".scene");
+            //if (ImGui::BeginMenu("Scene"))
+            //{
+            //    for (std::string &file_name : scene_file_names)
+            //    {
+            //        if (ImGui::MenuItem(file_name.c_str()))
+            //        {
+            //            //std::string tmp_file_name = file_name;
+            //            //tmp_file_name.append(".scene");
 
-                        std::string input_file_name = AssetImporter::assets_folder_path;
-                        input_file_name.append(file_name);
-                        input_file_name.append(".scene");
+            //            std::string input_file_name = AssetImporter::assets_folder_path;
+            //            input_file_name.append(file_name);
+            //            input_file_name.append(".scene");
 
-                        scene->load_from_file(input_file_name);
-                        cam_target = scene->camTarget;
+            //            scene->load_from_file(input_file_name);
+            //            cam_target = scene->camTarget;
 
-                        selected_scene_object = nullptr;
+            //            selected_scene_object = nullptr;
 
-                        //SceneObject *scene_object = AssetImporter::CreateFromObj(tmp_file_name.c_str());
-                        //scene->add_scene_object(scene_object);
+            //            //SceneObject *scene_object = AssetImporter::CreateFromObj(tmp_file_name.c_str());
+            //            //scene->add_scene_object(scene_object);
 
-                        //if (scene->sceneObjects.size() > 0)
-                            //selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-                    }
-                }
+            //            //if (scene->sceneObjects.size() > 0)
+            //                //selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            //        }
+            //    }
 
-                ImGui::EndMenu();
-            }
+            //    ImGui::EndMenu();
+            //}
 
-            if (ImGui::BeginMenu("OBJ"))
-            {
-                for (std::string &file_name : asset_file_names)
-                {
-                    if (ImGui::MenuItem(file_name.c_str()))
-                    {
-                        std::string tmp_file_name = file_name;
-                        tmp_file_name.append(".obj");
+            //if (ImGui::BeginMenu("OBJ"))
+            //{
+            //    for (std::string &file_name : asset_file_names)
+            //    {
+            //        if (ImGui::MenuItem(file_name.c_str()))
+            //        {
+            //            std::string tmp_file_name = file_name;
+            //            tmp_file_name.append(".obj");
 
-                        SceneObject *scene_object = AssetImporter::CreateFromObj(tmp_file_name.c_str());
-                        scene->add_scene_object(scene_object);
+            //            SceneObject *scene_object = AssetImporter::CreateFromObj(tmp_file_name.c_str());
+            //            scene->add_scene_object(scene_object);
 
-                        if (scene->sceneObjects.size() > 0)
-                            selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-                    }
-                }
+            //            if (scene->sceneObjects.size() > 0)
+            //                selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            //        }
+            //    }
 
-                ImGui::EndMenu();
-            }
-                
-            if (ImGui::MenuItem("Armadillo")) 
-            {
-                Mesh *armadillo_mesh = AssetImporter::ImportMesh("armadillo.obj");
-                armadillo_mesh->CenterPivot();
+            //    ImGui::EndMenu();
+            //}
+            //    
+            //if (ImGui::MenuItem("Armadillo")) 
+            //{
+            //    Mesh *armadillo_mesh = AssetImporter::ImportMesh("armadillo.obj");
+            //    armadillo_mesh->CenterPivot();
 
-                SceneObject *armadillo = new SceneObject("Armadillo");
-                armadillo->mesh = armadillo_mesh;
-                //armadillo->scale = 0.1f;
-                armadillo->rot.y = 180;
-                scene->add_scene_object(armadillo);
+            //    SceneObject *armadillo = new SceneObject("Armadillo");
+            //    armadillo->mesh = armadillo_mesh;
+            //    //armadillo->scale = 0.1f;
+            //    armadillo->rot.y = 180;
+            //    scene->add_scene_object(armadillo);
 
-                if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-            }
+            //    if (scene->sceneObjects.size() > 0)
+            //        selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            //}
 
-            if (ImGui::MenuItem("Floor")) 
-            { 
-                Mesh *floor_mesh = AssetImporter::ImportMesh("floor.obj");
-                floor_mesh->CenterPivot();
+            //if (ImGui::MenuItem("Floor")) 
+            //{ 
+            //    Mesh *floor_mesh = AssetImporter::ImportMesh("floor.obj");
+            //    floor_mesh->CenterPivot();
 
-                SceneObject *floor = new SceneObject("Floor");
-                floor->mesh = floor_mesh;
-                scene->add_scene_object(floor);
+            //    SceneObject *floor = new SceneObject("Floor");
+            //    floor->mesh = floor_mesh;
+            //    scene->add_scene_object(floor);
 
-                if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-            }
+            //    if (scene->sceneObjects.size() > 0)
+            //        selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            //}
 
-            if (ImGui::MenuItem("Torus Knot")) 
-            { 
-                Mesh *torus_knot_mesh = AssetImporter::ImportMesh("torus_knot.obj");
+            //if (ImGui::MenuItem("Torus Knot")) 
+            //{ 
+            //    Mesh *torus_knot_mesh = AssetImporter::ImportMesh("torus_knot.obj");
 
-                int min = 0;
-                int max = 1;
+            //    int min = 0;
+            //    int max = 1;
 
-                for (int i = min; i < max; i++)
-                {
-                    for (int j = min; j < max; j++)
-                    {
-                        for (int k = min; k < max; k++)
-                        {
-                            SceneObject *torus_knot = new SceneObject("Torus Knot");
-                            torus_knot->mesh = new Mesh(*torus_knot_mesh);
-                            torus_knot->pos = glm::vec3(i, j, k) * 5.0f;
-                            //torus_knot->scale = 0.02f;
-                            scene->add_scene_object(torus_knot);
-                        }
-                    }
-                }
+            //    for (int i = min; i < max; i++)
+            //    {
+            //        for (int j = min; j < max; j++)
+            //        {
+            //            for (int k = min; k < max; k++)
+            //            {
+            //                SceneObject *torus_knot = new SceneObject("Torus Knot");
+            //                torus_knot->mesh = new Mesh(*torus_knot_mesh);
+            //                torus_knot->pos = glm::vec3(i, j, k) * 5.0f;
+            //                //torus_knot->scale = 0.02f;
+            //                scene->add_scene_object(torus_knot);
+            //            }
+            //        }
+            //    }
 
-                if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-            }
+            //    if (scene->sceneObjects.size() > 0)
+            //        selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            //}
 
-            if (ImGui::MenuItem("Torus Knots"))
-            {
-                Mesh *torus_knot_mesh = AssetImporter::ImportMesh("torus_knot.obj");
+            //if (ImGui::MenuItem("Torus Knots"))
+            //{
+            //    Mesh *torus_knot_mesh = AssetImporter::ImportMesh("torus_knot.obj");
 
-                int min = -1;
-                int max = 2;
+            //    int min = -1;
+            //    int max = 2;
 
-                for (int i = min; i < max; i++)
-                {
-                    for (int j = min; j < max; j++)
-                    {
-                        for (int k = min; k < max; k++)
-                        {
-                            SceneObject *torus_knot = new SceneObject("Torus Knot");
-                            torus_knot->mesh = new Mesh(*torus_knot_mesh);
-                            torus_knot->pos = glm::vec3(i, j, k) * 5.0f;
-                            //torus_knot->scale = 0.02f;
-                            scene->add_scene_object(torus_knot);
-                        }
-                    }
-                }
+            //    for (int i = min; i < max; i++)
+            //    {
+            //        for (int j = min; j < max; j++)
+            //        {
+            //            for (int k = min; k < max; k++)
+            //            {
+            //                SceneObject *torus_knot = new SceneObject("Torus Knot");
+            //                torus_knot->mesh = new Mesh(*torus_knot_mesh);
+            //                torus_knot->pos = glm::vec3(i, j, k) * 5.0f;
+            //                //torus_knot->scale = 0.02f;
+            //                scene->add_scene_object(torus_knot);
+            //            }
+            //        }
+            //    }
 
-                if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
-            }
+            //    if (scene->sceneObjects.size() > 0)
+            //        selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            //}
 
-            ImGui::Separator();
+            //ImGui::Separator();
             //
             if (ImGui::MenuItem("Light"))
             {
@@ -718,7 +739,7 @@ void Editor::DrawTetGen()
     static bool show_points = false;
     //static 
 
-    std::thread *t = nullptr;
+    //std::thread *t = nullptr;
 
     if (ImGui::Button("Build"))
     {

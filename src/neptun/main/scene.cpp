@@ -31,11 +31,11 @@ Scene::~Scene()
 {
 }
 
-void Scene::load_from_file(const std::string & file_name)
+void Scene::load_from_file(const std::string& scene_file_path)
 {
     clear();
 
-    std::ifstream ifs(file_name);
+    std::ifstream ifs(scene_file_path);
 
     std::string line;
 
@@ -91,11 +91,14 @@ void Scene::load_from_file(const std::string & file_name)
 
         if (line != "#") // Mesh
         {
-            std::string file_name;
+            std::string mesh_file_path;
 
-            ifs >> file_name;
+            ifs >> mesh_file_path;
 
-            Mesh* mesh = AssetImporter::ImportMesh(file_name.c_str());
+            std::string absolute_mesh_file_path = 
+                scene_file_path.substr(0, scene_file_path.find_last_of("\\") + 1) + mesh_file_path;
+
+            Mesh* mesh = AssetImporter::ImportMesh(absolute_mesh_file_path.c_str());
 
             scene_object->mesh = mesh;
         }

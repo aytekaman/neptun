@@ -15,15 +15,15 @@
 
 Mesh * AssetImporter::ImportMesh(const char *file_name)
 {
-    std::string inputfile = assets_folder_path;
-    inputfile.append(file_name);
+    //std::string inputfile = assets_folder_path;
+    //inputfile.append(file_name);
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
 
     std::string err;
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, file_name);
 
     if (!err.empty()) { // `err` may contain warning message.
         std::cerr << err << std::endl;
@@ -143,14 +143,14 @@ Texture * AssetImporter::ImportTexture(const char * file_name)
 
 SceneObject * AssetImporter::CreateFromObj(const char * file_name)
 {
-    std::string inputfile = assets_folder_path;
-    inputfile.append(file_name);
+    //std::string inputfile = assets_folder_path;
+    //inputfile.append(file_name);
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
 
     std::string err;
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str(), assets_folder_path.c_str());
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, file_name, assets_folder_path.c_str());
 
     if (!err.empty()) { // `err` may contain warning message.
         std::cerr << err << std::endl;
