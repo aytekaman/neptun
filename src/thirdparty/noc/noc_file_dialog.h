@@ -108,7 +108,7 @@ const char *noc_file_dialog_open(int flags,
         gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
 
     if (default_path)
-        v(chooser, default_path);
+        gtk_file_chooser_set_filename(chooser, default_path);
     if (default_name)
         gtk_file_chooser_set_current_name(chooser, default_name);
 
@@ -169,7 +169,7 @@ const char *noc_file_dialog_open(int flags,
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = default_path;
+    ofn.lpstrInitialDir = NULL;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
     if (flags & NOC_FILE_DIALOG_OPEN)
