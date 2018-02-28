@@ -31,6 +31,7 @@ set (thirdparty_sources
     src/thirdparty/imgui/imgui_internal.h
     src/thirdparty/ImGuizmo/ImGuizmo.h
     src/thirdparty/ImGuizmo/ImGuizmo.cpp
+    src/thirdparty/noc/noc_file_dialog.h
     src/thirdparty/tinydir/tinydir.h
     src/thirdparty/tinyobjloader/tiny_obj_loader.h
     src/thirdparty/tetgen/tetgen.h
