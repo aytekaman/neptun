@@ -289,13 +289,13 @@ void Editor::DrawMainMenuBar()
 
             if (ImGui::MenuItem("Save scene as"))
             {
-                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_SAVE, nullptr, nullptr, nullptr);
+                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_SAVE, "scene\0*.scene\0", nullptr, nullptr);
                 Logger::Log("scene is saved as %s", file_name);
             }
 
             if (ImGui::MenuItem("Load scene"))
             {
-                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_OPEN, nullptr, ".\\Assets\\", nullptr);
+                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_OPEN, "scene\0*.scene\0", ".\\Assets\\", nullptr);
                 if (file_name)
                 {
                     scene->load_from_file(file_name);
@@ -314,7 +314,7 @@ void Editor::DrawMainMenuBar()
 
             if (ImGui::MenuItem("Import OBJ file"))
             {
-                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_OPEN, nullptr, ".\\Assets\\", nullptr);
+                const char* file_name = noc_file_dialog_open(NOC_FILE_DIALOG_OPEN, "obj\0*.obj\0", ".\\Assets\\", nullptr);
                 if (file_name)
                 {
                     SceneObject *scene_object = AssetImporter::CreateFromObj(file_name);
