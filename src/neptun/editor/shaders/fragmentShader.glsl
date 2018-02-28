@@ -2,7 +2,7 @@
 
 in vec3 normal;
 in vec2 uv;
-varying in vec3 bary;
+in vec3 bary;
 uniform int textured;
 uniform int rendering_mode;
 uniform vec3 wire_color;
@@ -25,8 +25,8 @@ void main()
   	else
   	{
   		if(rendering_mode == 1)
-  			color =  mix(wire_color, vec3(1.0,1.0,1.0) * dot(normal, normalize(vec3(0.5, 1.0, 0.1))), edgeFactor());
+  			color =  mix(vec3(0.0), vec3(0.2) + vec3(0.8) * max(dot(normal, normalize(vec3(0.5, 1.0, 0.1))), 0), edgeFactor());
   		else
-			color =  vec3(1.0,1.0,1.0) * dot(normal, normalize(vec3(0.5, 1.0, 0.1)));
+			color =  vec3(0.2, 0.2, 0.2) + vec3(0.8,0.8,0.8)  * max(dot(normal, normalize(vec3(0.5, 1.0, 0.1))), 0);
   	}
 }

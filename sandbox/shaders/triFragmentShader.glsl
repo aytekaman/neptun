@@ -5,7 +5,7 @@ in vec4 outColor;
 
 out vec3 color;
 
-varying in vec3 bary;
+in vec3 bary;
 
 #extension GL_OES_standard_derivatives : enable
 float edgeFactor(){

@@ -3,7 +3,7 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 layout(location = 1) in vec3 anormal;
 layout(location = 2) in vec2 auv;
-layout(location = 3) varying in vec3 abary;
+layout(location = 3) in vec3 abary;
 
 
 out vec3 normal;
