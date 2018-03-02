@@ -500,6 +500,17 @@ void Editor::DrawMainMenuBar()
                     light->light->intensity = 1.0f / (256.0f / (3.14f / 2.0f));
                 }
             }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Steiner Point"))
+            {
+                SceneObject* steiner_point = new SceneObject("Steiner point");
+                scene->add_scene_object(steiner_point);
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            }
+
             //if (ImGui::MenuItem("Paste")) {}
             ImGui::EndMenu();
         }
