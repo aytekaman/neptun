@@ -747,6 +747,10 @@ void Editor::DrawTetGen()
     ImGui::Checkbox("Create Bounding Box", &create_bounding_box);
     ImGui::SliderFloat("Quality", &quality, 1.0, 10.0, "%.2f");
 
+    static int current_tet_mesh_type = 0;
+    const char* reps[] = { "TetMesh32", "TetMesh20", "TetMesh16" };
+    ImGui::Combo("Type", &current_tet_mesh_type, reps, 3);
+
     static bool show_points = false;
     //static 
 
@@ -762,9 +766,21 @@ void Editor::DrawTetGen()
         if (scene->tet_mesh)
             delete scene->tet_mesh;
 
-        scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
-
-        Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        if (current_tet_mesh_type == 0)
+        {
+            scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
+            Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        }
+        else if (current_tet_mesh_type == 1) 
+        {
+            scene->tet_mesh = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
+            Logger::Log("TetMesh20 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        }
+        else if (current_tet_mesh_type == 2)
+        {
+            scene->tet_mesh = new TetMesh16(*scene, preserveTriangles, create_bounding_box, quality);
+            Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        }
 
         //scene->tet_mesh20 = new TetMesh20(*scene->tet_mesh);
 
