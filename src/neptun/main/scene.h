@@ -42,7 +42,7 @@ public:
     float camOrbitX, camOrbitY, camDist;
 
     std::string name;
-    std::string tet_mesh_file_name;
+    std::string tet_mesh_file_path;
 
     // Accelerators.
     Bvh*     bvh      = nullptr;

@@ -43,9 +43,9 @@ TetMesh::TetMesh(
 TetMesh::TetMesh(const Scene& scene)
 {
     init_faces(scene);
-
-    read_from_file(scene.tet_mesh_file_name);
-
+    Logger::LogWarning(scene.tet_mesh_file_path.c_str());
+    read_from_file(scene.tet_mesh_file_path);
+    
     Logger::Log("Tet Mesh is read from the disk.");
     printf("Tet Mesh is read from the disk.\n");
 }
@@ -57,11 +57,8 @@ TetMesh::~TetMesh()
 
 void TetMesh::read_from_file(std::string file_name)
 {
-    std::string path = "./Assets/";
-    path.append(file_name);
-
     //const char* FILENAME = "tet_mesh.txt";
-    std::ifstream i(path, std::ios::binary);
+    std::ifstream i(file_name, std::ios::binary);
 
     // read points
     size_t point_count = m_points.size();
