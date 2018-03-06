@@ -810,11 +810,23 @@ void Editor::DrawTetGen()
 
     if (ImGui::Button("Load"))
     {
-        TetMesh *tm = new TetMesh32(*scene);
+        if (current_tet_mesh_type == 0)
+        {
+            scene->tet_mesh = new TetMesh32(*scene);
+            Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        }
+        else if (current_tet_mesh_type == 1)
+        {
+            scene->tet_mesh = new TetMesh20(*scene);
+            Logger::Log("TetMesh20 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        }
+        else if (current_tet_mesh_type == 2)
+        {
+            scene->tet_mesh = new TetMesh16(*scene);
+            Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        }
 
-        scene->tet_mesh = tm;
-
-        Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+        Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
     }
 
     ImGui::Separator();
