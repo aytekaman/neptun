@@ -119,7 +119,7 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
     //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, resolution.x, resolution.y, GL_BGR, GL_UNSIGNED_BYTE, pixels);
 }
 
-#define NOMINMAX
+//#define NOMINMAX
 
 void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
 {
