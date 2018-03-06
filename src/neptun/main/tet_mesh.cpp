@@ -976,11 +976,14 @@ bool TetMesh32::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         const glm::vec3 p = glm::cross(ray.dir, e2);
         const float f = 1.0f / glm::dot(e1, p);
         const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
+
         intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
         intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+
+        return true;
     }
     else
         return false;
