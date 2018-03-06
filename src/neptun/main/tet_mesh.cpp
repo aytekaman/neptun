@@ -342,7 +342,7 @@ void TetMesh::build_from_scene(
         {
             m_tets[i].v[j] = out.tetrahedronlist[4 * i + j];
             m_tets[i].n[j] = out.neighborlist[4 * i + j];
-            m_tets[i].face_idx[j] = out.trifacemarkerlist[out.tet2facelist[4*i+j]];
+            m_tets[i].face_idx[j] = out.trifacemarkerlist[out.tet2facelist[4 * i + j]];
 
             if (m_tets[i].face_idx[j] > 0)
                 ++m_constrained_face_count;
@@ -705,7 +705,7 @@ void TetMesh32::init_acceleration_data()
             if (m_tets[i].face_idx[j] > 0)
             {
                 ConstrainedFace cf;
-                cf.face = &faces[m_tets[i].face_idx[j]-1];
+                cf.face = &faces[m_tets[i].face_idx[j] - 1];
                 cf.tet_idx = i;
                 cf.other_tet_idx = n;
                 m_constrained_faces.push_back(cf);
