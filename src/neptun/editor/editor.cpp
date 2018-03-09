@@ -2,7 +2,7 @@
 
 #define NOMINMAX
 
-#include "tinydir/tinydir.h"
+//#include "tinydir/tinydir.h"
 
 #define NOC_FILE_DIALOG_IMPLEMENTATION
 #define NOC_FILE_DIALOG_WIN32
@@ -204,45 +204,6 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
     Logger::Log("Welcome.");
 
     instance = this;
-
-    std::string path(AssetImporter::assets_folder_path.begin(), AssetImporter::assets_folder_path.end());
-
-    tinydir_dir dir;
-    tinydir_open(&dir, path.c_str());
-
-    while (dir.has_next)
-    {
-        tinydir_file file;
-        tinydir_readfile(&dir, &file);
-
-        std::string wstr(file.name);
-
-        //file.name
-        std::string tmp(wstr.begin(), wstr.end());
-
-        //std::wstring string_to_convert(file.name);
-        //using convert_type = std::codecvt_utf8<wchar_t>;
-        //std::wstring_convert<convert_type, wchar_t> converter;
-        //std::string converted_str = converter.to_bytes(string_to_convert);
-
-        if (tmp.find(".obj") != std::string::npos)
-        {
-            std::string file_name = tmp.substr(0, tmp.size() - 4);
-            asset_file_names.push_back(file_name);
-        }
-
-        if (tmp.find(".scene") != std::string::npos)
-        {
-            std::string file_name = tmp.substr(0, tmp.size() - 6);
-            scene_file_names.push_back(file_name);
-        }
-
-
-
-        tinydir_next(&dir);
-    }
-
-    tinydir_close(&dir);
 }
 
 void Editor::Run()
@@ -523,8 +484,6 @@ void Editor::DrawMainMenuBar()
 
             ImGui::EndMenu();
         }
-
-
 
         ImGui::EndMainMenuBar();
     }
