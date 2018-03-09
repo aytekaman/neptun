@@ -291,12 +291,10 @@ void Editor::DrawMainMenuBar()
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-            if (ImGui::MenuItem("Redo", "CTRL+Y")) {}  // Disabled item
-            ImGui::Separator();
-            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+            if (ImGui::MenuItem("Perturb objects")) 
+                for (SceneObject* scene_object : scene->sceneObjects)
+                    scene_object->pos += glm::sphericalRand(0.5f);
+
             ImGui::Separator();
 
             if (ImGui::MenuItem("Preferences")) {}
