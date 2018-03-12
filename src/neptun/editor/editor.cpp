@@ -286,7 +286,11 @@ void Editor::DrawMainMenuBar()
                 }
             }
 
-            if (ImGui::MenuItem("Exit", "ALT+F4")) {}
+            if (ImGui::MenuItem("Exit", "ALT+F4"))
+            {
+                glfwSetWindowShouldClose(graphics->window, true);
+            }
+
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit"))
