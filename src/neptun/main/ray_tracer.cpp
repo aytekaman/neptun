@@ -7,7 +7,7 @@
 #include <iostream>
 #include <thread>
 
-#include "glm\trigonometric.hpp"
+#include "glm/trigonometric.hpp"
 
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 //#include "stb_image_write.h"

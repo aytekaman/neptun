@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include <glm\glm.hpp>
-#include <glm\gtc\quaternion.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class Light;
 class Material;

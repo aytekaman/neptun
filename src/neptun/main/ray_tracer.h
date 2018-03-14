@@ -4,7 +4,7 @@
 #include <vector>
 
 #define GLM_SWIZZLE
-#include "glm\glm.hpp"
+#include "glm/glm.hpp"
 
 class Bvh;
 class Image;

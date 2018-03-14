@@ -15,9 +15,9 @@
 #include "neptun/main/texture.h"
 #include "neptun/main/asset_importer.h"
 
-#include <glm\gtx\transform.hpp>
-#include <glm\gtx\euler_angles.hpp>
-#include <glm\gtc\matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 Graphics::Graphics()
 {
