@@ -283,7 +283,7 @@ void Editor::DrawMainMenuBar()
                     scene->add_scene_object(scene_object);
 
                     if (scene->sceneObjects.size() > 0)
-                        selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+                        selected_scene_object = scene->sceneObjects.back();
                 }
             }
 
@@ -316,7 +316,7 @@ void Editor::DrawMainMenuBar()
                 cube->mesh = ProceduralMeshGenerator::create_cube();
                 scene->add_scene_object(cube);
                 if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+                    selected_scene_object = scene->sceneObjects.back();
             }
 
             if (ImGui::MenuItem("Icosphere"))
@@ -326,7 +326,7 @@ void Editor::DrawMainMenuBar()
                 icosphere->mesh = ProceduralMeshGenerator::create_icosphere();
                 scene->add_scene_object(icosphere);
                 if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+                    selected_scene_object = scene->sceneObjects.back();
             }
 
             ImGui::Separator();
@@ -340,7 +340,7 @@ void Editor::DrawMainMenuBar()
                 light->light->intensity = 1.0f;
 
                 if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+                    selected_scene_object = scene->sceneObjects.back();
             }
 
             if (ImGui::MenuItem("Sky Dome"))
@@ -363,7 +363,7 @@ void Editor::DrawMainMenuBar()
                 SceneObject* steiner_point = new SceneObject("Steiner point");
                 scene->add_scene_object(steiner_point);
                 if (scene->sceneObjects.size() > 0)
-                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+                    selected_scene_object = scene->sceneObjects.back();
             }
 
             ImGui::EndMenu();
