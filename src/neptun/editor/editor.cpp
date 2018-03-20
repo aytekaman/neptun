@@ -31,6 +31,7 @@
 #include "neptun/main/logger.h"
 #include "neptun/main/material.h"
 #include "neptun/main/mesh.h"
+#include "neptun/main/proceduralmeshgenerator.h"
 #include "neptun/main/ray_tracer.h"
 #include "neptun/main/scene.h"
 #include "neptun/main/sceneObject.h"
@@ -308,6 +309,18 @@ void Editor::DrawMainMenuBar()
 
         if (ImGui::BeginMenu("Create"))
         {
+            if (ImGui::MenuItem("Cube"))
+            {
+                SceneObject* cube = new SceneObject("Cube");
+
+                cube->mesh = ProceduralMeshGenerator::create_cube();
+                scene->add_scene_object(cube);
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            }
+
+            ImGui::Separator();
+
             if (ImGui::MenuItem("Light"))
             {
                 SceneObject *light = new SceneObject("Light");

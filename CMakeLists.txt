@@ -104,6 +104,8 @@ set (main_sources
     src/neptun/main/memory.h
     src/neptun/main/mesh.cpp
     src/neptun/main/mesh.h
+    src/neptun/main/proceduralmeshgenerator.cpp
+    src/neptun/main/proceduralmeshgenerator.h
     src/neptun/main/ray.h
     src/neptun/main/ray_tracer.cpp
     src/neptun/main/ray_tracer.h
