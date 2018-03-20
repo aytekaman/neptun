@@ -306,6 +306,8 @@ void TetMesh::build_from_scene(
 
     tetgenio out;
 
+    bool is_tetrahedralization_success = true;
+
     try
     {
         if (preserve_triangles)
@@ -321,8 +323,12 @@ void TetMesh::build_from_scene(
     }
     catch (int a)
     {
-        std::cout << "Error: " << a << std::endl;
+        is_tetrahedralization_success = false;
+        Logger::LogError("TetGen error: %d", a);
     }
+
+    if (!is_tetrahedralization_success)
+        return;
 
     m_points.resize(out.numberofpoints);
     m_tets.resize(out.numberoftetrahedra);
@@ -685,6 +691,9 @@ int TetMesh32::get_size_in_bytes()
 
 void TetMesh32::init_acceleration_data()
 {
+    if (m_tets.size() == 0)
+        return;
+
     clock_t start = clock();
 
     m_tet32s.resize(m_tets.size());
