@@ -81,9 +81,84 @@ Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size)
     return mesh;
 }
 
-//Mesh* ProceduralMeshGenerator::create_icosphere(const float radius, const int n)
-//{
-//    Mesh* mesh = new Mesh();
-//
-//    return mesh;
-//}
+void subdivide_triangle(Mesh* mesh, const int n, glm::vec3 a, glm::vec3 b, glm::vec3 c)
+{
+    if (n == 0)
+    {
+        mesh->vertices.push_back(a);
+        mesh->normals.push_back(a);
+
+        mesh->vertices.push_back(b);
+        mesh->normals.push_back(b);
+
+        mesh->vertices.push_back(c);
+        mesh->normals.push_back(c);
+    }
+    else
+    {
+        glm::vec3 ab = glm::normalize((a + b) * 0.5f);
+        glm::vec3 bc = glm::normalize((b + c) * 0.5f);
+        glm::vec3 ca = glm::normalize((c + a) * 0.5f);
+
+        subdivide_triangle(mesh, n - 1, a, ab, ca);
+        subdivide_triangle(mesh, n - 1, b, bc, ab);
+        subdivide_triangle(mesh, n - 1, c, ca, bc);
+        subdivide_triangle(mesh, n - 1, ab, bc, ca);
+    }
+}
+
+Mesh* ProceduralMeshGenerator::create_icosphere(const float radius, const int n)
+{
+    // Creating an icosphere mesh in code
+    // http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
+    // Accessed on 20.03.2018
+
+    Mesh* mesh = new Mesh();
+
+    std::vector<glm::vec3> vertices;
+
+    const float t = (1.0f + glm::sqrt(5.0f)) / 2.0f;
+
+    vertices.push_back(glm::normalize(glm::vec3(-1, +t, 0)));
+    vertices.push_back(glm::normalize(glm::vec3(+1, +t, 0)));
+    vertices.push_back(glm::normalize(glm::vec3(-1, -t, 0)));
+    vertices.push_back(glm::normalize(glm::vec3(+1, -t, 0)));
+
+    vertices.push_back(glm::normalize(glm::vec3(0, -1, +t)));
+    vertices.push_back(glm::normalize(glm::vec3(0, +1, +t)));
+    vertices.push_back(glm::normalize(glm::vec3(0, -1, -t)));
+    vertices.push_back(glm::normalize(glm::vec3(0, +1, -t)));
+
+    vertices.push_back(glm::normalize(glm::vec3(+t, 0, -1)));
+    vertices.push_back(glm::normalize(glm::vec3(+t, 0, +1)));
+    vertices.push_back(glm::normalize(glm::vec3(-t, 0, -1)));
+    vertices.push_back(glm::normalize(glm::vec3(-t, 0, +1)));
+
+    subdivide_triangle(mesh, n, vertices[ 0], vertices[11], vertices[ 5]);
+    subdivide_triangle(mesh, n, vertices[ 0], vertices[ 5], vertices[ 1]);
+    subdivide_triangle(mesh, n, vertices[ 0], vertices[ 1], vertices[ 7]);
+    subdivide_triangle(mesh, n, vertices[ 0], vertices[ 7], vertices[10]);
+    subdivide_triangle(mesh, n, vertices[ 0], vertices[10], vertices[11]);
+
+    subdivide_triangle(mesh, n, vertices[ 1], vertices[ 5], vertices[ 9]);
+    subdivide_triangle(mesh, n, vertices[ 5], vertices[11], vertices[ 4]);
+    subdivide_triangle(mesh, n, vertices[11], vertices[10], vertices[ 2]);
+    subdivide_triangle(mesh, n, vertices[10], vertices[ 7], vertices[ 6]);
+    subdivide_triangle(mesh, n, vertices[ 7], vertices[ 1], vertices[ 8]);
+
+    subdivide_triangle(mesh, n, vertices[ 3], vertices[ 9], vertices[ 4]);
+    subdivide_triangle(mesh, n, vertices[ 3], vertices[ 4], vertices[ 2]);
+    subdivide_triangle(mesh, n, vertices[ 3], vertices[ 2], vertices[ 6]);
+    subdivide_triangle(mesh, n, vertices[ 3], vertices[ 6], vertices[ 8]);
+    subdivide_triangle(mesh, n, vertices[ 3], vertices[ 8], vertices[ 9]);
+
+    subdivide_triangle(mesh, n, vertices[ 4], vertices[ 9], vertices[ 5]);
+    subdivide_triangle(mesh, n, vertices[ 2], vertices[ 4], vertices[11]);
+    subdivide_triangle(mesh, n, vertices[ 6], vertices[ 2], vertices[10]);
+    subdivide_triangle(mesh, n, vertices[ 8], vertices[ 6], vertices[ 7]);
+    subdivide_triangle(mesh, n, vertices[ 9], vertices[ 8], vertices[ 1]);
+
+    mesh->vertexCount = mesh->vertices.size();
+
+    return mesh;
+}

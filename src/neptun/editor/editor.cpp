@@ -319,6 +319,16 @@ void Editor::DrawMainMenuBar()
                     selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
             }
 
+            if (ImGui::MenuItem("Icosphere"))
+            {
+                SceneObject* icosphere = new SceneObject("Icosphere");
+
+                icosphere->mesh = ProceduralMeshGenerator::create_icosphere();
+                scene->add_scene_object(icosphere);
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects[scene->sceneObjects.size() - 1];
+            }
+
             ImGui::Separator();
 
             if (ImGui::MenuItem("Light"))
