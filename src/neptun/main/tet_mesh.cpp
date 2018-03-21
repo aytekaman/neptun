@@ -191,8 +191,8 @@ void TetMesh::build_from_scene(
     int bbox_vertex_count = 8 * create_bbox;
     int bbox_facet_count = 6 * create_bbox;
 
-    glm::vec3 bb_min(-500, -500, -500);
-    glm::vec3 bb_max(500, 500, 500);
+    glm::vec3 bb_min(-50, -50, -50);
+    glm::vec3 bb_max(50, 50, 50);
 
     glm::vec3 bbox_vertices[8];
 
@@ -1352,6 +1352,8 @@ bool TetMesh20::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+
+        return true;
     }
     else
         return false;
@@ -1711,63 +1713,96 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
     //nx = 0
     int index = source_tet.n[outIdx];
     int nx = source_tet.idx;
-    
+    id[outIdx] = id[3];
+    p[outIdx] = p[3];
 
     while (index >= 0)
     {
-        id[outIdx] = id[3];
+        //id[outIdx] = id[3];
         id[3] = m_tet16s[index].x ^ id[0] ^ id[1] ^ id[2];
         const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
 
-        p[outIdx] = p[3];
+        //p[outIdx] = p[3];
         p[3].x = glm::dot(basis.right, newPoint);
         p[3].y = glm::dot(basis.up, newPoint);
 
-        //p[3] = basis.project(newPoint);
+        const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
         if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
         {
             if (p[3].x * p[2].y >= p[3].y * p[2].x)
-                outIdx = 1;
+            {
+                // 1
+                const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
+                for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
+                    nx ^= m_tet16s[index].n[i];
+
+                id[1] = id[3];
+                p[1] = p[3];
+            }
             else
-                outIdx = 0;
+            {
+                // 0
+                const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+                for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
+                    nx ^= m_tet16s[index].n[i];
+
+                id[0] = id[3];
+                p[0] = p[3];
+            }
         }
         else if (p[3].x * p[1].y < p[3].y * p[1].x)
-            outIdx = 2;
-        else
-            outIdx = 0;
-
-        //prev_index = index;
-
-        int idx2 = 0;
-        for (int i = 0; i < 4; ++i)
         {
-            if (id[outIdx] > id[i])
-                idx2++;
-        }
-
-        int idx = 0;
-        for (int i = 0; i < 4; ++i)
-        {
-            if (id[3] > id[i])
-                idx++;
-        }
-
-        int prev_index = index;
-
-        if (idx2 > idx)
-        {
-            for (int i = idx; i < idx2; i++)
+            // 2
+            const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
+            for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
                 nx ^= m_tet16s[index].n[i];
+
+            id[2] = id[3];
+            p[2] = p[3];
         }
         else
         {
-            for (int i = idx2; i < idx; i++)
+            // 0
+            const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+            for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
                 nx ^= m_tet16s[index].n[i];
+
+            id[0] = id[3];
+            p[0] = p[3];
         }
 
-        index = nx;
-        nx = prev_index;
+
+
+
+        ////prev_index = index;
+
+        //int idx2 = 0;
+        //for (int i = 0; i < 4; ++i)
+        //{
+        //    if (id[outIdx] > id[i])
+        //        idx2++;
+        //}
+
+        //
+
+        ////int prev_index = index;
+
+        ////if (idx2 > idx)
+        ////{
+        ////    for (int i = idx; i < idx2; i++)
+        ////        nx ^= m_tet16s[index].n[i];
+        ////}
+        ////else
+        ////{
+        ////    for (int i = idx2; i < idx; i++)
+        ////        nx ^= m_tet16s[index].n[i];
+        ////}
+
+        //for (int i = std::min(idx, idx2); i < std::max(idx, idx2); i++)
+        //    nx ^= m_tet16s[index].n[i];
+
+        std::swap(nx, index);
     }
 
     if (index != -1)
