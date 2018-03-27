@@ -243,7 +243,7 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
 
     std::cout << file_name << " is loaded." << std::endl;
 
-    std::string name = fs::path(file_name).base();
+    std::string name = fs::path(file_name).stem();
 
     SceneObject *scene_object = new SceneObject(name);
 
@@ -256,7 +256,7 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
     if (materials.size() > 0)
     {
         fs::path tex_path(materials[0].diffuse_texname.c_str());
-        name = tex_path.base();
+        name = tex_path.stem();
         std::string ext = tex_path.extension();
 
         std::string texture_file_name = assets_folder_path;
