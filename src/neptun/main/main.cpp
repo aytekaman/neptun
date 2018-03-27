@@ -13,6 +13,7 @@
 #include "stats.h"
 #include "tet_mesh.h"
 #include "utils.h"
+#include "filesystem.h"
 
 #include <glm/gtc/random.hpp>
 
@@ -48,7 +49,7 @@ struct SceneInfo
 void build_and_render_times(const std::string folder_name, int N = 100)
 {
     std::string test_folder_name = folder_name + "/build_and_render_times";
-    _mkdir(test_folder_name.c_str());
+    fs::create_directory(test_folder_name);
 
     Scene scene;
     RayTracer ray_tracer;
@@ -280,7 +281,7 @@ void build_and_render_times(const std::string folder_name, int N = 100)
 void close_surface(const std::string folder_name, int N = 100)
 {
     std::string test_folder_name = folder_name + "/close_surface";
-    _mkdir(test_folder_name.c_str());
+    fs::create_directory(test_folder_name);
 
     std::vector<MethodInfo> methodInfos =
     {
@@ -440,7 +441,7 @@ void close_surface(const std::string folder_name, int N = 100)
 void tet_mesh_weight(const std::string folder_name, int N = 100)
 {
     std::string test_folder_name = folder_name + "/tet_mesh_weight";
-    _mkdir(test_folder_name.c_str());
+    fs::create_directory(test_folder_name);
 
     std::vector<SceneInfo> scene_infos =
     {
@@ -577,7 +578,7 @@ void tet_mesh_sorting(const std::string folder_name, int N = 1000)
 {
     std::string test_folder_name = folder_name + "/tet_mesh_sorting";
 
-    _mkdir(test_folder_name.c_str());
+    fs::create_directory(test_folder_name);
 
     std::vector<SceneInfo> scene_infos =
     {
@@ -756,7 +757,7 @@ int main(int argc, char** argv)
     {
         std::string test_folder_name = Utils::get_timestamp();
 
-        _mkdir(test_folder_name.c_str());
+        fs::create_directory(test_folder_name);
 
         std::cout << "Starting in benchmark mode ... " << std::endl;
 

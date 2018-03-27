@@ -6,6 +6,7 @@
 #include "mesh.h"
 #include "sceneObject.h"
 #include "texture.h"
+#include "filesystem.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -242,11 +243,7 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
 
     std::cout << file_name << " is loaded." << std::endl;
 
-    char dummy[2048];
-    char name[2048];
-    char ext[32];
-
-    _splitpath_s(file_name, dummy, dummy, name, dummy);
+    std::string name = fs::path(file_name).base();
 
     SceneObject *scene_object = new SceneObject(name);
 
@@ -258,7 +255,9 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
 
     if (materials.size() > 0)
     {
-        _splitpath_s(materials[0].diffuse_texname.c_str(), dummy, dummy, name, ext);
+        fs::path tex_path(materials[0].diffuse_texname.c_str());
+        name = tex_path.base();
+        std::string ext = tex_path.extension();
 
         std::string texture_file_name = assets_folder_path;
         texture_file_name.append(name).append(ext);

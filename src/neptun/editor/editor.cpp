@@ -34,16 +34,14 @@
 #include "neptun/main/stats.h"
 #include "neptun/main/tet_mesh.h"
 #include "neptun/main/texture.h"
+#include "neptun/main/filesystem.h"
 
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
     for (int i = 0; i < count; i++)
     {
-        char dummy[2048];
-        char name[2048];
-
-        _splitpath_s(paths[i], dummy, dummy, name, dummy);
-
+        fs::path file_path(paths[i]);
+        std::string name = file_path.stem();
         //SceneObject *sceneObject = new SceneObject(name);
 
         //sceneObject->mesh = AssetImporter::ImportMesh(paths[i]);
