@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include <direct.h>
+// #include <direct.h>
 
 #include "bvh.h"
 #include "neptun/editor/editor.h"
