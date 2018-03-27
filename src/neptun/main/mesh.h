@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <vector>
-//#include <string>
+#include <string>
 
 class Mesh
 {
