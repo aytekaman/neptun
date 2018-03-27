@@ -127,7 +127,7 @@ source_group ("main\\" FILES
     ${main_sources}
 )
 
-add_executable (neptun 
+add_executable (neptun
     ${editor_sources}
     ${main_sources}
     ${thirdparty_sources}
@@ -167,13 +167,36 @@ add_custom_command(
     VERBATIM)
 
 if(UNIX)
+    if (APPLE)
+        add_definitions(-DNOC_FILE_DIALOG_IMPLEMENTATION)
+        add_definitions(-DNOC_FILE_DIALOG_OSX)
+    else()
+        #Noc requires gtk to run in linux
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(GTK3 REQUIRED gtk+-3.0) # Maybe use older gtk versions?
+
+        if (GTK3_FOUND)
+            include_directories(${GTK3_INCLUDE_DIRS})
+            link_directories(${GTK3_LIBRARY_DIRS})
+            add_definitions(${GTK3_CFLAGS_OTHER})
+            target_link_libraries(neptun ${GTK3_LIBRARIES})
+
+            add_definitions(-DNOC_FILE_DIALOG_GTK)
+            add_definitions(-DNOC_FILE_DIALOG_IMPLEMENTATION)
+        else()
+            message( FATAL_ERROR "GTK is not found. GTK is required for linux builds.")
+        endif()
+    endif()
+
     set_target_properties(
-        neptun 
+        neptun
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin/Release")
-else()
+else() #Windows
+    add_definitions(-DNOC_FILE_DIALOG_IMPLEMENTATION)
+    add_definitions(-DNOC_FILE_DIALOG_WIN32)
     set_target_properties(
-        neptun 
+        neptun
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin")
 endif()
