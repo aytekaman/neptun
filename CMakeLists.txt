@@ -127,6 +127,7 @@ set (main_sources
     src/neptun/main/texture.h
     src/neptun/main/utils.cpp
     src/neptun/main/utils.h
+    src/neptun/main/filesystem.h
 )
 
 source_group ("main\\" FILES
@@ -171,6 +172,20 @@ add_custom_command(
     "${CMAKE_SOURCE_DIR}/src/neptun/editor/fonts" "${CMAKE_SOURCE_DIR}/sandbox/fonts"
     COMMENT "copying fonts"
     VERBATIM)
+
+# Use _aligned_malloc if exists otherwise check posix_memalign
+# Not tested on Windows
+check_function_exists(_aligned_malloc HAVE_ALIGNED_MALLOC)
+if (HAVE_ALIGNED_MALLOC)
+    add_definitions(-DHAVE_ALIGNED_MALLOC)
+else()
+    check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
+    if (HAVE_POSIX_MEMALIGN)
+        add_definitions(-DHAVE_POSIX_MEMALIGN)
+    endif()
+endif()
+
+
 
 if(UNIX)
     if (APPLE)
