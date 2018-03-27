@@ -3,7 +3,6 @@
 #include <atomic>
 #include <vector>
 
-#define GLM_SWIZZLE
 #include "glm/glm.hpp"
 
 class Bvh;
@@ -79,9 +78,9 @@ public:
     void Render(Scene &scene, const bool is_diagnostic = false);
 
     void Raytrace_worker(
-        Scene &scene,  
-        SourceTet source_tet, 
-        int thread_idx, 
+        Scene &scene,
+        SourceTet source_tet,
+        int thread_idx,
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
