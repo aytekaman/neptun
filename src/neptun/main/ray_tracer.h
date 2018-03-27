@@ -100,7 +100,7 @@ public:
     Image* m_locality_image;
     Image* m_rendered_image;
 
-    std::atomic<int> job_index = 0;
+    std::atomic<int> job_index{0};
     glm::ivec2 resolution = glm::ivec2(640, 480);
     int tile_size = 16;
     //glm::u8vec3 *pixels;
