@@ -89,7 +89,7 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
     clock_t start = clock();
 
     for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, scene, source_tet, i, lightInfos, is_diagnostic);
+        threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
 
     for (int i = 0; i < thread_count; i++)
     {
