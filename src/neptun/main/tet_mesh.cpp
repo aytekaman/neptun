@@ -45,7 +45,7 @@ TetMesh::TetMesh(const Scene& scene)
     init_faces(scene);
     Logger::LogWarning(scene.tet_mesh_file_path.c_str());
     read_from_file(scene.tet_mesh_file_path);
-    
+
     Logger::Log("Tet Mesh is read from the disk.");
     printf("Tet Mesh is read from the disk.\n");
 }
@@ -287,16 +287,16 @@ void TetMesh::build_from_scene(
             p->vertexlist[1] = (int)vertices.size() + 1 + side * 4;
             p->vertexlist[2] = (int)vertices.size() + 3 + side * 4;
             p->vertexlist[3] = (int)vertices.size() + 2 + side * 4;
-        }					    			   
-        else if (axis == 1)	    			   
-        {					    			   
+        }
+        else if (axis == 1)
+        {
             p->vertexlist[0] = (int)vertices.size() + 0 + side * 2;
             p->vertexlist[1] = (int)vertices.size() + 1 + side * 2;
             p->vertexlist[2] = (int)vertices.size() + 5 + side * 2;
             p->vertexlist[3] = (int)vertices.size() + 4 + side * 2;
-        }					   				   
-        else if (axis == 2)	   				   
-        {					   				   
+        }
+        else if (axis == 2)
+        {
             p->vertexlist[0] = (int)vertices.size() + 0 + side * 1;
             p->vertexlist[1] = (int)vertices.size() + 4 + side * 1;
             p->vertexlist[2] = (int)vertices.size() + 6 + side * 1;
@@ -311,11 +311,13 @@ void TetMesh::build_from_scene(
         if (preserve_triangles)
         {
             char str[128];
-
+#ifdef HAVE_SNPRINTF
+            snprintf(str, 128, "q%.2fYnAf", quality);
+#elif
             sprintf_s(str, 128, "q%.2fYnAf", quality);
-            
+#endif
             tetrahedralize(str, &data, &out);
-        }	
+        }
         else
             tetrahedralize("qnnAf", &data, &out);
     }
@@ -389,7 +391,7 @@ void TetMesh::sort_tets(const SortingMethod sorting_method, const unsigned int b
         center /= 4.0f;
 
         bitmask_t index;
-        
+
         if (sorting_method == SortingMethod::Hilbert)
             index = SfcUtils::hilbert_idx(bb_min, bb_max, center, bit_count);
         else if (sorting_method == SortingMethod::Morton)
@@ -413,7 +415,7 @@ void TetMesh::sort_tets(const SortingMethod sorting_method, const unsigned int b
 
     int *sort_idx = new int[m_tets.size()];
     Tet* sorted_tets = new Tet[m_tets.size()];
-    
+
     for (int i = 0; i < m_tets.size(); i++)
     {
         sorted_tets[i] = m_tets[pairs[i].second];
@@ -439,7 +441,7 @@ void TetMesh::sort_tets(const SortingMethod sorting_method, const unsigned int b
     }
 
     delete[] sorted_tets;
-    delete[] sort_idx;    
+    delete[] sort_idx;
 
     init_acceleration_data();
 }
@@ -659,7 +661,7 @@ TetMesh32::TetMesh32(
     const Scene & scene,
     const bool preserve_triangles,
     const bool create_bbox,
-    const float quality) : 
+    const float quality) :
     TetMesh(scene, preserve_triangles, create_bbox, quality)
 {
     init_acceleration_data();
@@ -767,7 +769,7 @@ int TetMesh32::find_tet(const glm::vec3& point, SourceTet& tet)
 
         return tet.idx;
     }
-        
+
 
     ray.origin *= 0.25;
 
@@ -893,7 +895,7 @@ bool TetMesh32::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
 {
     unsigned int id[4];
     glm::vec2 p[4];
-    
+
     //int prev_index;
     signed short outIdx = -1;
 
@@ -1268,11 +1270,11 @@ bool TetMesh20::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
 
     while (index >= 0)
     {
-        
+
         id[3] = m_tet20s[index].x ^ id[0] ^ id[1] ^ id[2];
         const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
 
-        
+
         p[3].x = glm::dot(basis.right, newPoint);
         p[3].y = glm::dot(basis.up, newPoint);
 
@@ -1434,13 +1436,13 @@ void TetMesh16::init_acceleration_data()
                     cf2.tet_idx = cf.other_tet_idx;
                     cf2.other_tet_idx = cf.tet_idx;
                     cf2.n = (m_constrained_faces.size() - 1) | (1 << 31);
-                    
+
                     m_constrained_faces.push_back(cf2);
 
                     n[4 * other_tet_idx + k] = (m_constrained_faces.size() - 1) | (1 << 31);
 
                     //cf.n = (m_constrained_faces.size()-1) | (1 << 31);
-                    
+
                 }
 
                 //n[j] = (m_constrained_faces.size() - 1) | (1 << 31);
@@ -1698,11 +1700,11 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
     }
     else
         return false;
-    
+
     //nx = 0
     int index = source_tet.n[outIdx];
     int nx = source_tet.idx;
-    
+
 
     while (index >= 0)
     {

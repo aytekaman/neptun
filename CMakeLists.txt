@@ -185,7 +185,10 @@ else()
     endif()
 endif()
 
-
+check_function_exists(snprintf HAVE_SNPRINTF)
+if(HAVE_SNPRINTF)
+    add_definitions(-DHAVE_SNPRINTF)
+endif()
 
 if(UNIX)
     if (APPLE)
