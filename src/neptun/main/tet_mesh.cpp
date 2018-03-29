@@ -1479,6 +1479,10 @@ void TetMesh16::init_acceleration_data()
         {
             m_tet16s[i].n[j] = tet_data[j].second ^ tet_data[j + 1].second;
         }
+
+        // 
+        m_tet16s[i].n[1] = m_tet16s[i].n[0] ^ m_tet16s[i].n[1];
+        m_tet16s[i].n[2] = m_tet16s[i].n[1] ^ m_tet16s[i].n[2];
     }
 
     Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
@@ -1613,16 +1617,19 @@ int TetMesh16::find_tet(const glm::vec3& point, SourceTet& tet)
 
                 int nxx = nx;
 
-                if (idx2 > idx)
-                {
-                    for (int j = idx; j < idx2; j++)
-                        nxx ^= m_tet16s[index].n[j];
-                }
-                else if (idx2 < idx)
-                {
-                    for (int j = idx2; j < idx; j++)
-                        nxx ^= m_tet16s[index].n[j];
-                }
+                //if (idx2 > idx)
+                //{
+                //    for (int j = idx; j < idx2; j++)
+                //        nxx ^= m_tet16s[index].n[j];
+                //}
+                //else if (idx2 < idx)
+                //{
+                //    for (int j = idx2; j < idx; j++)
+                //        nxx ^= m_tet16s[index].n[j];
+                //}
+
+                nxx ^= idx == 0 ? 0 : m_tet16s[index].n[idx - 1];
+                nxx ^= idx2 == 0 ? 0 : m_tet16s[index].n[idx2 - 1];
 
                 tet.n[i] = nxx;
             }
@@ -1646,16 +1653,19 @@ int TetMesh16::find_tet(const glm::vec3& point, SourceTet& tet)
                 idx++;
         }
 
-        if (idx2 > idx)
-        {
-            for (int i = idx; i < idx2; i++)
-                nx ^= m_tet16s[index].n[i];
-        }
-        else
-        {
-            for (int i = idx2; i < idx; i++)
-                nx ^= m_tet16s[index].n[i];
-        }
+        //if (idx2 > idx)
+        //{
+        //    for (int i = idx; i < idx2; i++)
+        //        nx ^= m_tet16s[index].n[i];
+        //}
+        //else
+        //{
+        //    for (int i = idx2; i < idx; i++)
+        //        nx ^= m_tet16s[index].n[i];
+        //}
+
+        nx ^= idx == 0 ? 0 : m_tet16s[index].n[idx - 1];
+        nx ^= idx2 == 0 ? 0 : m_tet16s[index].n[idx2 - 1];
 
         prev_index = index;
 
@@ -1685,8 +1695,6 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
     const Basis basis(ray.dir);
     int index;
 
-    
-
     for (int i = 0; i < 4; i++)
     {
         id[i] = source_tet.v[i];
@@ -1695,25 +1703,25 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         p[i].y = glm::dot(basis.up, point);
     }
 
-    if (cross(p[2], p[1]) <= 0.0 && cross(p[1], p[3]) <= 0.0 && cross(p[3], p[2]) <= 0.0)
+    if (cross(p[2], p[1]) <= 0.0f && cross(p[1], p[3]) <= 0.0f && cross(p[3], p[2]) <= 0.0f)
     {
         index = source_tet.n[0];
         id[0] = id[3];
         p[0] = p[3];
     }
-    else if (cross(p[2], p[3]) <= 0.0 && cross(p[3], p[0]) <= 0.0 && cross(p[0], p[2]) <= 0.0)
+    else if (cross(p[2], p[3]) <= 0.0f && cross(p[3], p[0]) <= 0.0f && cross(p[0], p[2]) <= 0.0f)
     {
         index = source_tet.n[1];
         id[1] = id[3];
         p[1] = p[3];
     }
-    else if (cross(p[0], p[3]) <= 0.0 && cross(p[3], p[1]) <= 0.0 && cross(p[1], p[0]) <= 0.0)
+    else if (cross(p[0], p[3]) <= 0.0f && cross(p[3], p[1]) <= 0.0f && cross(p[1], p[0]) <= 0.0f)
     {
         index = source_tet.n[2];
         id[2] = id[3];
         p[2] = p[3];
     }
-    else if (cross(p[0], p[1]) <= 0.0 && cross(p[1], p[2]) <= 0.0 && cross(p[2], p[0]) <= 0.0)
+    else if (cross(p[0], p[1]) <= 0.0f && cross(p[1], p[2]) <= 0.0f && cross(p[2], p[0]) <= 0.0f)
     {
         std::swap(id[0], id[1]);
         std::swap(p[0], p[1]);
@@ -1727,34 +1735,35 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
 
     while (index >= 0)
     {
-        //id[outIdx] = id[3];
         id[3] = m_tet16s[index].x ^ id[0] ^ id[1] ^ id[2];
         const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
 
-        //p[outIdx] = p[3];
         p[3].x = glm::dot(basis.right, newPoint);
         p[3].y = glm::dot(basis.up, newPoint);
 
         const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
+        if(idx != 0)
+            nx ^= m_tet16s[index].n[idx - 1];
+
         if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
         {
             if (p[3].x * p[2].y >= p[3].y * p[2].x)
             {
-                // 1
                 const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
-                for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
-                    nx ^= m_tet16s[index].n[i];
+
+                if (idx2 != 0)
+                    nx ^= m_tet16s[index].n[idx2 - 1];
 
                 id[1] = id[3];
                 p[1] = p[3];
             }
             else
             {
-                // 0
                 const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
-                for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
-                    nx ^= m_tet16s[index].n[i];
+
+                if (idx2 != 0)
+                    nx ^= m_tet16s[index].n[idx2 - 1];
 
                 id[0] = id[3];
                 p[0] = p[3];
@@ -1762,20 +1771,20 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         }
         else if (p[3].x * p[1].y < p[3].y * p[1].x)
         {
-            // 2
             const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
-            for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
-                nx ^= m_tet16s[index].n[i];
+
+            if (idx2 != 0)
+                nx ^= m_tet16s[index].n[idx2 - 1];
 
             id[2] = id[3];
             p[2] = p[3];
         }
         else
         {
-            // 0
             const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
-            for (int i = std::min(idx, idx2); i < std::max(idx, idx2); ++i)
-                nx ^= m_tet16s[index].n[i];
+
+            if (idx2 != 0)
+                nx ^= m_tet16s[index].n[idx2 - 1];
 
             id[0] = id[3];
             p[0] = p[3];
