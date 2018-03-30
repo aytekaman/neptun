@@ -8,7 +8,7 @@
 #include <string>
 
 #if defined(_WIN32) || defined(_WIN64)
-
+#include <direct.h>
 #else
 #include <sys/stat.h>
 #endif
