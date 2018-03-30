@@ -3,8 +3,7 @@
 #include <atomic>
 #include <vector>
 
-#define GLM_SWIZZLE
-#include "glm\glm.hpp"
+#include "glm/glm.hpp"
 
 class Bvh;
 class Image;
@@ -79,9 +78,9 @@ public:
     void Render(Scene &scene, const bool is_diagnostic = false);
 
     void Raytrace_worker(
-        Scene &scene,  
-        SourceTet source_tet, 
-        int thread_idx, 
+        Scene &scene,
+        SourceTet source_tet,
+        int thread_idx,
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
@@ -101,7 +100,7 @@ public:
     Image* m_locality_image;
     Image* m_rendered_image;
 
-    std::atomic<int> job_index = 0;
+    std::atomic<int> job_index{0};
     glm::ivec2 resolution = glm::ivec2(640, 480);
     int tile_size = 16;
     //glm::u8vec3 *pixels;

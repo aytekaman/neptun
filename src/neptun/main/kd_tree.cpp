@@ -4,12 +4,12 @@
 #include <ctime>
 #include <iostream>
 
-#include <glm\glm.hpp>
-#include <glm\gtx\euler_angles.hpp>
-#include <glm\gtx\intersect.hpp>
-#include <glm\gtx\norm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/intersect.hpp>
+#include <glm/gtx/norm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "memory.h"
 
@@ -42,15 +42,14 @@ KdTree::KdTree(Scene& scene,
         clock_t start_time = clock();
 
         scene_ptr = &scene;
-        
+
         initFaces();
 
     nextFreeNode = nAllocedNodes = 0;
     if (maxDepth <= 0)
     {
         // !!! Log2Int
-        unsigned long lz = 0;
-        _BitScanReverse64(&lz, int64_t(faces.size()));
+        unsigned long lz = Log2Int(int64_t(faces.size()));
 
         maxDepth = std::round(8 + 1.3f * lz);
     }
@@ -58,7 +57,7 @@ KdTree::KdTree(Scene& scene,
     //maxDepth = 50;
 
     // Compute bounds for kd-tree construction
-    
+
     primBounds.reserve(faces.size());
 
     //std::cout << "faces size: " << faces.size() << std::endl;
@@ -79,7 +78,7 @@ KdTree::KdTree(Scene& scene,
         primBounds.push_back(b);
     }
 
-    
+
 
     // Allocate working memory for kd-tree construction
     BoundEdge *edges[3];
@@ -295,7 +294,7 @@ retrySplit:
         return;
     }
 
-    
+
 
     //
         // Classify primitives with respect to split
@@ -322,7 +321,7 @@ retrySplit:
 //
 bool KdTree::Intersect(const Ray &ray, IntersectionData& intersection_data) const {
 
-    
+
     //ProfilePhase p(Prof::AccelIntersect);
     // Compute initial parametric range of ray inside kd-tree extent
     float tMin, tMax;

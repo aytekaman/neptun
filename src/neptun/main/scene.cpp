@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <ctime>
 
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 #include "asset_importer.h"
 #include "bvh.h"

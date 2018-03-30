@@ -3,9 +3,6 @@
 #define NOMINMAX
 
 //#include "tinydir/tinydir.h"
-
-#define NOC_FILE_DIALOG_IMPLEMENTATION
-#define NOC_FILE_DIALOG_WIN32
 #include "noc/noc_file_dialog.h"
 
 #include "imgui/imgui.h"
@@ -38,16 +35,14 @@
 #include "neptun/main/stats.h"
 #include "neptun/main/tet_mesh.h"
 #include "neptun/main/texture.h"
+#include "neptun/main/filesystem.h"
 
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
     for (int i = 0; i < count; i++)
     {
-        char dummy[2048];
-        char name[2048];
-
-        _splitpath_s(paths[i], dummy, dummy, name, dummy);
-
+        fs::path file_path(paths[i]);
+        std::string name = file_path.stem();
         //SceneObject *sceneObject = new SceneObject(name);
 
         //sceneObject->mesh = AssetImporter::ImportMesh(paths[i]);
@@ -63,7 +58,7 @@ void Editor::InitSkin()
 {
     ImGui::StyleColorsDark();
 
-    
+
 
     ImGuiStyle& style = ImGui::GetStyle();
 
@@ -188,10 +183,10 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
 
     ImGuiIO& io = ImGui::GetIO();
 
-    
+
     io.Fonts->AddFontFromFileTTF("../../fonts/DroidSans.ttf", 14);
     io.Fonts->AddFontFromFileTTF("../../fonts/Consolas.ttf", 12);
-    
+
 
     glEnable(GL_MULTISAMPLE);
 
@@ -244,7 +239,7 @@ void Editor::DrawMainMenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Save scene")) 
+            if (ImGui::MenuItem("Save scene"))
             {
                 scene->save_to_file();
             }
@@ -296,7 +291,7 @@ void Editor::DrawMainMenuBar()
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem("Perturb objects")) 
+            if (ImGui::MenuItem("Perturb objects"))
                 for (SceneObject* scene_object : scene->sceneObjects)
                     scene_object->pos += glm::sphericalRand(0.5f);
 
@@ -402,7 +397,7 @@ void Editor::DrawInspector()
         ImGui::SameLine();
 
         ImGui::Text(selected_scene_object->name.c_str());
-        
+
         ImGui::Separator();
 
         ImGui::Text("Transform");
@@ -503,7 +498,7 @@ void Editor::DrawHierarchy()
             rect_min = ImGui::GetItemRectMin();
             rect_max = ImGui::GetItemRectMax();
         }
-            
+
         ImGui::PopID();
     }
 
@@ -570,12 +565,12 @@ void Editor::DrawTetGen()
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
 
-    ImGuiWindowFlags flags = 
-        ImGuiWindowFlags_NoResize | 
-        ImGuiWindowFlags_NoMove | 
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoCollapse;
 
-    
+
     //ImGui::OpenPopup("Modal window");
 
     //bool open = true;
@@ -604,7 +599,7 @@ void Editor::DrawTetGen()
     ImGui::Combo("Type", &current_tet_mesh_type, reps, 3);
 
     static bool show_points = false;
-    //static 
+    //static
 
     //std::thread *t = nullptr;
 
@@ -612,7 +607,7 @@ void Editor::DrawTetGen()
     {
         //t = new std::thread(&TetMesh::BuildFromScene, tet_mesh, *scene, preserveTriangles, create_bounding_box);
         //t->detach();
-        
+
 
         //t.join();
         if (scene->tet_mesh)
@@ -623,7 +618,7 @@ void Editor::DrawTetGen()
             scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
-        else if (current_tet_mesh_type == 1) 
+        else if (current_tet_mesh_type == 1)
         {
             scene->tet_mesh = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh20 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
@@ -640,7 +635,7 @@ void Editor::DrawTetGen()
         //scene->tet_mesh32 = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
     }
 
-    
+
 
     //if (t && t->joinable)
     //{
@@ -648,8 +643,8 @@ void Editor::DrawTetGen()
     //	t->join();
     //}
     //else
-    //	
-        
+    //
+
 
     ImGui::SameLine();
 
@@ -826,7 +821,7 @@ void Editor::DrawTetGen()
     //}
 
 
-        
+
 
     if (scene->tet_mesh)
     {
@@ -900,7 +895,7 @@ void Editor::DrawTetGen()
             std::cout << source_tet.n[i] << " ";
 
         std::cout << std::endl;*/
-        
+
         //std::cout << iss_point_inside_tet(v, dummy->pos) << std::endl;
         //std::cout << std::endl;
 
@@ -916,7 +911,7 @@ void Editor::DrawTetGen()
 
     if (show_tetrahedrons)
     {
-        
+
         //for (int index = 0; index < scene->tet_mesh->num_tets; index++)
         //{
         //	glm::vec3 c;
@@ -971,7 +966,7 @@ void Editor::DrawScene()
         for (int i = 0; i < scene->sceneObjects.size(); i++)
             scene->sceneObjects[i]->isVisible = false;
     }
-        
+
 
     if (!KeysDownPrev[GLFW_KEY_D] && ImGui::GetIO().KeysDown[GLFW_KEY_D] && selected_scene_object)
     {
@@ -1110,12 +1105,12 @@ void Editor::DrawScene()
                 graphics->DrawLine(b, c, color);
                 graphics->DrawLine(c, d, color);
                 graphics->DrawLine(d, a, color);
-                            
+
                 graphics->DrawLine(e, f, color);
                 graphics->DrawLine(f, g, color);
                 graphics->DrawLine(g, h, color);
                 graphics->DrawLine(h, e, color);
-                                  
+
                 graphics->DrawLine(a, e, color);
                 graphics->DrawLine(b, f, color);
                 graphics->DrawLine(c, g, color);
@@ -1208,7 +1203,7 @@ void Editor::DrawRenderedFrame()
     //ImGui::Checkbox("Multi-threading", &ray_tracer->multi_threading);
 
     static glm::ivec2 res = ray_tracer->resolution;
-    
+
     ImGui::InputInt2("Resolution", &res.x);
     //ImGui::InputInt("Size", &ray_tracer->tile_size);
     ImGui::Checkbox("Shadows", &ray_tracer->shadows);
@@ -1236,7 +1231,7 @@ void Editor::DrawRenderedFrame()
         Logger::LogWarning("can't render because there is no accelerator in the scene.");
         render = false;
     }
-        
+
 
 
     ImGui::Separator();
@@ -1289,7 +1284,7 @@ void Editor::DrawConsole()
 
     if (ImGui::Button("Clear"))
         Logger::Clear();
-    
+
     static bool show_logs = true, show_warnings = true, show_errors = true;
 
     ImGui::SameLine();
@@ -1310,7 +1305,7 @@ void Editor::DrawConsole()
 
     static int selected_msg_id = -1;
 
-    
+
 
     for (size_t i = 0; i < logs.size(); i++)
     {

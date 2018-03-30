@@ -1,10 +1,9 @@
 #pragma once
 
-
-
-#include "glm\glm.hpp"
+#include "glm/glm.hpp"
 
 #include <vector>
+#include <string>
 
 class Graphics;
 class RayTracer;
@@ -38,8 +37,8 @@ public:
 
     void InitSkin();
 
-    bool show_rendered_frame_window;
-    bool show_console_window;
+    bool show_rendered_frame_window = false;
+    bool show_console_window = false;
     bool show_grid = true;
     bool edged_faces = false;
 

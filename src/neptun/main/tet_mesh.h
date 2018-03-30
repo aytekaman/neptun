@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include <glm/glm.hpp>
 
@@ -122,26 +123,26 @@ public:
 
     // Casts a ray from a point inside the 'tet'.
     virtual bool raycast(
-        const Ray& ray, 
-        const SourceTet& tet, 
+        const Ray& ray,
+        const SourceTet& tet,
         IntersectionData& intersection_data) = 0;
 
     // Casts a ray from a point on the 'tet_face'
     virtual bool raycast(
-        const Ray& ray, 
-        const TetFace& tet_face, 
+        const Ray& ray,
+        const TetFace& tet_face,
         IntersectionData& intersection_data) = 0;
 
     // Returns true if a ray can reach to a target_tet_idx'th tet.
     virtual bool raycast(
-        const Ray& ray, 
-        const TetFace& tet_face, 
+        const Ray& ray,
+        const TetFace& tet_face,
         const int& target_tet_idx = 0) = 0;
 
     bool raycast_stats(
         const Ray& ray,
         const SourceTet& tet,
-        IntersectionData& intersection_data, 
+        IntersectionData& intersection_data,
         DiagnosticData& diagnostic_data);
 
     bool raycast_optimized_basis(const Ray& ray, IntersectionData& intersection_data);
@@ -180,7 +181,7 @@ public:
     TetMesh32(
         const Scene &scene,
         const bool preserve_triangles,
-        const bool create_bbox, 
+        const bool create_bbox,
         const float quality = 1.0f);
 
     TetMesh32(const Scene &scene);
@@ -220,7 +221,7 @@ public:
         unsigned int x;
         int n[3];
     };
-    
+
     TetMesh16(
         const Scene &scene,
         const bool preserve_triangles,
