@@ -191,8 +191,8 @@ void TetMesh::build_from_scene(
     int bbox_vertex_count = 8 * create_bbox;
     int bbox_facet_count = 6 * create_bbox;
 
-    glm::vec3 bb_min(-500, -500, -500);
-    glm::vec3 bb_max(500, 500, 500);
+    glm::vec3 bb_min(-50, -50, -50);
+    glm::vec3 bb_max(50, 50, 50);
 
     glm::vec3 bbox_vertices[8];
 
@@ -1354,6 +1354,8 @@ bool TetMesh20::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+
+        return true;
     }
     else
         return false;
@@ -1479,6 +1481,10 @@ void TetMesh16::init_acceleration_data()
         {
             m_tet16s[i].n[j] = tet_data[j].second ^ tet_data[j + 1].second;
         }
+
+        // 
+        m_tet16s[i].n[1] = m_tet16s[i].n[0] ^ m_tet16s[i].n[1];
+        m_tet16s[i].n[2] = m_tet16s[i].n[1] ^ m_tet16s[i].n[2];
     }
 
     Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
@@ -1613,16 +1619,19 @@ int TetMesh16::find_tet(const glm::vec3& point, SourceTet& tet)
 
                 int nxx = nx;
 
-                if (idx2 > idx)
-                {
-                    for (int j = idx; j < idx2; j++)
-                        nxx ^= m_tet16s[index].n[j];
-                }
-                else if (idx2 < idx)
-                {
-                    for (int j = idx2; j < idx; j++)
-                        nxx ^= m_tet16s[index].n[j];
-                }
+                //if (idx2 > idx)
+                //{
+                //    for (int j = idx; j < idx2; j++)
+                //        nxx ^= m_tet16s[index].n[j];
+                //}
+                //else if (idx2 < idx)
+                //{
+                //    for (int j = idx2; j < idx; j++)
+                //        nxx ^= m_tet16s[index].n[j];
+                //}
+
+                nxx ^= idx == 0 ? 0 : m_tet16s[index].n[idx - 1];
+                nxx ^= idx2 == 0 ? 0 : m_tet16s[index].n[idx2 - 1];
 
                 tet.n[i] = nxx;
             }
@@ -1646,16 +1655,19 @@ int TetMesh16::find_tet(const glm::vec3& point, SourceTet& tet)
                 idx++;
         }
 
-        if (idx2 > idx)
-        {
-            for (int i = idx; i < idx2; i++)
-                nx ^= m_tet16s[index].n[i];
-        }
-        else
-        {
-            for (int i = idx2; i < idx; i++)
-                nx ^= m_tet16s[index].n[i];
-        }
+        //if (idx2 > idx)
+        //{
+        //    for (int i = idx; i < idx2; i++)
+        //        nx ^= m_tet16s[index].n[i];
+        //}
+        //else
+        //{
+        //    for (int i = idx2; i < idx; i++)
+        //        nx ^= m_tet16s[index].n[i];
+        //}
+
+        nx ^= idx == 0 ? 0 : m_tet16s[index].n[idx - 1];
+        nx ^= idx2 == 0 ? 0 : m_tet16s[index].n[idx2 - 1];
 
         prev_index = index;
 
@@ -1682,10 +1694,8 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
     unsigned int id[4];
     glm::vec2 p[4];
 
-    //int prev_index;
-    signed short outIdx = -1;
-
     const Basis basis(ray.dir);
+    int index;
 
     for (int i = 0; i < 4; i++)
     {
@@ -1695,81 +1705,94 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         p[i].y = glm::dot(basis.up, point);
     }
 
-    if (cross(p[2], p[1]) <= 0.0 && cross(p[1], p[3]) <= 0.0 && cross(p[3], p[2]) <= 0.0)
-        outIdx = 0;
-    else if (cross(p[2], p[3]) <= 0.0 && cross(p[3], p[0]) <= 0.0 && cross(p[0], p[2]) <= 0.0)
-        outIdx = 1;
-    else if (cross(p[0], p[3]) <= 0.0 && cross(p[3], p[1]) <= 0.0 && cross(p[1], p[0]) <= 0.0)
-        outIdx = 2;
-    else if (cross(p[0], p[1]) <= 0.0 && cross(p[1], p[2]) <= 0.0 && cross(p[2], p[0]) <= 0.0)
+    if (cross(p[2], p[1]) <= 0.0f && cross(p[1], p[3]) <= 0.0f && cross(p[3], p[2]) <= 0.0f)
     {
-        outIdx = 3;
+        index = source_tet.n[0];
+        id[0] = id[3];
+        p[0] = p[3];
+    }
+    else if (cross(p[2], p[3]) <= 0.0f && cross(p[3], p[0]) <= 0.0f && cross(p[0], p[2]) <= 0.0f)
+    {
+        index = source_tet.n[1];
+        id[1] = id[3];
+        p[1] = p[3];
+    }
+    else if (cross(p[0], p[3]) <= 0.0f && cross(p[3], p[1]) <= 0.0f && cross(p[1], p[0]) <= 0.0f)
+    {
+        index = source_tet.n[2];
+        id[2] = id[3];
+        p[2] = p[3];
+    }
+    else if (cross(p[0], p[1]) <= 0.0f && cross(p[1], p[2]) <= 0.0f && cross(p[2], p[0]) <= 0.0f)
+    {
         std::swap(id[0], id[1]);
         std::swap(p[0], p[1]);
+
+        index = source_tet.n[3];
     }
     else
         return false;
 
-    //nx = 0
-    int index = source_tet.n[outIdx];
     int nx = source_tet.idx;
-
 
     while (index >= 0)
     {
-        id[outIdx] = id[3];
         id[3] = m_tet16s[index].x ^ id[0] ^ id[1] ^ id[2];
         const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
 
-        p[outIdx] = p[3];
         p[3].x = glm::dot(basis.right, newPoint);
         p[3].y = glm::dot(basis.up, newPoint);
 
-        //p[3] = basis.project(newPoint);
+        const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
+
+        if(idx != 0)
+            nx ^= m_tet16s[index].n[idx - 1];
 
         if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
         {
             if (p[3].x * p[2].y >= p[3].y * p[2].x)
-                outIdx = 1;
+            {
+                const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
+
+                if (idx2 != 0)
+                    nx ^= m_tet16s[index].n[idx2 - 1];
+
+                id[1] = id[3];
+                p[1] = p[3];
+            }
             else
-                outIdx = 0;
+            {
+                const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+
+                if (idx2 != 0)
+                    nx ^= m_tet16s[index].n[idx2 - 1];
+
+                id[0] = id[3];
+                p[0] = p[3];
+            }
         }
         else if (p[3].x * p[1].y < p[3].y * p[1].x)
-            outIdx = 2;
-        else
-            outIdx = 0;
-
-        //prev_index = index;
-
-        int idx2 = 0;
-        for (int i = 0; i < 4; ++i)
         {
-            if (id[outIdx] > id[i])
-                idx2++;
-        }
+            const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
 
-        int idx = 0;
-        for (int i = 0; i < 4; ++i)
-        {
-            if (id[3] > id[i])
-                idx++;
-        }
+            if (idx2 != 0)
+                nx ^= m_tet16s[index].n[idx2 - 1];
 
-        int prev_index = index;
-
-        if (idx2 > idx)
-        {
-            for (int i = idx; i < idx2; i++)
-                nx ^= m_tet16s[index].n[i];
+            id[2] = id[3];
+            p[2] = p[3];
         }
         else
         {
-            for (int i = idx2; i < idx; i++)
-                nx ^= m_tet16s[index].n[i];
+            const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+
+            if (idx2 != 0)
+                nx ^= m_tet16s[index].n[idx2 - 1];
+
+            id[0] = id[3];
+            p[0] = p[3];
         }
 
-        index = nx;
-        nx = prev_index;
+        std::swap(nx, index);
     }
 
     if (index != -1)
