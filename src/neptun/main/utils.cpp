@@ -16,7 +16,7 @@ std::string Utils::get_timestamp()
         1 + ltm->tm_hour,
         1 + ltm->tm_min,
         1 + ltm->tm_sec);
-#elif
+#else
     sprintf_s(buf, 128, "%d_%d_%d_%d_%d_%d",
         1900 + ltm->tm_year,
         1 + ltm->tm_mon,

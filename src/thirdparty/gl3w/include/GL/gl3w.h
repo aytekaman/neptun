@@ -33,9 +33,9 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include "gl3w/include/GL/glcorearb.h"
-#endif
-
+#elif
 #include <GL/glcorearb.h>
+#endif
 
 #ifndef __gl_h_
 #define __gl_h_

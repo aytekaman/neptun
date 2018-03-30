@@ -315,7 +315,7 @@ void TetMesh::build_from_scene(
             char str[128];
 #ifdef HAVE_SNPRINTF
             snprintf(str, 128, "q%.2fYnAf", quality);
-#elif
+#else
             sprintf_s(str, 128, "q%.2fYnAf", quality);
 #endif
             tetrahedralize(str, &data, &out);
