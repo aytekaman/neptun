@@ -2,8 +2,8 @@
 
 #include "material.h"
 
-#include <glm\gtc\random.hpp>
-#include <glm\gtx\color_space.hpp>
+#include <glm/gtc/random.hpp>
+#include <glm/gtx/color_space.hpp>
 
 
 

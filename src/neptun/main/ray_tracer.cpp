@@ -7,7 +7,7 @@
 #include <iostream>
 #include <thread>
 
-#include "glm\trigonometric.hpp"
+#include "glm/trigonometric.hpp"
 
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 //#include "stb_image_write.h"
@@ -55,7 +55,7 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
     SourceTet source_tet;
 
     int tet_index = 0;
-    
+
     if(scene.tet_mesh)
         tet_index = scene.tet_mesh->find_tet(cam_pos, source_tet);
 
@@ -89,7 +89,7 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
     clock_t start = clock();
 
     for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, scene, source_tet, i, lightInfos, is_diagnostic);
+        threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
 
     for (int i = 0; i < thread_count; i++)
     {
@@ -165,7 +165,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
             for (int j = rect_min.x; j < rect_max.x; j++)
             {
                 ray.dir = glm::normalize(bottom_left + right_step * (float)j + up_step * (float)i - ray.origin);
-                
+
                 glm::vec3 pos, normal, color;
                 glm::vec2 uv;
                 Face face;
@@ -181,8 +181,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
                 IntersectionData intersection_data;
 
-                if (method == Method::Default || 
-                    method == Method::Fast_basis || 
+                if (method == Method::Default ||
+                    method == Method::Fast_basis ||
                     method == Method::ScTP)
                     ray.tet_idx = 0;
                 else
@@ -197,10 +197,10 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                     else if (method == Method::BVH)
                         hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);*/
                 }
-                    
+
                 else
                 {
-                    if (method == Method::Default) 
+                    if (method == Method::Default)
                         hit = scene.tet_mesh->raycast(ray, source_tet, intersection_data);
                     //else if (method == Method::ScTP)
                     //    hit = scene.tet_mesh->Raycast_sctp(ray, intersection_data);
@@ -255,12 +255,12 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
                         float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
                         float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
-                        glm::vec3 avg_locality_color = Color::lerp(Color::turquoise, Color::yellow, Color::melon, scaled_avg_locality).xyz;
+                        glm::vec3 avg_locality_color = Color::lerp(Color::turquoise, Color::yellow, Color::melon, scaled_avg_locality);
                         m_locality_image->set_pixel((resolution.y - i - 1), (resolution.x - j - 1), avg_locality_color * 255.0f);
                     }
 
-                    float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;                   
-                    glm::vec3 visited_tet_count_color = Color::lerp(Color::turquoise, Color::yellow, Color::melon, scaled_visited_tet_count).xyz;
+                    float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
+                    glm::vec3 visited_tet_count_color = Color::lerp(Color::turquoise, Color::yellow, Color::melon, scaled_visited_tet_count);
                     m_visited_tets_image->set_pixel((resolution.y - i - 1), (resolution.x - j - 1), visited_tet_count_color * 255.0f);
 
                     total_test_count += diagnostic_data.visited_node_count;
@@ -268,7 +268,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
                 glm::ivec2 p_idx = glm::ivec2((resolution.y - i - 1), (resolution.x - j - 1));
 
-                m_rendered_image->set_pixel(p_idx.x, p_idx.y, color.zyx * 255.0f);
+                m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
             }
         }
 

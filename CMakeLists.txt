@@ -1,6 +1,15 @@
+
 cmake_minimum_required(VERSION 2.6)
 
+include(CheckFunctionExists)
+
 project(neptun) #LANGUAGES CXX CUDA
+
+if(${CMAKE_VERSION} VERSION_LESS "3.1.0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+    set(CMAKE_CXX_STANDARD 11)
+endif()
 
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
@@ -123,13 +132,14 @@ set (main_sources
     src/neptun/main/texture.h
     src/neptun/main/utils.cpp
     src/neptun/main/utils.h
+    src/neptun/main/filesystem.h
 )
 
 source_group ("main\\" FILES
     ${main_sources}
 )
 
-add_executable (neptun 
+add_executable (neptun
     ${editor_sources}
     ${main_sources}
     ${thirdparty_sources}
@@ -168,14 +178,54 @@ add_custom_command(
     COMMENT "copying fonts"
     VERBATIM)
 
+# Use _aligned_malloc if exists otherwise check posix_memalign
+# Not tested on Windows
+check_function_exists(_aligned_malloc HAVE_ALIGNED_MALLOC)
+if (HAVE_ALIGNED_MALLOC)
+    add_definitions(-DHAVE_ALIGNED_MALLOC)
+else()
+    check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
+    if (HAVE_POSIX_MEMALIGN)
+        add_definitions(-DHAVE_POSIX_MEMALIGN)
+    endif()
+endif()
+
+check_function_exists(snprintf HAVE_SNPRINTF)
+if(HAVE_SNPRINTF)
+    add_definitions(-DHAVE_SNPRINTF)
+endif()
+
 if(UNIX)
+    if (APPLE)
+        add_definitions(-DNOC_FILE_DIALOG_IMPLEMENTATION)
+        add_definitions(-DNOC_FILE_DIALOG_OSX)
+    else()
+        #Noc requires gtk to run in linux
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(GTK3 REQUIRED gtk+-3.0) # Maybe use older gtk versions?
+
+        if (GTK3_FOUND)
+            include_directories(${GTK3_INCLUDE_DIRS})
+            link_directories(${GTK3_LIBRARY_DIRS})
+            add_definitions(${GTK3_CFLAGS_OTHER})
+            target_link_libraries(neptun ${GTK3_LIBRARIES})
+
+            add_definitions(-DNOC_FILE_DIALOG_GTK)
+            add_definitions(-DNOC_FILE_DIALOG_IMPLEMENTATION)
+        else()
+            message( FATAL_ERROR "GTK is not found. GTK is required for linux builds.")
+        endif()
+    endif()
+
     set_target_properties(
-        neptun 
+        neptun
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin/Release")
-else()
+else() #Windows
+    add_definitions(-DNOC_FILE_DIALOG_IMPLEMENTATION)
+    add_definitions(-DNOC_FILE_DIALOG_WIN32)
     set_target_properties(
-        neptun 
+        neptun
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin")
 endif()

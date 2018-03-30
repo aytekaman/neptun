@@ -31,13 +31,14 @@
 #include "gl3w/include/GL/gl3w.h"
 #include <stdlib.h>
 
-#define ARRAY_SIZE(x)	(sizeof(x) / sizeof((x)[0]))
+#define ARRAY_SIZE(x)  (sizeof(x) / sizeof((x)[0]))
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN 1
 #include <windows.h>
 
 static HMODULE libgl;
+static PROC (__stdcall *wgl_get_proc_address)(LPCSTR);
 
 static int open_libgl(void)
 {
@@ -45,6 +46,7 @@ static int open_libgl(void)
 	if (!libgl)
 		return GL3W_ERROR_LIBRARY_OPEN;
 
+	*(void **)(&wgl_get_proc_address) = GetProcAddress(libgl, "wglGetProcAddress");
 	return GL3W_OK;
 }
 
@@ -57,7 +59,7 @@ static GL3WglProc get_proc(const char *proc)
 {
 	GL3WglProc res;
 
-	res = (GL3WglProc)wglGetProcAddress(proc);
+	res = (GL3WglProc)wgl_get_proc_address(proc);
 	if (!res)
 		res = (GL3WglProc)GetProcAddress(libgl, proc);
 	return res;
@@ -69,7 +71,7 @@ static void *libgl;
 
 static int open_libgl(void)
 {
-	libgl = dlopen("/System/Library/Frameworks/OpenGL.framework/OpenGL", RTLD_LAZY | RTLD_GLOBAL);
+	libgl = dlopen("/System/Library/Frameworks/OpenGL.framework/OpenGL", RTLD_LAZY | RTLD_LOCAL);
 	if (!libgl)
 		return GL3W_ERROR_LIBRARY_OPEN;
 
@@ -90,14 +92,13 @@ static GL3WglProc get_proc(const char *proc)
 }
 #else
 #include <dlfcn.h>
-#include <GL/glx.h>
 
 static void *libgl;
-static PFNGLXGETPROCADDRESSPROC glx_get_proc_address;
+static GL3WglProc (*glx_get_proc_address)(const GLubyte *);
 
 static int open_libgl(void)
 {
-	libgl = dlopen("libGL.so", RTLD_LAZY | RTLD_GLOBAL);
+	libgl = dlopen("libGL.so.1", RTLD_LAZY | RTLD_LOCAL);
 	if (!libgl)
 		return GL3W_ERROR_LIBRARY_OPEN;
 

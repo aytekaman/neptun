@@ -40,7 +40,7 @@ struct Bounds3
             return 2;
     }
 
-    bool intersectP(const Ray &ray, float* hitt0, float* hitt1) const 
+    bool intersectP(const Ray &ray, float* hitt0, float* hitt1) const
     {
 
         // !!!!!!!!!!!!!!!!
@@ -61,10 +61,10 @@ struct Bounds3
             if (t0 > t1) return false;
         }
 
-        if (hitt0) 
+        if (hitt0)
             *hitt0 = t0;
 
-        if (hitt1) 
+        if (hitt1)
             *hitt1 = t1;
         return true;
     }
@@ -74,7 +74,7 @@ struct Bounds3
         return (i == 0) ? min : max;
     }
 
-    bool Bounds3::intersectP(const Ray &ray, const glm::vec3 &invDir,
+    bool intersectP(const Ray &ray, const glm::vec3 &invDir,
         const int dirIsNeg[3]) const {
         const Bounds3 &bounds = *this;
         // Check for ray intersection against $x$ and $y$ slabs

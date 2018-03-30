@@ -1,9 +1,9 @@
 #pragma once
 
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 
 #include <vector>
-//#include <string>
+#include <string>
 
 class Mesh
 {

@@ -62,7 +62,7 @@ public:
 	~KdTree();
 
     Bounds3 WorldBound() const { return bounds; }
-    
+
     bool Intersect(const Ray &ray, IntersectionData& intersection_data) const;
     bool Intersect_stats(const Ray &ray, IntersectionData& intersection_data, DiagnosticData& diagnostic_data) const;
 
@@ -91,3 +91,13 @@ public:
     int nAllocedNodes, nextFreeNode;
     Bounds3 bounds;
 };
+
+inline int Log2Int(uint32_t v) {
+#if defined(_MSC_VER)
+    unsigned long lz = 0;
+    if (_BitScanReverse(&lz, v)) return lz;
+    return 0;
+#else
+    return 31 - __builtin_clz(v);
+#endif
+}
