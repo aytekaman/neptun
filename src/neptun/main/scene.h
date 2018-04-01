@@ -1,11 +1,10 @@
 #pragma once
 
-#include <vector>
-
 #include "sceneObject.h"
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 class Bvh;
 
