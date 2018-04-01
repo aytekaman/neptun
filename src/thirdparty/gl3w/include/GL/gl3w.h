@@ -33,7 +33,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include "gl3w/include/GL/glcorearb.h"
-#elif
+#else
 #include <GL/glcorearb.h>
 #endif
 
