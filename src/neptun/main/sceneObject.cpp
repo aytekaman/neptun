@@ -27,7 +27,7 @@ void SceneObject::randomize_color()
     color = glm::vec4(glm::rgbColor(glm::vec3(hue, 1, 1)), 1);
 }
 
-void SceneObject::LookAt(glm::vec3 target, glm::vec3 up)
+void SceneObject::look_at(glm::vec3 target, glm::vec3 up)
 {
     
 }

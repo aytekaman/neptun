@@ -18,7 +18,7 @@ public:
 
     void randomize_color();
 
-    void LookAt(glm::vec3 target, glm::vec3 up = glm::vec3(0, 1, 0));
+    void look_at(glm::vec3 target, glm::vec3 up = glm::vec3(0, 1, 0));
 
     Light *light;
     Material *material;
