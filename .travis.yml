@@ -13,6 +13,7 @@ addons:
     - g++-5
     - cmake
     - xorg-dev
+	- libgtk-3-0
 
 install: true
 script: mkdir build && cd build && cmake ../ && make -r -j 2
