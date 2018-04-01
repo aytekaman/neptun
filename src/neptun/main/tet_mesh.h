@@ -1,13 +1,13 @@
 #pragma once
 
-#include <vector>
-#include <string>
-
 #include <glm/glm.hpp>
 
 #include "accelerator.h"
 #include "face.h"
 #include "ray.h"
+
+#include <vector>
+#include <string>
 
 class Material;
 class Scene;
