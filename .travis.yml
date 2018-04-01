@@ -12,6 +12,7 @@ addons:
     - gcc-5
     - g++-5
     - cmake
+	- xorg-dev
 
 install: true
 script: mkdir build && cd build && cmake ../ && make -r -j 2
