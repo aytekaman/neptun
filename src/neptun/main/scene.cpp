@@ -1,8 +1,5 @@
 #include "scene.h"
 
-#include <algorithm>
-#include <ctime>
-
 #include <glm/glm.hpp>
 
 #include "asset_importer.h"
@@ -12,6 +9,9 @@
 #include "mesh.h"
 #include "tet_mesh.h"
 #include "utils.h"
+
+#include <algorithm>
+#include <ctime>
 
 Scene::Scene() : camOrbitX(0), camOrbitY(glm::pi<float>() / 2.0f), camDist(20)
 {
