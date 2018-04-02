@@ -687,11 +687,11 @@ void Editor::DrawTetGen()
         ImGui::Text("Statistics:");
         ImGui::Text("Number of points:");
         ImGui::SameLine(180);
-        ImGui::Text("%d", scene->tet_mesh->m_points.size());
+        ImGui::Text("%zu", scene->tet_mesh->m_points.size());
 
         ImGui::Text("Number of tetrahedrons:");
         ImGui::SameLine(180);
-        ImGui::Text("%d", scene->tet_mesh->m_tets.size());
+        ImGui::Text("%zu", scene->tet_mesh->m_tets.size());
 
         ImGui::Text("Weight:");
         ImGui::SameLine(180);

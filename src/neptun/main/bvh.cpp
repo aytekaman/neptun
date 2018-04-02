@@ -205,9 +205,9 @@ Bvh::Bvh(Scene &scene,
     //CHECK_EQ(totalNodes, offset);
 
     printf("Node count: %d", totalNodes);
-    printf("Node size:  %d", sizeof(LinearBVHNode));
+    printf("Node size:  %zu", sizeof(LinearBVHNode));
 
-    printf("BVH size:  %d MB", (totalNodes * sizeof(LinearBVHNode)) / (1024 * 1024));
+    printf("BVH size:  %zu MB", (totalNodes * sizeof(LinearBVHNode)) / (1024 * 1024));
 
     clock_t elapsed = clock() - start_time;
 
