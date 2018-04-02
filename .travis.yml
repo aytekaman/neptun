@@ -4,6 +4,10 @@ language: cpp
 compiler: gcc
 notifications:
   email: false
+script:
+  - git submodule update --init --recursive
+  - mkdir external/glfw/include/GL
+  - wget --no-check-certificate -P external/glfw/include/GL http://www.opengl.org/registry/api/GL/glcorearb.h
 addons:
   apt:
     sources:
