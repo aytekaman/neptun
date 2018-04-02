@@ -396,7 +396,7 @@ void Editor::DrawInspector()
 
         ImGui::SameLine();
 
-        ImGui::Text(selected_scene_object->name.c_str());
+        ImGui::Text("%s", selected_scene_object->name.c_str());
 
         ImGui::Separator();
 
@@ -458,7 +458,7 @@ void Editor::DrawInspector()
 
                     ImVec2 size(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth() / aspect);
 
-                    ImGui::Image((ImTextureID)result->second, size);
+                    ImGui::Image((ImTextureID)(intptr_t)result->second, size);
                 }
             }
         }
@@ -687,11 +687,11 @@ void Editor::DrawTetGen()
         ImGui::Text("Statistics:");
         ImGui::Text("Number of points:");
         ImGui::SameLine(180);
-        ImGui::Text("%d", scene->tet_mesh->m_points.size());
+        ImGui::Text("%zu", scene->tet_mesh->m_points.size());
 
         ImGui::Text("Number of tetrahedrons:");
         ImGui::SameLine(180);
-        ImGui::Text("%d", scene->tet_mesh->m_tets.size());
+        ImGui::Text("%zu", scene->tet_mesh->m_tets.size());
 
         ImGui::Text("Weight:");
         ImGui::SameLine(180);
@@ -1188,7 +1188,7 @@ void Editor::DrawRenderedFrame()
 
     float image_scale = 1;
 
-    ImGui::Image((ImTextureID)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
     ImGui::SameLine();
     ImGui::BeginChild("asd", ImVec2(0, 0));
 
@@ -1267,9 +1267,9 @@ void Editor::DrawRenderedFrame()
     ImGui::End();
 
     ImGui::Begin("Diag");
-    ImGui::Image((ImTextureID)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
     ImGui::SameLine();
-    ImGui::Image((ImTextureID)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
     ImGui::End();
 }
 
@@ -1344,7 +1344,7 @@ void Editor::DrawConsole()
 
     ImGui::BeginChild("Message Window", ImVec2(0, 0), false, flags);
     if(selected_msg_id != -1)
-        ImGui::Text(logs[selected_msg_id].text.c_str());
+        ImGui::Text("%s", logs[selected_msg_id].text.c_str());
     ImGui::End();
 
     ImGui::PopFont();
