@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sceneObject.h"
+#include "sceneobject.h"
 
 class Component
 {
