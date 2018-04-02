@@ -458,7 +458,7 @@ void Editor::DrawInspector()
 
                     ImVec2 size(ImGui::GetContentRegionAvailWidth(), ImGui::GetContentRegionAvailWidth() / aspect);
 
-                    ImGui::Image((GLuint*)result->second, size);
+                    ImGui::Image((ImTextureID)(intptr_t)result->second, size);
                 }
             }
         }
@@ -1188,7 +1188,7 @@ void Editor::DrawRenderedFrame()
 
     float image_scale = 1;
 
-    ImGui::Image((int*)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
     ImGui::SameLine();
     ImGui::BeginChild("asd", ImVec2(0, 0));
 
@@ -1267,9 +1267,9 @@ void Editor::DrawRenderedFrame()
     ImGui::End();
 
     ImGui::Begin("Diag");
-    ImGui::Image((int*)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
     ImGui::SameLine();
-    ImGui::Image((int*)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
     ImGui::End();
 }
 
