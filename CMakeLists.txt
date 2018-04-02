@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CheckFunctionExists)
 
+if(WIN32)
+    add_compile_options("-d2SSAOptimizer-")
+endif()
+
 project(neptun) #LANGUAGES CXX CUDA
 
 if(${CMAKE_VERSION} VERSION_LESS "3.1.0")
