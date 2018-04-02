@@ -31,11 +31,7 @@
 #ifndef __gl3w_h_
 #define __gl3w_h_
 
-#if defined(_WIN32) || defined(_WIN64)
 #include "gl3w/include/GL/glcorearb.h"
-#else
-#include <GL/glcorearb.h>
-#endif
 
 #ifndef __gl_h_
 #define __gl_h_

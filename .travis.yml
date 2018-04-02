@@ -19,6 +19,4 @@ addons:
 
 install: true
 script:
-  - mkdir external/glfw/include/GL
-  - wget --no-check-certificate -P /src/thirdparty/gl3w/include/GL http://www.opengl.org/registry/api/GL/glcorearb.h
   - mkdir build && cd build && cmake ../ && make -r -j 2
