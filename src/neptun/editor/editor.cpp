@@ -396,7 +396,7 @@ void Editor::DrawInspector()
 
         ImGui::SameLine();
 
-        ImGui::Text(selected_scene_object->name.c_str());
+        ImGui::Text("%s", selected_scene_object->name.c_str());
 
         ImGui::Separator();
 
@@ -1344,7 +1344,7 @@ void Editor::DrawConsole()
 
     ImGui::BeginChild("Message Window", ImVec2(0, 0), false, flags);
     if(selected_msg_id != -1)
-        ImGui::Text(logs[selected_msg_id].text.c_str());
+        ImGui::Text("%s", logs[selected_msg_id].text.c_str());
     ImGui::End();
 
     ImGui::PopFont();
