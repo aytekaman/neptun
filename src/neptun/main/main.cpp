@@ -755,26 +755,26 @@ int main(int argc, char** argv)
 
     if (argc > 1)
     {
-        std::string test_folder_name = Utils::get_timestamp();
+        //std::string test_folder_name = Utils::get_timestamp();
 
-        fs::create_directory(test_folder_name);
+        //fs::create_directory(test_folder_name);
 
         std::cout << "Starting in benchmark mode ... " << std::endl;
 
-        if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
-            build_and_render_times(test_folder_name, 100);
+        //if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
+        //    build_and_render_times(test_folder_name, 100);
 
-        if (std::find(args.begin(), args.end(), "close_surface") != args.end())
-            close_surface(test_folder_name);
+        //if (std::find(args.begin(), args.end(), "close_surface") != args.end())
+        //    close_surface(test_folder_name);
 
-        if (std::find(args.begin(), args.end(), "tet_mesh_weight") != args.end())
-            tet_mesh_weight(test_folder_name);
+        //if (std::find(args.begin(), args.end(), "tet_mesh_weight") != args.end())
+        //    tet_mesh_weight(test_folder_name);
 
-        if (std::find(args.begin(), args.end(), "tet_mesh_sorting") != args.end())
-            tet_mesh_sorting(test_folder_name);
+        //if (std::find(args.begin(), args.end(), "tet_mesh_sorting") != args.end())
+        //    tet_mesh_sorting(test_folder_name);
 
-        if (std::find(args.begin(), args.end(), "region_sort") != args.end())
-            region_sort();
+        //if (std::find(args.begin(), args.end(), "region_sort") != args.end())
+        //    region_sort();
 
         return 0;
     }

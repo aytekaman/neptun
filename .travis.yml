@@ -20,3 +20,4 @@ addons:
 install: true
 script:
   - mkdir build && cd build && cmake ../ && make -r -j 2
+  - ../sandbox/bin/Release/neptun -test
