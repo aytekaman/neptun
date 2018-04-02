@@ -4,10 +4,7 @@ language: cpp
 compiler: gcc
 notifications:
   email: false
-script:
-  - git submodule update --init --recursive
-  - mkdir external/glfw/include/GL
-  - wget --no-check-certificate -P external/glfw/include/GL http://www.opengl.org/registry/api/GL/glcorearb.h
+
 addons:
   apt:
     sources:
@@ -21,4 +18,7 @@ addons:
     - libglu1-mesa-dev
 
 install: true
-script: mkdir build && cd build && cmake ../ && make -r -j 2
+script:
+  - mkdir external/glfw/include/GL
+  - wget --no-check-certificate -P external/glfw/include/GL http://www.opengl.org/registry/api/GL/glcorearb.h
+  - mkdir build && cd build && cmake ../ && make -r -j 2
