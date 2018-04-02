@@ -1,11 +1,11 @@
-#include "sceneObject.h"
+#include "sceneobject.h"
 
+#include "light.h"
 #include "material.h"
+#include "mesh.h"
 
-#include <glm/gtc/random.hpp>
-#include <glm/gtx/color_space.hpp>
-
-
+#include "glm/gtc/random.hpp"
+#include "glm/gtx/color_space.hpp"
 
 SceneObject::SceneObject(std::string name_) : name(name_), scale(1), mesh(nullptr), light(nullptr)
 {

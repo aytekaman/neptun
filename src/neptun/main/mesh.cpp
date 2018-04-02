@@ -1,12 +1,10 @@
 #include "mesh.h"
 
-#include <iostream>
-#include <fstream>
 #include <vector>
 
 Mesh::Mesh()
 {
-    faceCount = 0;
+    m_face_count = 0;
 }
 
 //Mesh::Mesh(const Mesh & mesh)
@@ -17,18 +15,18 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::CenterPivot()
+void Mesh::center_pivot()
 {
     glm::vec3 center(0, 0, 0);
 
-    float r = 1.0f / vertexCount;
+    float r = 1.0f / m_vertex_count;
 
-    for (int i = 0; i < vertexCount; i++)
-        center += vertices[i] * r;
+    for (int i = 0; i < m_vertex_count; i++)
+        center += m_vertices[i] * r;
 
-    for (int i = 0; i < vertexCount; i++)
-        vertices[i] -= center;
+    for (int i = 0; i < m_vertex_count; i++)
+        m_vertices[i] -= center;
 
-    min -= center;
-    max -= center;
+    m_bounds_min -= center;
+    m_bounds_max -= center;
 }

@@ -15,7 +15,7 @@
 #include "utils.h"
 #include "filesystem.h"
 
-#include <glm/gtc/random.hpp>
+#include <glm/gtc/constants.hpp>
 
 std::string colors[] = { "cyan", "orange", "red", "blue" };
 std::string marks[] = { "square", "circle", "triangle", "plus" };

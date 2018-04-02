@@ -124,8 +124,8 @@ set (main_sources
     src/neptun/main/ray_tracer.h
     src/neptun/main/scene.cpp
     src/neptun/main/scene.h
-    src/neptun/main/sceneObject.cpp
-    src/neptun/main/sceneObject.h
+    src/neptun/main/sceneobject.cpp
+    src/neptun/main/sceneobject.h
     src/neptun/main/sfc_utils.cpp
     src/neptun/main/sfc_utils.h
     src/neptun/main/stats.cpp

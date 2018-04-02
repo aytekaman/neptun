@@ -153,12 +153,12 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode render
 
     for (int i = 0; i < scene->sceneObjects.size(); i++)
     {
-        if (!scene->sceneObjects[i]->isVisible || scene->sceneObjects[i]->mesh == NULL)
+        if (!scene->sceneObjects[i]->m_is_visible || scene->sceneObjects[i]->mesh == NULL)
             continue;
 
         Mesh *mesh = scene->sceneObjects[i]->mesh;
 
-        if (mesh->isDirty)
+        if (mesh->m_is_dirty)
         {
             std::unordered_map<Mesh*, RenderData>::const_iterator result = renderDatas.find(mesh);
 
@@ -169,7 +169,7 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode render
 
             SendMeshData(mesh);
 
-            mesh->isDirty = false;
+            mesh->m_is_dirty = false;
         }
 
         std::unordered_map<Mesh*, RenderData>::const_iterator result = renderDatas.find(mesh);
@@ -219,7 +219,7 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode render
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &n[0][0]);
 
         GLuint textured = glGetUniformLocation(programID, "textured");
-        glUniform1i(textured, mesh->uvs.size() > 0 && texture);
+        glUniform1i(textured, mesh->m_uvs.size() > 0 && texture);
 
         GLuint rendering_mode_glsl = glGetUniformLocation(programID, "rendering_mode");
         glUniform1i(rendering_mode_glsl, rendering_mode == RenderingMode::SolidWireframe);
@@ -230,7 +230,7 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode render
         glBindVertexArray(renderData.vertexArrayID);
         
 
-        glDrawArrays(GL_TRIANGLES, 0, mesh->vertexCount);
+        glDrawArrays(GL_TRIANGLES, 0, mesh->m_vertex_count);
     }
 
     lineVertices.clear();
@@ -402,7 +402,7 @@ void Graphics::CreateRenderData(Mesh * mesh)
     glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[1]);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 0, 0);
 
-    if (mesh->uvs.size() > 0)
+    if (mesh->m_uvs.size() > 0)
     {
         glEnableVertexAttribArray(2);
         glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[2]);
@@ -427,23 +427,23 @@ void Graphics::SendMeshData(Mesh *mesh)
     glBindVertexArray(renderData.vertexArrayID);
 
     glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[0]);
-    glBufferData(GL_ARRAY_BUFFER, mesh->vertexCount * sizeof(glm::vec3), (void*)&mesh->vertices[0].x, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh->m_vertex_count * sizeof(glm::vec3), (void*)&mesh->m_vertices[0].x, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[1]);
-    glBufferData(GL_ARRAY_BUFFER, mesh->vertexCount * sizeof(glm::vec3), (void*)&mesh->normals[0].x, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh->m_vertex_count * sizeof(glm::vec3), (void*)&mesh->m_normals[0].x, GL_STATIC_DRAW);
 
-    if (mesh->uvs.size() > 0)
+    if (mesh->m_uvs.size() > 0)
     {
         glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[2]);
-        glBufferData(GL_ARRAY_BUFFER, mesh->vertexCount * sizeof(glm::vec2), (void*)&mesh->uvs[0].x, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, mesh->m_vertex_count * sizeof(glm::vec2), (void*)&mesh->m_uvs[0].x, GL_STATIC_DRAW);
     }
 
-    std::vector<glm::vec3> bary(mesh->vertexCount);
-    for (size_t i = 0; i < mesh->vertexCount; ++i)
+    std::vector<glm::vec3> bary(mesh->m_vertex_count);
+    for (size_t i = 0; i < mesh->m_vertex_count; ++i)
         bary[i][i % 3] = 1;
 
     glBindBuffer(GL_ARRAY_BUFFER, renderData.vertexBufferIDs[3]);
-    glBufferData(GL_ARRAY_BUFFER, mesh->vertexCount * sizeof(glm::vec3), (void*)&bary[0].x, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh->m_vertex_count * sizeof(glm::vec3), (void*)&bary[0].x, GL_STATIC_DRAW);
 }
 
 void Graphics::CreateTextureData(Texture * texture)

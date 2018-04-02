@@ -41,11 +41,11 @@ Mesh * AssetImporter::ImportMesh(const char *file_name)
 
     //std::string tmp(wstr.begin(), wstr.end());
 
-    mesh->file_name = file_name;
-    mesh->vertexCount = 0;
+    mesh->m_file_name = file_name;
+    mesh->m_vertex_count = 0;
 
-    mesh->min = glm::vec3(1000000, 1000000, 1000000);
-    mesh->max = glm::vec3(-1000000, -1000000, -1000000);
+    mesh->m_bounds_min = glm::vec3(1000000, 1000000, 1000000);
+    mesh->m_bounds_max = glm::vec3(-1000000, -1000000, -1000000);
 
     // Loop over shapes
     for (size_t s = 0; s < shapes.size(); s++) {
@@ -65,10 +65,10 @@ Mesh * AssetImporter::ImportMesh(const char *file_name)
 
                 glm::vec3 vertex(vx, vy, vz);
 
-                mesh->min = glm::min(mesh->min, vertex);
-                mesh->max = glm::max(mesh->max, vertex);
+                mesh->m_bounds_min = glm::min(mesh->m_bounds_min, vertex);
+                mesh->m_bounds_max = glm::max(mesh->m_bounds_max, vertex);
 
-                mesh->vertices.push_back(vertex);
+                mesh->m_vertices.push_back(vertex);
 
                 if (attrib.normals.size() > 0)
                 {
@@ -76,7 +76,7 @@ Mesh * AssetImporter::ImportMesh(const char *file_name)
                     float ny = attrib.normals[3 * idx.normal_index + 1];
                     float nz = attrib.normals[3 * idx.normal_index + 2];
 
-                    mesh->normals.push_back(glm::vec3(nx, ny, nz));
+                    mesh->m_normals.push_back(glm::vec3(nx, ny, nz));
                 }
 
                 if (attrib.texcoords.size() > 0)
@@ -84,10 +84,10 @@ Mesh * AssetImporter::ImportMesh(const char *file_name)
                     float tx = attrib.texcoords[2 * idx.texcoord_index + 0];
                     float ty = 1 - attrib.texcoords[2 * idx.texcoord_index + 1];
 
-                    mesh->uvs.push_back(glm::vec2(tx, ty));
+                    mesh->m_uvs.push_back(glm::vec2(tx, ty));
                 }
 
-                mesh->vertexCount++;
+                mesh->m_vertex_count++;
             }
 
             index_offset += fv;
@@ -97,22 +97,22 @@ Mesh * AssetImporter::ImportMesh(const char *file_name)
         }
     }
 
-    mesh->faceCount = mesh->vertexCount / 3;
+    mesh->m_face_count = mesh->m_vertex_count / 3;
 
     if (attrib.normals.size() == 0)
     {
         std::cout << "Calculating normals" << std::endl;
 
-        std::vector<glm::vec3> &vertices = mesh->vertices;
+        std::vector<glm::vec3> &vertices = mesh->m_vertices;
 
-        for (int i = 0; i < mesh->vertexCount; i += 3)
+        for (int i = 0; i < mesh->m_vertex_count; i += 3)
         {
             glm::vec3 normal = glm::cross(vertices[i + 1] - vertices[i], vertices[i + 2] - vertices[i]);
             normal = glm::normalize(normal);
 
-            mesh->normals.push_back(normal);
-            mesh->normals.push_back(normal);
-            mesh->normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
         }
     }
 
@@ -165,12 +165,12 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
 
     Mesh* mesh = new Mesh();
 
-    mesh->file_name = file_name;
+    mesh->m_file_name = file_name;
 
-    mesh->vertexCount = 0;
+    mesh->m_vertex_count = 0;
 
-    mesh->min = glm::vec3(1000000, 1000000, 1000000);
-    mesh->max = glm::vec3(-1000000, -1000000, -1000000);
+    mesh->m_bounds_min = glm::vec3(1000000, 1000000, 1000000);
+    mesh->m_bounds_max = glm::vec3(-1000000, -1000000, -1000000);
 
     // Loop over shapes
     for (size_t s = 0; s < shapes.size(); s++) {
@@ -190,10 +190,10 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
 
                 glm::vec3 vertex(vx, vy, vz);
 
-                mesh->min = glm::min(mesh->min, vertex);
-                mesh->max = glm::max(mesh->max, vertex);
+                mesh->m_bounds_min = glm::min(mesh->m_bounds_min, vertex);
+                mesh->m_bounds_max = glm::max(mesh->m_bounds_max, vertex);
 
-                mesh->vertices.push_back(vertex);
+                mesh->m_vertices.push_back(vertex);
 
                 if (attrib.normals.size() > 0)
                 {
@@ -201,7 +201,7 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
                     float ny = attrib.normals[3 * idx.normal_index + 1];
                     float nz = attrib.normals[3 * idx.normal_index + 2];
 
-                    mesh->normals.push_back(glm::vec3(nx, ny, nz));
+                    mesh->m_normals.push_back(glm::vec3(nx, ny, nz));
                 }
 
                 if (attrib.texcoords.size() > 0)
@@ -209,10 +209,10 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
                     float tx = attrib.texcoords[2 * idx.texcoord_index + 0];
                     float ty = 1 - attrib.texcoords[2 * idx.texcoord_index + 1];
 
-                    mesh->uvs.push_back(glm::vec2(tx, ty));
+                    mesh->m_uvs.push_back(glm::vec2(tx, ty));
                 }
 
-                mesh->vertexCount++;
+                mesh->m_vertex_count++;
             }
 
             index_offset += fv;
@@ -222,22 +222,22 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
         }
     }
 
-    mesh->faceCount = mesh->vertexCount / 3;
+    mesh->m_face_count = mesh->m_vertex_count / 3;
 
     if (attrib.normals.size() == 0)
     {
         std::cout << "Calculating normals" << std::endl;
 
-        std::vector<glm::vec3> &vertices = mesh->vertices;
+        std::vector<glm::vec3> &vertices = mesh->m_vertices;
 
-        for (int i = 0; i < mesh->vertexCount; i += 3)
+        for (int i = 0; i < mesh->m_vertex_count; i += 3)
         {
             glm::vec3 normal = glm::cross(vertices[i + 1] - vertices[i], vertices[i + 2] - vertices[i]);
             normal = glm::normalize(normal);
 
-            mesh->normals.push_back(normal);
-            mesh->normals.push_back(normal);
-            mesh->normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
         }
     }
 

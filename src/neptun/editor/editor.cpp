@@ -392,7 +392,7 @@ void Editor::DrawInspector()
 
     if (selected_scene_object)
     {
-        ImGui::Checkbox("", &selected_scene_object->isVisible);
+        ImGui::Checkbox("", &selected_scene_object->m_is_visible);
 
         ImGui::SameLine();
 
@@ -428,7 +428,7 @@ void Editor::DrawInspector()
         {
             ImGui::Text("Mesh");
 
-            ImGui::Text("Vertex count: %d", selected_scene_object->mesh->vertexCount);
+            ImGui::Text("Vertex count: %d", selected_scene_object->mesh->m_vertex_count);
 
             //if (ImGui::Button("Center Pivot Point"))
             //{
@@ -487,7 +487,7 @@ void Editor::DrawHierarchy()
 
     for (int i = 0; i < scene->sceneObjects.size(); i++)
     {
-        if (scene->sceneObjects[i]->hide_in_editor)
+        if (scene->sceneObjects[i]->m_hide_in_editor)
             continue;
 
         ImGui::PushID(i);
@@ -764,7 +764,7 @@ void Editor::DrawTetGen()
                 {
                     ffd[i][j][k] = new SceneObject("FFD Node");
                     ffd[i][j][k]->pos = glm::vec3(i, j, k);
-                    ffd[i][j][k]->hide_in_editor = true;
+                    ffd[i][j][k]->m_hide_in_editor = true;
                     ffd[i][j][k]->color = Color::orange;
                     scene->add_scene_object(ffd[i][j][k]);
                 }
@@ -777,7 +777,7 @@ void Editor::DrawTetGen()
             for (int j = 0; j < 4; j++)
                 for (int k = 0; k < 4; k++)
                 {
-                    ffd[i][j][k]->pickable = show_ffd;
+                    ffd[i][j][k]->m_is_pickable = show_ffd;
 
                     if (show_ffd && i < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i + 1][j][k]->pos, Color::orange);
                     if (show_ffd && j < 3) graphics->DrawLine(ffd[i][j][k]->pos, ffd[i][j + 1][k]->pos, Color::orange);
@@ -964,7 +964,7 @@ void Editor::DrawScene()
     if (!KeysDownPrev[GLFW_KEY_H] && ImGui::GetIO().KeysDown[GLFW_KEY_H])
     {
         for (int i = 0; i < scene->sceneObjects.size(); i++)
-            scene->sceneObjects[i]->isVisible = false;
+            scene->sceneObjects[i]->m_is_visible = false;
     }
 
 
@@ -978,7 +978,7 @@ void Editor::DrawScene()
         {
             Mesh *mesh = new Mesh(*clone->mesh);
             clone->mesh = mesh;
-            mesh->isDirty = true;
+            mesh->m_is_dirty = true;
         }
 
         if (selected_scene_object->light)
@@ -1073,8 +1073,8 @@ void Editor::DrawScene()
 
                 glm::mat4 m = t * r * s;
 
-                glm::vec3 min = selected_scene_object->mesh->min;
-                glm::vec3 max = selected_scene_object->mesh->max;
+                glm::vec3 min = selected_scene_object->mesh->m_bounds_min;
+                glm::vec3 max = selected_scene_object->mesh->m_bounds_max;
 
                 //glm::vec3 a = glm::vec3(m * glm::vec4(selected_scene_object->mesh->min, 1));
                 //glm::vec3 b = glm::vec3(m * glm::vec4(selected_scene_object->mesh->max, 1));
@@ -1378,7 +1378,7 @@ void Editor::HandleSelectionGizmos()
 
     for (int i = 0; i < scene->sceneObjects.size(); i++)
     {
-        if (!scene->sceneObjects[i]->pickable)
+        if (!scene->sceneObjects[i]->m_is_pickable)
             continue;
 
         glm::mat4 t = glm::translate(glm::mat4(1.0f), scene->sceneObjects[i]->pos);

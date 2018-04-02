@@ -27,6 +27,8 @@
 
 #include "color.h"
 
+#include "glm/gtc/constants.hpp"
+
 RayTracer::RayTracer()
 {
     m_rendered_image = new Image(resolution.x, resolution.y);

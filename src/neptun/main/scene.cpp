@@ -1,7 +1,5 @@
 #include "scene.h"
 
-#include <glm/glm.hpp>
-
 #include "asset_importer.h"
 #include "bvh.h"
 #include "kd_tree.h"
@@ -9,6 +7,9 @@
 #include "mesh.h"
 #include "tet_mesh.h"
 #include "utils.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <algorithm>
 #include <ctime>
@@ -158,7 +159,7 @@ void Scene::save_to_file(const std::string & file_name)
         if (scene_object->mesh)
         {
             o << "#Mesh" << std::endl;
-            o << scene_object->mesh->file_name << std::endl;
+            o << scene_object->mesh->m_file_name << std::endl;
         }
         else
             o << "#" << std::endl;
@@ -196,11 +197,11 @@ int Scene::get_triangle_count(bool ignore_hidden_scene_objects)
 
     for (SceneObject* scene_object : sceneObjects)
     {
-        if (ignore_hidden_scene_objects && scene_object->hide_in_editor)
+        if (ignore_hidden_scene_objects && scene_object->m_hide_in_editor)
             continue;
 
         if (scene_object->mesh)
-            triangle_count += scene_object->mesh->faceCount;
+            triangle_count += scene_object->mesh->m_face_count;
     }
 
     return triangle_count;

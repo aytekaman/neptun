@@ -135,21 +135,21 @@ void KdTree::initFaces()
 
         glm::mat4 m = t * r * s;
 
-        for (int j = 0; j < mesh->vertexCount; j += 3)
+        for (int j = 0; j < mesh->m_vertex_count; j += 3)
         {
-            glm::vec3 vertex = glm::vec3(m * glm::vec4(mesh->vertices[j], 1));
+            glm::vec3 vertex = glm::vec3(m * glm::vec4(mesh->m_vertices[j], 1));
 
             Face face;
 
             //face.material = scene.sceneObjects[i]->material;
 
-            face.vertices[0] = glm::vec3(m * glm::vec4(mesh->vertices[j + 0], 1));
-            face.vertices[1] = glm::vec3(m * glm::vec4(mesh->vertices[j + 1], 1));
-            face.vertices[2] = glm::vec3(m * glm::vec4(mesh->vertices[j + 2], 1));
+            face.vertices[0] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 0], 1));
+            face.vertices[1] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 1], 1));
+            face.vertices[2] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 2], 1));
 
-            face.normals[0] = glm::vec3(r * glm::vec4(mesh->normals[j + 0], 1));
-            face.normals[1] = glm::vec3(r * glm::vec4(mesh->normals[j + 1], 1));
-            face.normals[2] = glm::vec3(r * glm::vec4(mesh->normals[j + 2], 1));
+            face.normals[0] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 0], 1));
+            face.normals[1] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 1], 1));
+            face.normals[2] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 2], 1));
 
             //if (mesh->uvs.size() > 0)
             //{

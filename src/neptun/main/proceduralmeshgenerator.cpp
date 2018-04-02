@@ -31,24 +31,24 @@ Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size)
                 glm::vec3 c = a + step_first + step_second;
                 glm::vec3 d = a + step_second;
 
-                mesh->vertices.push_back(a);
-                mesh->vertices.push_back(c);
-                mesh->vertices.push_back(b);
+                mesh->m_vertices.push_back(a);
+                mesh->m_vertices.push_back(c);
+                mesh->m_vertices.push_back(b);
 
-                mesh->vertices.push_back(a);
-                mesh->vertices.push_back(d);
-                mesh->vertices.push_back(c);
+                mesh->m_vertices.push_back(a);
+                mesh->m_vertices.push_back(d);
+                mesh->m_vertices.push_back(c);
 
                 glm::vec3 normal;
                 normal[axis] = -1.0f;
 
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
 
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
 
                 a[axis] += size[axis];
                 b[axis] += size[axis];
@@ -57,26 +57,26 @@ Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size)
 
                 normal[axis] = 1.0f;
 
-                mesh->vertices.push_back(a);
-                mesh->vertices.push_back(b);
-                mesh->vertices.push_back(c);
+                mesh->m_vertices.push_back(a);
+                mesh->m_vertices.push_back(b);
+                mesh->m_vertices.push_back(c);
 
-                mesh->vertices.push_back(a);
-                mesh->vertices.push_back(c);
-                mesh->vertices.push_back(d);
+                mesh->m_vertices.push_back(a);
+                mesh->m_vertices.push_back(c);
+                mesh->m_vertices.push_back(d);
 
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
 
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
-                mesh->normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
+                mesh->m_normals.push_back(normal);
             }
         }
     }
 
-    mesh->vertexCount = mesh->vertices.size();
+    mesh->m_vertex_count = mesh->m_vertices.size();
 
     return mesh;
 }
@@ -85,14 +85,14 @@ void subdivide_triangle(Mesh* mesh, const int n, glm::vec3 a, glm::vec3 b, glm::
 {
     if (n == 0)
     {
-        mesh->vertices.push_back(a);
-        mesh->normals.push_back(a);
+        mesh->m_vertices.push_back(a);
+        mesh->m_normals.push_back(a);
 
-        mesh->vertices.push_back(b);
-        mesh->normals.push_back(b);
+        mesh->m_vertices.push_back(b);
+        mesh->m_normals.push_back(b);
 
-        mesh->vertices.push_back(c);
-        mesh->normals.push_back(c);
+        mesh->m_vertices.push_back(c);
+        mesh->m_normals.push_back(c);
     }
     else
     {
@@ -158,7 +158,7 @@ Mesh* ProceduralMeshGenerator::create_icosphere(const float radius, const int n)
     subdivide_triangle(mesh, n, vertices[ 8], vertices[ 6], vertices[ 7]);
     subdivide_triangle(mesh, n, vertices[ 9], vertices[ 8], vertices[ 1]);
 
-    mesh->vertexCount = mesh->vertices.size();
+    mesh->m_vertex_count = mesh->m_vertices.size();
 
     return mesh;
 }

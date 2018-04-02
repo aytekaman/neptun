@@ -1,9 +1,8 @@
 #pragma once
 
-#include <string>
+#include "glm/glm.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <string>
 
 class Light;
 class Material;
@@ -12,7 +11,6 @@ class Mesh;
 class SceneObject
 {
 public:
-
     SceneObject(std::string name);
     ~SceneObject();
 
@@ -20,14 +18,13 @@ public:
 
     void look_at(glm::vec3 target, glm::vec3 up = glm::vec3(0, 1, 0));
 
-    Light *light;
-    Material *material;
-    Mesh *mesh;
-    
+    Light*      light;
+    Material*   material;
+    Mesh*       mesh;
 
-    bool isVisible = true;
-    bool hide_in_editor = false;
-    bool pickable = true;
+    bool m_hide_in_editor   = false;
+    bool m_is_visible       = true;
+    bool m_is_pickable      = true;
 
     glm::vec4 color;
 
