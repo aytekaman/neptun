@@ -4,7 +4,7 @@
 
 #include "material.h"
 #include "mesh.h"
-#include "sceneObject.h"
+#include "sceneobject.h"
 #include "texture.h"
 #include "filesystem.h"
 

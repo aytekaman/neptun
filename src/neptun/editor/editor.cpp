@@ -31,7 +31,7 @@
 #include "neptun/main/proceduralmeshgenerator.h"
 #include "neptun/main/ray_tracer.h"
 #include "neptun/main/scene.h"
-#include "neptun/main/sceneObject.h"
+#include "neptun/main/sceneobject.h"
 #include "neptun/main/stats.h"
 #include "neptun/main/tet_mesh.h"
 #include "neptun/main/texture.h"
