@@ -321,7 +321,15 @@ void TetMesh::build_from_scene(
             tetrahedralize(str, &data, &out);
         }
         else
-            tetrahedralize("qnnAf", &data, &out);
+        {
+            char str[128];
+#ifdef HAVE_SNPRINTF
+            snprintf(str, 128, "q%.2fnnAf", quality);
+#else
+            sprintf_s(str, 128, "q%.2fnnAf", quality);
+#endif
+            tetrahedralize(str, &data, &out);
+        }
     }
     catch (int a)
     {
