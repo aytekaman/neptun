@@ -192,9 +192,9 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
                 if (is_diagnostic)
                 {
-                    /*if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
-                        hit = scene.tet_mesh->raycast_stats(ray, intersection_data, diagnostic_data);
-                    else if (method == Method::Kd_tree)
+                    if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
+                        hit = scene.tet_mesh->raycast_stats(ray, source_tet, intersection_data, diagnostic_data);
+                    /*else if (method == Method::Kd_tree)
                         hit = scene.kd_tree->Intersect_stats(ray, intersection_data, diagnostic_data);
                     else if (method == Method::BVH)
                         hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);*/

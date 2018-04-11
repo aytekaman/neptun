@@ -139,7 +139,7 @@ public:
         const TetFace& tet_face,
         const int& target_tet_idx = 0) = 0;
 
-    bool raycast_stats(
+    virtual bool raycast_stats(
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data,
@@ -197,6 +197,13 @@ public:
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
+
+    // Casts a ray from a point inside the 'tet'.
+    virtual bool raycast_stats(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data,
+        DiagnosticData& diagnostic_data) override;
 
     // Casts a ray from a point on the 'tet_face'
     bool raycast(
