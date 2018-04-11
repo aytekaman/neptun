@@ -151,7 +151,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     int total_test_count = 0;
     int total_L1_hit_count = 0;
 
-    const int max_job_index = (resolution.x * resolution.y) / (tile_size * tile_size);
+    const int max_job_index = (resolution.x / tile_size) * (resolution.y / tile_size);
 
     int idx = thread_idx;
 
