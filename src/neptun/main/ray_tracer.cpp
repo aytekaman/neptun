@@ -257,12 +257,12 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
                         float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
                         float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
-                        glm::vec3 avg_locality_color = Color::lerp(Color::turquoise, Color::yellow, Color::melon, scaled_avg_locality);
+                        glm::vec3 avg_locality_color = Color::jet(scaled_avg_locality);
                         m_locality_image->set_pixel((resolution.y - i - 1), (resolution.x - j - 1), avg_locality_color * 255.0f);
                     }
 
                     float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
-                    glm::vec3 visited_tet_count_color = Color::lerp(Color::turquoise, Color::yellow, Color::melon, scaled_visited_tet_count);
+                    glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
                     m_visited_tets_image->set_pixel((resolution.y - i - 1), (resolution.x - j - 1), visited_tet_count_color * 255.0f);
 
                     total_test_count += diagnostic_data.visited_node_count;
