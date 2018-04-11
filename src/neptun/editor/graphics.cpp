@@ -510,7 +510,7 @@ GLuint Graphics::LoadShaders(std::string vertexFilePath, std::string fragmentFil
     int InfoLogLength;
 
     // Compile Vertex Shader
-    printf("Compiling shader : %s\n", vertexFilePath.c_str());
+    //printf("Compiling shader : %s\n", vertexFilePath.c_str());
     char const * VertexSourcePointer = VertexShaderCode.c_str();
     glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
     glCompileShader(VertexShaderID);
@@ -525,7 +525,7 @@ GLuint Graphics::LoadShaders(std::string vertexFilePath, std::string fragmentFil
     }
 
     // Compile Fragment Shader
-    printf("Compiling shader : %s\n", fragmentFilePath.c_str());
+    //printf("Compiling shader : %s\n", fragmentFilePath.c_str());
     char const * FragmentSourcePointer = FragmentShaderCode.c_str();
     glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
     glCompileShader(FragmentShaderID);
@@ -540,7 +540,7 @@ GLuint Graphics::LoadShaders(std::string vertexFilePath, std::string fragmentFil
     }
 
     // Link the program
-    printf("Linking program\n");
+    //printf("Linking program\n");
     GLuint ProgramID = glCreateProgram();
     glAttachShader(ProgramID, VertexShaderID);
     glAttachShader(ProgramID, FragmentShaderID);

@@ -8,6 +8,7 @@
 #include "neptun/editor/editor.h"
 #include "neptun/editor/graphics.h"
 #include "kd_tree.h"
+#include "proceduralmeshgenerator.h"
 #include "ray_tracer.h"
 #include "scene.h"
 #include "stats.h"
@@ -45,6 +46,23 @@ struct SceneInfo
     std::string short_name;
     bool has_bounding_box;
 };
+
+void create_and_render_test_scene()
+{
+    Scene scene;
+    RayTracer ray_tracer;
+
+    SceneObject* icosphere = new SceneObject("Icosphere");
+
+    icosphere->mesh = ProceduralMeshGenerator::create_icosphere();
+    scene.add_scene_object(icosphere);
+
+    scene.build_tet_mesh(true, true);
+
+    ray_tracer.Render(scene);
+
+    std::cout << "simple test scene is rendered." << std::endl;
+}
 
 void build_and_render_times(const std::string folder_name, int N = 100)
 {
@@ -760,6 +778,8 @@ int main(int argc, char** argv)
         //fs::create_directory(test_folder_name);
 
         std::cout << "Starting in benchmark mode ... " << std::endl;
+
+        create_and_render_test_scene();
 
         //if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
         //    build_and_render_times(test_folder_name, 100);
