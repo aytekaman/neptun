@@ -151,13 +151,16 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     int total_test_count = 0;
     int total_L1_hit_count = 0;
 
-    const int max_job_index = (resolution.x / tile_size) * (resolution.y / tile_size);
+
+    const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
+    const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
+    const int max_job_index = tile_count_x * tile_count_y;
 
     int idx = thread_idx;
 
     while (idx < max_job_index)
     {
-        glm::ivec2 rect_min = glm::ivec2((idx * tile_size) % resolution.x, ((idx * tile_size) / resolution.x) * tile_size);
+        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
         glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
 
         rect_max = (glm::min)(rect_max, resolution);
