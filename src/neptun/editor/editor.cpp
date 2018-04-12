@@ -159,19 +159,19 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
 
     glGenTextures(1, &rendered_frame_texture_id);
     glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     glGenTextures(1, &visited_tets_texture_id);
     glBindTexture(GL_TEXTURE_2D, visited_tets_texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_visited_tets_image->get_pixels());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_visited_tets_image->get_pixels());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     glGenTextures(1, &locality_texture_id);
     glBindTexture(GL_TEXTURE_2D, locality_texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_locality_image->get_pixels());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_locality_image->get_pixels());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -1188,10 +1188,9 @@ void Editor::DrawRenderedFrame()
 
     float image_scale = 1;
 
-    ImGui::Image((ImTextureID)(intptr_t)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)rendered_frame_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
     ImGui::SameLine();
     ImGui::BeginChild("asd", ImVec2(0, 0));
-
 
     //(printf("Rendered in %.3f seconds. (%.1f FPS)", ray_tracer->last_render_time, 1 / ray_tracer->last_render_time);
     ImGui::Text("Rendered in %.4f seconds. (%.2f FPS)", Stats::get_avg_render_time(10), 1 / Stats::get_avg_render_time(10));
@@ -1202,7 +1201,7 @@ void Editor::DrawRenderedFrame()
 
     //ImGui::Checkbox("Multi-threading", &ray_tracer->multi_threading);
 
-    static glm::ivec2 res = ray_tracer->resolution;
+    static glm::ivec2 res = ray_tracer->m_resolution;
 
     ImGui::InputInt2("Resolution", &res.x);
     //ImGui::InputInt("Size", &ray_tracer->tile_size);
@@ -1211,15 +1210,27 @@ void Editor::DrawRenderedFrame()
     const char* reps[] = { "Default", "ScTP", "Fast Basis", "kd-tree", "BVH"};
     ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 5);
 
-    if (res != ray_tracer->resolution)
+    if (res != ray_tracer->m_resolution)
     {
-        ray_tracer->resolution = res;
+        ray_tracer->set_resoultion(res);
 
-        //delete[] ray_tracer->pixels;
+        //glGenTextures(1, &rendered_frame_texture_id);
+        glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-        //ray_tracer->pixels = new glm::u8vec3[ray_tracer->resolution.x * ray_tracer->resolution.y];
-        //glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
-        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->resolution.x, ray_tracer->resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->pixels);
+        //glGenTextures(1, &visited_tets_texture_id);
+        glBindTexture(GL_TEXTURE_2D, visited_tets_texture_id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_visited_tets_image->get_pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+        //glGenTextures(1, &locality_texture_id);
+        glBindTexture(GL_TEXTURE_2D, locality_texture_id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, 0, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_locality_image->get_pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
     static bool render = false;
@@ -1231,8 +1242,6 @@ void Editor::DrawRenderedFrame()
         Logger::LogWarning("can't render because there is no accelerator in the scene.");
         render = false;
     }
-
-
 
     ImGui::Separator();
     ImGui::Checkbox("Diagnostics", &diagnostics);
@@ -1254,22 +1263,21 @@ void Editor::DrawRenderedFrame()
     {
         ray_tracer->Render(*scene, diagnostics);
         glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
 
         glBindTexture(GL_TEXTURE_2D, visited_tets_texture_id);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_RGB, GL_UNSIGNED_BYTE, ray_tracer->m_visited_tets_image->get_pixels());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, GL_RGB, GL_UNSIGNED_BYTE, ray_tracer->m_visited_tets_image->get_pixels());
 
         glBindTexture(GL_TEXTURE_2D, locality_texture_id);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->resolution.x, ray_tracer->resolution.y, GL_RGB, GL_UNSIGNED_BYTE, ray_tracer->m_locality_image->get_pixels());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, GL_RGB, GL_UNSIGNED_BYTE, ray_tracer->m_locality_image->get_pixels());
     }
-
 
     ImGui::End();
 
     ImGui::Begin("Diag");
-    ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
     ImGui::SameLine();
-    ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->resolution.y / ray_tracer->resolution.x));
+    ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
     ImGui::End();
 }
 
@@ -1304,8 +1312,6 @@ void Editor::DrawConsole()
     const std::vector<Msg> &logs = Logger::logs;
 
     static int selected_msg_id = -1;
-
-
 
     for (size_t i = 0; i < logs.size(); i++)
     {

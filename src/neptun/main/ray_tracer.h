@@ -84,7 +84,10 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
+
     void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
+    void set_resoultion(const glm::ivec2& resolution);
+
 
     bool multi_threading = false;
     bool shadows = false;
@@ -101,7 +104,7 @@ public:
     Image* m_rendered_image;
 
     std::atomic<int> job_index{0};
-    glm::ivec2 resolution = glm::ivec2(640, 480);
+    glm::ivec2 m_resolution = glm::ivec2(640, 480);
     int tile_size = 16;
     //glm::u8vec3 *pixels;
     int thread_count;

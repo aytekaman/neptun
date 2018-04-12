@@ -640,7 +640,7 @@ int TetMesh::find_tet_brute_force(const glm::vec3& point)
     return -1;
 }
 
-bool TetMesh::raycast_stats(const Ray & ray, const SourceTet& tet, IntersectionData& intersection_data, DiagnosticData& diagnostic_data)
+bool TetMesh::raycast_stats(const Ray & ray, const SourceTet& tet, IntersectionData& intersection_data, DiagnosticData & diagnostic_data)
 {
     return false;
 }

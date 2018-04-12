@@ -31,9 +31,9 @@
 
 RayTracer::RayTracer()
 {
-    m_rendered_image = new Image(resolution.x, resolution.y);
-    m_visited_tets_image = new Image(resolution.x, resolution.y);
-    m_locality_image     = new Image(resolution.x, resolution.y);
+    m_rendered_image = new Image(m_resolution.x, m_resolution.y);
+    m_visited_tets_image = new Image(m_resolution.x, m_resolution.y);
+    m_locality_image     = new Image(m_resolution.x, m_resolution.y);
 
     thread_count = std::thread::hardware_concurrency();
     Logger::Log("Number of threads: %d", thread_count);
@@ -139,12 +139,12 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     const glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
     const glm::vec3 up = glm::cross(forward, right);
 
-    const float aspect = (float)resolution.x / resolution.y;
+    const float aspect = (float)m_resolution.x / m_resolution.y;
     const float scale_y = glm::tan(glm::pi<float>() / 8);
 
     const glm::vec3 bottom_left = cam_pos + forward - up * scale_y - right * scale_y * aspect;
-    const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)resolution.x;
-    const glm::vec3 up_step = (up * scale_y * 2.0f) / (float)resolution.y;
+    const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
+    const glm::vec3 up_step = (up * scale_y * 2.0f) / (float)m_resolution.y;
 
     Ray ray(cam_pos);
 
@@ -152,8 +152,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     int total_L1_hit_count = 0;
 
 
-    const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
-    const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
+    const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
+    const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
     const int max_job_index = tile_count_x * tile_count_y;
 
     int idx = thread_idx;
@@ -163,7 +163,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
         glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
         glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
 
-        rect_max = (glm::min)(rect_max, resolution);
+        rect_max = (glm::min)(rect_max, m_resolution);
 
         for (int i = rect_min.y; i < rect_max.y; i++)
         {
@@ -261,17 +261,17 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                         float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
                         float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
                         glm::vec3 avg_locality_color = Color::jet(scaled_avg_locality);
-                        m_locality_image->set_pixel((resolution.y - i - 1), (resolution.x - j - 1), avg_locality_color * 255.0f);
+                        m_locality_image->set_pixel((m_resolution.y - i - 1), (m_resolution.x - j - 1), avg_locality_color * 255.0f);
                     }
 
                     float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
                     glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
-                    m_visited_tets_image->set_pixel((resolution.y - i - 1), (resolution.x - j - 1), visited_tet_count_color * 255.0f);
+                    m_visited_tets_image->set_pixel((m_resolution.y - i - 1), (m_resolution.x - j - 1), visited_tet_count_color * 255.0f);
 
                     total_test_count += diagnostic_data.visited_node_count;
                 }
 
-                glm::ivec2 p_idx = glm::ivec2((resolution.y - i - 1), (resolution.x - j - 1));
+                glm::ivec2 p_idx = glm::ivec2((m_resolution.y - i - 1), (m_resolution.x - j - 1));
 
                 m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
             }
@@ -280,7 +280,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
         idx = job_index++;
     }
 
-    traversed_tetra_count[thread_idx] = total_test_count / ((resolution.x * resolution.y) / (float)thread_count);
+    traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
     L1_hit_count[thread_idx] = total_L1_hit_count;
 }
 
@@ -292,4 +292,20 @@ void RayTracer::save_to_disk(const char * file_name, ImageType image_type)
         m_visited_tets_image->save_to_disk(file_name);
     else if (image_type == ImageType::Render)
         m_rendered_image->save_to_disk(file_name);
+}
+
+void RayTracer::set_resoultion(const glm::ivec2& resolution)
+{
+    if (m_resolution == resolution)
+        return;
+
+    m_resolution = resolution;
+
+    delete m_rendered_image;
+    delete m_locality_image;
+    delete m_visited_tets_image;
+
+    m_rendered_image = new Image(m_resolution.x, m_resolution.y);
+    m_locality_image = new Image(m_resolution.x, m_resolution.y);
+    m_visited_tets_image = new Image(m_resolution.x, m_resolution.y);
 }
