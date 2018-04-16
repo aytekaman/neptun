@@ -533,31 +533,6 @@ void Editor::DrawHierarchy()
     ImGui::End();
 }
 
-bool iss_point_inside_tet(glm::vec3 v[4], glm::vec3 point)
-{
-    bool flag = true;
-
-    for (int j = 0; j < 4; j++)
-    {
-        glm::vec3 a = v[(j + 2) % 4] - v[(j + 1) % 4];
-        glm::vec3 b = v[(j + 3) % 4] - v[(j + 1) % 4];
-        glm::vec3 c = glm::cross(a, b);
-        glm::vec3 d = v[j] - v[(j + 1) % 4];
-
-        bool result = glm::dot(c, d) > 0;
-
-        glm::vec3 e = point - v[(j + 1) % 4];
-
-        if ((glm::dot(c, e) > 0) != result)
-        {
-            flag = false;
-            break;
-        }
-    }
-
-    return flag;
-};
-
 void Editor::DrawTetGen()
 {
     ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGui::GetStyle().Colors[ImGuiCol_TitleBg]);
