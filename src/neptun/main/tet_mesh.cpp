@@ -561,14 +561,12 @@ void TetMesh::init_faces(const Scene& scene)
             Face face;
 
             //face.material = scene.sceneObjects[i]->material;
-
-            face.vertices[0] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 0], 1));
-            face.vertices[1] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 1], 1));
-            face.vertices[2] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 2], 1));
-
-            face.normals[0] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 0], 1));
-            face.normals[1] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 1], 1));
-            face.normals[2] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 2], 1));
+            for (int i = 0; i < 3; ++i)
+            {
+                face.vertices[i] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + i], 1));
+                face.normals [i] = glm::vec3(r * glm::vec4(mesh->m_normals [j + i], 1));
+            }
+            
 
             //if (mesh->uvs.size() > 0)
             //{
@@ -948,8 +946,13 @@ bool TetMesh32::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
 
     int index = source_tet.n[outIdx];
 
+    int iter = 0;
+
     while (index >= 0)
     {
+        iter++;
+        if (iter > 100)
+            return false;
         id[outIdx] = id[3];
         id[3] = m_tet32s[index].x ^ id[0] ^ id[1] ^ id[2];
         const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
@@ -1048,9 +1051,19 @@ bool TetMesh32::raycast_stats(const Ray& ray, const SourceTet& source_tet, Inter
         return false;
 
     int index = source_tet.n[outIdx];
-
+    int iter = 0;
     while (index >= 0)
     {
+        if (diagnostic_data.x == 240 && diagnostic_data.y == 336)
+            std::cout << index << std::endl;
+
+        iter++;
+        if (iter > 200)
+        {
+            std::cout << diagnostic_data.x << " " << diagnostic_data.y << std::endl;
+            return false;
+        }
+            
         ++diagnostic_data.visited_node_count;
 
         id[outIdx] = id[3];
@@ -1070,7 +1083,7 @@ bool TetMesh32::raycast_stats(const Ray& ray, const SourceTet& source_tet, Inter
             else
                 outIdx = 0;
         }
-        else if (p[3].x * p[1].y < p[3].y * p[1].x)
+        else if (p[3].x * p[1].y <= p[3].y * p[1].x)
             outIdx = 2;
         else
             outIdx = 0;

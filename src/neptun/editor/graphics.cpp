@@ -145,8 +145,6 @@ void Graphics::Render(Scene *scene, bool show_tetrahedrons, RenderingMode render
 
     }
 
-
-
     glUseProgram(programID);
     //glEnable(GL_TEXTURE_2D);
     glActiveTexture(GL_TEXTURE0);
@@ -271,9 +269,9 @@ void Graphics::DrawTri(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color)
 
 void Graphics::DrawTet(glm::vec3 p[4], glm::vec4 color)
 {
-    //for (int i = 0; i < 3; i++)
-    //	for (int j = i + 1; j < 4; j++)
-    //		DrawLine(p[i], p[j], color);
+    for (int i = 0; i < 3; i++)
+    	for (int j = i + 1; j < 4; j++)
+    		DrawLine(p[i], p[j], color);
     
     color = color * 0.9f;
     

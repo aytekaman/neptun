@@ -35,7 +35,7 @@ RayTracer::RayTracer()
     m_visited_tets_image = new Image(m_resolution.x, m_resolution.y);
     m_locality_image     = new Image(m_resolution.x, m_resolution.y);
 
-    thread_count = std::thread::hardware_concurrency();
+    thread_count = 1;
     Logger::Log("Number of threads: %d", thread_count);
 }
 
@@ -58,8 +58,14 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
     int tet_index = 0;
 
-    if(scene.tet_mesh)
+
+    std::cout << "start search" << std::endl;
+    if (scene.tet_mesh)
+    {
         tet_index = scene.tet_mesh->find_tet(cam_pos, source_tet);
+        std::cout << tet_index << std::endl;
+    }
+    std::cout << "end search" << std::endl;
 
     if (tet_index < 0)
         return;
@@ -169,6 +175,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
         {
             for (int j = rect_min.x; j < rect_max.x; j++)
             {
+                //std::cout << i << " " << j << std::endl;
+
                 ray.dir = glm::normalize(bottom_left + right_step * (float)j + up_step * (float)i - ray.origin);
 
                 glm::vec3 pos, normal, color;
@@ -179,6 +187,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 diagnostic_data.total_tet_distance = 0;
                 diagnostic_data.visited_node_count = 0;
                 diagnostic_data.L1_hit_count = 0;
+                diagnostic_data.x = i;
+                diagnostic_data.y = j;
 
                 // int tet_index_copy = tet_index;
 

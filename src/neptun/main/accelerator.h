@@ -10,6 +10,8 @@ struct DiagnosticData
     int visited_node_count;
     int total_tet_distance;
     int L1_hit_count;
+    int x;
+    int y;
 };
 
 struct IntersectionData

@@ -509,10 +509,7 @@ void Editor::DrawHierarchy()
 
     if (ImGui::GetIO().KeysDown[GLFW_KEY_F])
     {
-        if (selected_scene_object)
-            cam_target = selected_scene_object->pos;
-        else
-            cam_target = glm::vec3();
+        cam_target = selected_scene_object ? selected_scene_object->pos : glm::vec3();
     }
 
     if (ImGui::GetIO().KeysDown[GLFW_KEY_DELETE])
@@ -795,9 +792,6 @@ void Editor::DrawTetGen()
     //    }
     //}
 
-
-
-
     if (scene->tet_mesh)
     {
         static bool dummy_is_created = false;
@@ -809,7 +803,15 @@ void Editor::DrawTetGen()
             scene->add_scene_object(dummy);
             dummy_is_created = true;
         }
+        
+        SourceTet tet = scene->tet_mesh->m_source_tet;
 
+        glm::vec3 p[4];
+        for (int i = 0; i < 4; i++)
+            p[i] = scene->tet_mesh->m_points[tet.v[i]];
+
+        graphics->DrawTet(p);
+        std::cout << "drawing" << std::endl;
         //glm::vec3 p[4];
         //
         //SourceTet tet = scene->tet_mesh->m_source_tet;
@@ -941,7 +943,6 @@ void Editor::DrawScene()
         for (int i = 0; i < scene->sceneObjects.size(); i++)
             scene->sceneObjects[i]->m_is_visible = false;
     }
-
 
     if (!KeysDownPrev[GLFW_KEY_D] && ImGui::GetIO().KeysDown[GLFW_KEY_D] && selected_scene_object)
     {
