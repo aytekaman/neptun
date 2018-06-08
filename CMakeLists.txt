@@ -149,6 +149,9 @@ add_executable (neptun
     ${thirdparty_sources}
 )
 
+INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(neptun ${EMBREE_LIBRARY})
+
 # Find and link to OpenGL
 include(FindOpenGL)
 target_link_libraries(neptun ${OPENGL_gl_LIBRARY})
