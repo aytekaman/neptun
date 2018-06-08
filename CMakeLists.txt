@@ -28,9 +28,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(src/thirdparty/glfw-3.2.1)
 
-#set(glfw3_DIR ${NEPTUN_DEPS_STAGE_DIR}/glfw/lib/cmake/glfw3)
-
-#find_package(glfw3 REQUIRED)
+FIND_PACKAGE(embree 3.2.0 REQUIRED)
 
 set (thirdparty_sources
     src/thirdparty/gl3w/include/GL/gl3w.h
