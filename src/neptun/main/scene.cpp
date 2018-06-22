@@ -188,7 +188,7 @@ void Scene::clear()
 
 bool Scene::has_accelerator() const
 {
-    return kd_tree || bvh || tet_mesh;
+    return kd_tree || bvh || bvh_embree || tet_mesh;
 }
 
 int Scene::get_triangle_count(bool ignore_hidden_scene_objects)
@@ -213,6 +213,16 @@ void Scene::build_bvh(int maxPrimsInNode, SplitMethod splitMethod)
         delete bvh;
 
     bvh = new Bvh(*this, maxPrimsInNode, splitMethod);
+}
+
+void Scene::build_bvh_embree()
+{
+    if (bvh_embree)
+        delete bvh_embree;
+
+    bvh_embree = new BvhEmbree(*this);
+
+    std::cout << "embree tree is built." << std::endl;
 }
 
 void Scene::build_kd_tree(int isectCost, int traversalCost, float emptyBonus, int maxPrims, int maxDepth)
