@@ -4,6 +4,8 @@
 #include <ctime>
 #include <iostream>
 
+
+
 #include <glm/glm.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
@@ -654,12 +656,12 @@ int Bvh::flattenBVHTree(BVHBuildNode *node, int *offset) {
 
 Bvh::~Bvh()
 { 
-	FreeAligned(nodes);
+    FreeAligned(nodes);
 
-	//for (Face face : faces)
-	//{
-	//	face.reset();
-	//}
+    //for (Face face : faces)
+    //{
+    //	face.reset();
+    //}
 }
 
 bool Bvh::Intersect(const Ray &ray, IntersectionData& intersection_data) const {
@@ -872,4 +874,155 @@ void Bvh::initFaces()
             faces.push_back(face);
         }
     }
+}
+
+BvhEmbree::BvhEmbree(Scene& scene)
+{
+    scene_ptr = &scene;
+
+    initFaces();
+
+    std::cout << "a" << std::endl;
+
+    RTCDevice rtc_device = rtcNewDevice("isa=sse2");
+    rtc_scene = rtcNewScene(rtc_device);
+
+    std::cout << "b" << std::endl;
+
+    RTCGeometry mesh = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
+
+    std::cout << "c" << std::endl;
+
+    glm::vec3* vertices = (glm::vec3*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(glm::vec3), faces.size() * 3);
+
+    for (int i = 0; i < faces.size(); ++i)
+    {
+        vertices[3 * i + 0].x = faces[i].vertices[0].x;
+        vertices[3 * i + 0].y = faces[i].vertices[0].y;
+        vertices[3 * i + 0].z = faces[i].vertices[0].z;
+                                      
+        vertices[3 * i + 1].x = faces[i].vertices[1].x;
+        vertices[3 * i + 1].y = faces[i].vertices[1].y;
+        vertices[3 * i + 1].z = faces[i].vertices[1].z;
+                                      
+        vertices[3 * i + 2].x = faces[i].vertices[2].x;
+        vertices[3 * i + 2].y = faces[i].vertices[2].y;
+        vertices[3 * i + 2].z = faces[i].vertices[2].z;
+    }
+
+    struct Tri
+    {
+        int v0;
+        int v1;
+        int v2;
+    };
+
+    Tri* triangles = (Tri*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Tri), faces.size());
+
+    for (int i = 0; i < faces.size(); ++i)
+    {
+        triangles[i].v0 = 3 * i + 0;
+        triangles[i].v1 = 3 * i + 1;
+        triangles[i].v2 = 3 * i + 2;
+    }
+
+    std::cout << "e" << std::endl;
+
+    rtcCommitGeometry(mesh);
+    unsigned int geomID = rtcAttachGeometry(rtc_scene, mesh);
+    rtcReleaseGeometry(mesh);
+    //return geomID;
+    rtcCommitScene(rtc_scene);
+}
+
+BvhEmbree::~BvhEmbree()
+{
+
+}
+
+void BvhEmbree::initFaces()
+{
+    Scene &scene = *scene_ptr;
+
+    std::vector<SceneObject*> &scene_objects = scene.sceneObjects;
+
+    for (int i = 0, face_idx = 0; i < scene_objects.size(); i++)
+    {
+        Mesh *mesh = scene.sceneObjects[i]->mesh;
+
+        if (mesh == nullptr)
+            continue;
+
+        glm::mat4 t = glm::translate(glm::mat4(1.0f), scene_objects[i]->pos);
+        glm::vec3 rot = glm::radians(scene_objects[i]->rot);
+        glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
+        glm::mat4 s = glm::scale(glm::mat4(1.0), scene_objects[i]->scale);
+
+        s[3][3] = 1;
+
+        glm::mat4 m = t * r * s;
+
+        for (int j = 0; j < mesh->m_vertex_count; j += 3)
+        {
+            glm::vec3 vertex = glm::vec3(m * glm::vec4(mesh->m_vertices[j], 1));
+
+            Face face;;
+
+            //face.material = scene.sceneObjects[i]->material;
+
+            face.vertices[0] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 0], 1));
+            face.vertices[1] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 1], 1));
+            face.vertices[2] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 2], 1));
+
+            face.normals[0] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 0], 1));
+            face.normals[1] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 1], 1));
+            face.normals[2] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 2], 1));
+
+            //if (mesh->uvs.size() > 0)
+            //{
+            //    face.uvs[0] = mesh->uvs[j + 0];
+            //    face.uvs[1] = mesh->uvs[j + 1];
+            //    face.uvs[2] = mesh->uvs[j + 2];
+            //}
+
+            faces.push_back(face);
+        }
+    }
+}
+
+bool BvhEmbree::Intersect(const Ray& ray, IntersectionData& intersection_data) const
+{
+    RTCIntersectContext context;
+    rtcInitIntersectContext(&context);
+
+
+    //RTCRay rtc_ray;
+    RTCRayHit rtc_hit;
+
+    rtc_hit.ray.org_x = ray.origin.x;
+    rtc_hit.ray.org_y = ray.origin.y;
+    rtc_hit.ray.org_z = ray.origin.z;
+
+    rtc_hit.ray.dir_x = ray.dir.x;
+    rtc_hit.ray.dir_y = ray.dir.y;
+    rtc_hit.ray.dir_z = ray.dir.z;
+
+    rtc_hit.ray.tnear = 0.0000001f;
+    rtc_hit.ray.tfar = 10000000.0f;
+    //rtc_hit.ray.id = rand();
+
+    rtc_hit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
+    rtc_hit.hit.primID = RTC_INVALID_GEOMETRY_ID;
+    
+    rtcIntersect1(rtc_scene, &context, &rtc_hit);
+
+    intersection_data.position = ray.origin + rtc_hit.ray.tfar * ray.dir;
+    intersection_data.normal.x = rtc_hit.hit.Ng_x;
+    intersection_data.normal.y = rtc_hit.hit.Ng_y;
+    intersection_data.normal.z = rtc_hit.hit.Ng_z;
+    intersection_data.normal = glm::normalize(intersection_data.normal);
+
+    //intersection_data.position = rtc_hit.ray.
+
+    return rtc_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }

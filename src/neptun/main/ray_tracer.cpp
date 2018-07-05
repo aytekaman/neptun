@@ -30,6 +30,8 @@
 
 #include "glm/gtc/constants.hpp"
 
+#include "embree3/rtcore.h"
+
 RayTracer::RayTracer()
 {
     m_rendered_image = new Image(m_resolution.x, m_resolution.y);
@@ -183,7 +185,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
                 // int tet_index_copy = tet_index;
 
-                bool hit;
+                bool hit = false;
 
                 IntersectionData intersection_data;
 
@@ -215,12 +217,13 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                     else if (method == Method::Kd_tree)
                         hit = scene.kd_tree->Intersect(ray, intersection_data);
                     else if (method == Method::BVH)
-                        hit = scene.bvh->Intersect(ray, intersection_data);
+                        hit = scene.bvh_embree->Intersect(ray, intersection_data);
                 }
 
                 if (hit)
                 {
-                    //color = glm::vec3(1.0, 1.0, 1.0);
+                    
+                    color = glm::vec3();
 
                     for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
                     {
@@ -236,7 +239,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                         }
                     }
 
-                    color = glm::clamp(color, 0.0f, 1.0f);
+                    //color = glm::clamp(color, 0.0f, 1.0f);
 
                     //float u = (glm::atan(pos.x, pos.z) / glm::pi<float>()) * 0.5f + 0.5f;
                     //float v = 0.5 - (glm::atan(pos.y, glm::sqrt(pos.x * pos.x + pos.z * pos.z)) / glm::pi<float>());

@@ -720,8 +720,11 @@ void Editor::DrawTetGen()
     if (ImGui::Button("Build kd-tree"))
         scene->build_kd_tree();
 
-    if (ImGui::Button("Build BVH"))
+    if (ImGui::Button("Build BVH (pbrt)"))
         scene->build_bvh();
+
+    if (ImGui::Button("Build BVH (embree)"))
+        scene->build_bvh_embree();
 
     ImGui::SetWindowSize(ImVec2(360, (display_h - 20) / 2));
     ImGui::SetWindowPos(ImVec2(display_w - 360, 20 + (display_h - 20) / 2));

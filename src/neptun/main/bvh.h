@@ -7,6 +7,7 @@
 #include "face.h"
 #include "memory.h"
 
+#include "embree3/rtcore.h"
 
 #include <memory>
 #include <vector>
@@ -67,6 +68,22 @@ public:
     const SplitMethod splitMethod;
     //std::vector<Face> faces;
     LinearBVHNode *nodes = nullptr;
+};
+
+class BvhEmbree
+{
+public:
+    BvhEmbree(Scene& scene);
+    ~BvhEmbree();
+
+    void initFaces();
+
+    bool Intersect(const Ray &ray, IntersectionData& intersection_data) const;
+
+    RTCScene rtc_scene;
+
+    std::vector<Face> faces;
+    Scene* scene_ptr;
 };
 
 //std::shared_ptr<Bvh> CreateBvherator(

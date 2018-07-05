@@ -7,6 +7,7 @@
 #include <vector>
 
 class Bvh;
+class BvhEmbree;
 
 enum class SplitMethod;
 class KdTree;
@@ -30,6 +31,7 @@ public:
     int  get_triangle_count(bool ignore_hidden_scene_objects = true);
 
     void build_bvh(int maxPrimsInNode = 1, SplitMethod splitMethod = (SplitMethod)0);
+    void build_bvh_embree();
     void build_kd_tree(int isectCost = 80, int traversalCost = 1, float emptyBonus = 0.5, int maxPrims = 1, int maxDepth = -1);
     void build_tet_mesh(bool preserve_triangles, bool create_bounding_box, float quality = 5.0f);
 
@@ -44,7 +46,8 @@ public:
     std::string tet_mesh_file_path;
 
     // Accelerators.
-    Bvh*     bvh      = nullptr;
-    KdTree*  kd_tree  = nullptr;
-    TetMesh* tet_mesh = nullptr;
+    Bvh*        bvh         = nullptr;
+    BvhEmbree*  bvh_embree  = nullptr;
+    KdTree*     kd_tree     = nullptr;
+    TetMesh*    tet_mesh    = nullptr;
 };

@@ -17,6 +17,7 @@ endif()
 
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
+set(USE_STATIC_RUNTIME)
 
 include_directories(src)
 include_directories(src/thirdparty)

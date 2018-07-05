@@ -267,8 +267,6 @@ void Graphics::DrawTri(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec4 color)
     triColors.push_back(color);
 }
 
-
-
 void Graphics::DrawTet(glm::vec3 p[4], glm::vec4 color)
 {
     //for (int i = 0; i < 3; i++)

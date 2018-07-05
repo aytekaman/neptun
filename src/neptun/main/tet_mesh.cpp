@@ -307,7 +307,6 @@ void TetMesh::build_from_scene(
     tetgenio out;
 
     bool is_tetrahedralization_success = true;
-
     try
     {
         if (preserve_triangles)
