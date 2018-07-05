@@ -222,21 +222,21 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 if (hit)
                 {
                     
-                    color = glm::vec3(1.0, 1.0, 1.0);
+                    color = glm::vec3();
 
-                    //for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
-                    //{
-                    //    Ray shadow_ray(intersection_data.position, glm::normalize(lightInfos[light_idx].pos - intersection_data.position));
+                    for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                    {
+                        Ray shadow_ray(intersection_data.position, glm::normalize(lightInfos[light_idx].pos - intersection_data.position));
 
-                    //    // check normals before shooting
-                    //    //if (!shadows || scene.tet_mesh->Raycast(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
-                    //    {
-                    //        glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersection_data.position);
-                    //        float diffuse = glm::clamp(glm::dot(intersection_data.normal, to_light), 0.0f, 1.0f);
-                    //        //diffuse = 1.0f;
-                    //        color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
-                    //    }
-                    //}
+                        // check normals before shooting
+                        //if (!shadows || scene.tet_mesh->Raycast(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
+                        {
+                            glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersection_data.position);
+                            float diffuse = glm::clamp(glm::dot(intersection_data.normal, to_light), 0.0f, 1.0f);
+                            //diffuse = 1.0f;
+                            color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                        }
+                    }
 
                     //color = glm::clamp(color, 0.0f, 1.0f);
 
