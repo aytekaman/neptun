@@ -760,6 +760,11 @@ void region_sort(int N = 5000)
     std::cout << render_time_with_regions / N << std::endl;
 }
 
+extern "C"
+{
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+
 int main(int argc, char** argv)
 {
     //glm::vec3 n = glm::normalize(glm::vec3(0.5, 1.0, 0.1));
