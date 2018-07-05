@@ -1016,6 +1016,12 @@ bool BvhEmbree::Intersect(const Ray& ray, IntersectionData& intersection_data) c
     
     rtcIntersect1(rtc_scene, &context, &rtc_hit);
 
+    intersection_data.position = ray.origin + rtc_hit.ray.tfar * ray.dir;
+    intersection_data.normal.x = rtc_hit.hit.Ng_x;
+    intersection_data.normal.y = rtc_hit.hit.Ng_y;
+    intersection_data.normal.z = rtc_hit.hit.Ng_z;
+    intersection_data.normal = glm::normalize(intersection_data.normal);
+
     //intersection_data.position = rtc_hit.ray.
 
     return rtc_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID;
