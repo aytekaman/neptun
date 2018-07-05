@@ -3,6 +3,7 @@
 #include "gl3w/include/GL/gl3w.h"
 #include "GLFW/glfw3.h"
 
+#include <chrono>
 #include <ctime>
 #include <iostream>
 #include <thread>
@@ -88,7 +89,7 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
     job_index = thread_count;
 
-    clock_t start = clock();
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
     for (int i = 0; i < thread_count; i++)
         threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
@@ -99,11 +100,11 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
         delete threads[i];
     }
 
-    clock_t end = clock();
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
     delete[] threads;
 
-    last_render_time = (float)(end - start) / CLOCKS_PER_SEC;
+    last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
 
     Stats::add_render_time(last_render_time);
 
