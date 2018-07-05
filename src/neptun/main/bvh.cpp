@@ -884,7 +884,7 @@ BvhEmbree::BvhEmbree(Scene& scene)
 
     std::cout << "a" << std::endl;
 
-    RTCDevice rtc_device = rtcNewDevice("isa=sse2");
+    RTCDevice rtc_device = rtcNewDevice("");
     rtc_scene = rtcNewScene(rtc_device);
 
     std::cout << "b" << std::endl;
