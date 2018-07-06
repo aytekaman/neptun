@@ -30,8 +30,6 @@
 
 #include "glm/gtc/constants.hpp"
 
-#include "embree3/rtcore.h"
-
 RayTracer::RayTracer()
 {
     m_rendered_image = new Image(m_resolution.x, m_resolution.y);
