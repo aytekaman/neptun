@@ -28,9 +28,9 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 if(UNIX)
-    add_definitions(-DEMBREE_ISPC_SUPPORT = 0)
+    add_definitions(-DEMBREE_ISPC_SUPPORT=0)
 endif()
-add_definitions(-DEMBREE_STATIC_LIB = 1)
+add_definitions(-DEMBREE_STATIC_LIB=1)
 add_subdirectory(src/thirdparty/embree-3.2.0)
 
 add_subdirectory(src/thirdparty/glfw-3.2.1)
