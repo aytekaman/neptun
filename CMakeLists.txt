@@ -30,6 +30,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_definitions(-DEMBREE_STATIC_LIB=1)
 if(UNIX)
     set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
+    set(EMBREE_TUTORIALS OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
 endif()
 add_subdirectory(src/thirdparty/embree-3.2.0)
 
