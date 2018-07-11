@@ -7,6 +7,7 @@
 #include "face.h"
 #include "memory.h"
 
+#define ENABLE_STATIC_LIB
 #include "embree3/rtcore.h"
 
 #include <memory>

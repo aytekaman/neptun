@@ -27,9 +27,10 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-add_subdirectory(src/thirdparty/glfw-3.2.1)
+add_subdirectory(src/thirdparty/embree-3.2.0)
+add_definitions(-DEMBREE_STATIC_LIB=1)
 
-FIND_PACKAGE(embree 3.2.0 REQUIRED)
+add_subdirectory(src/thirdparty/glfw-3.2.1)
 
 set (thirdparty_sources
     src/thirdparty/gl3w/include/GL/gl3w.h
@@ -148,8 +149,9 @@ add_executable (neptun
     ${thirdparty_sources}
 )
 
-INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(neptun ${EMBREE_LIBRARY})
+#Link & include embree
+TARGET_LINK_LIBRARIES(neptun embree)
+INCLUDE_DIRECTORIES(src/thirdparty/embree-3.2.0/include/)
 
 # Find and link to OpenGL
 include(FindOpenGL)
