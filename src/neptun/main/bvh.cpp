@@ -995,8 +995,6 @@ bool BvhEmbree::Intersect(const Ray& ray, IntersectionData& intersection_data) c
     RTCIntersectContext context;
     rtcInitIntersectContext(&context);
 
-
-    //RTCRay rtc_ray;
     RTCRayHit rtc_hit;
 
     rtc_hit.ray.org_x = ray.origin.x;
@@ -1009,20 +1007,24 @@ bool BvhEmbree::Intersect(const Ray& ray, IntersectionData& intersection_data) c
 
     rtc_hit.ray.tnear = 0.0000001f;
     rtc_hit.ray.tfar = 10000000.0f;
-    //rtc_hit.ray.id = rand();
 
     rtc_hit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
     rtc_hit.hit.primID = RTC_INVALID_GEOMETRY_ID;
     
     rtcIntersect1(rtc_scene, &context, &rtc_hit);
 
-    intersection_data.position = ray.origin + rtc_hit.ray.tfar * ray.dir;
-    intersection_data.normal.x = rtc_hit.hit.Ng_x;
-    intersection_data.normal.y = rtc_hit.hit.Ng_y;
-    intersection_data.normal.z = rtc_hit.hit.Ng_z;
-    intersection_data.normal = glm::normalize(intersection_data.normal);
+    if (rtc_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
+    {
+        intersection_data.position = ray.origin + rtc_hit.ray.tfar * ray.dir;
+        intersection_data.normal =
+            faces[rtc_hit.hit.primID].normals[1] * rtc_hit.hit.u +
+            faces[rtc_hit.hit.primID].normals[2] * rtc_hit.hit.v +
+            faces[rtc_hit.hit.primID].normals[0] * (1 - rtc_hit.hit.u - rtc_hit.hit.v);
 
-    //intersection_data.position = rtc_hit.ray.
+        intersection_data.normal = glm::normalize(intersection_data.normal);
 
-    return rtc_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID;
+        return true;
+    }
+    else
+        return false;
 }
