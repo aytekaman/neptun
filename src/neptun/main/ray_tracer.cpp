@@ -197,7 +197,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 if (is_diagnostic)
                 {
                     if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
-                        hit = scene.tet_mesh->raycast_stats(ray, source_tet, intersection_data, diagnostic_data);
+                        hit = scene.tet_mesh->intersect_stats(ray, source_tet, intersection_data, diagnostic_data);
                     /*else if (method == Method::Kd_tree)
                         hit = scene.kd_tree->Intersect_stats(ray, intersection_data, diagnostic_data);
                     else if (method == Method::BVH)
@@ -207,11 +207,11 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 else
                 {
                     if (method == Method::Default)
-                        hit = scene.tet_mesh->raycast(ray, source_tet, intersection_data);
+                        hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
                     //else if (method == Method::ScTP)
-                    //    hit = scene.tet_mesh->Raycast_sctp(ray, intersection_data);
+                    //    hit = scene.tet_mesh->intersect_sctp(ray, intersection_data);
                     //else if (method == Method::Fast_basis)
-                    //    hit = scene.tet_mesh->raycast_optimized_basis(ray, intersection_data);
+                    //    hit = scene.tet_mesh->intersect_optimized_basis(ray, intersection_data);
                     else if (method == Method::Kd_tree)
                         hit = scene.kd_tree->Intersect(ray, intersection_data);
                     else if (method == Method::BVH)
@@ -228,7 +228,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                         Ray shadow_ray(intersection_data.position, glm::normalize(lightInfos[light_idx].pos - intersection_data.position));
 
                         // check normals before shooting
-                        //if (!shadows || scene.tet_mesh->Raycast(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
+                        //if (!shadows || scene.tet_mesh->intersect(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
                         {
                             glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersection_data.position);
                             float diffuse = glm::clamp(glm::dot(intersection_data.normal, to_light), 0.0f, 1.0f);

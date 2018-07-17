@@ -639,7 +639,7 @@ int TetMesh::find_tet_brute_force(const glm::vec3& point)
     return -1;
 }
 
-bool TetMesh::raycast_stats(const Ray & ray, const SourceTet& tet, IntersectionData& intersection_data, DiagnosticData & diagnostic_data)
+bool TetMesh::intersect_stats(const Ray & ray, const SourceTet& tet, IntersectionData& intersection_data, DiagnosticData & diagnostic_data)
 {
     return false;
 }
@@ -912,7 +912,7 @@ int TetMesh32::find_tet(const glm::vec3& point, SourceTet& tet)
     return -1;
 }
 
-bool TetMesh32::raycast(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
+bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
     unsigned int id[4];
     glm::vec2 p[4];
@@ -1012,7 +1012,7 @@ bool TetMesh32::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         return false;
 }
 
-bool TetMesh32::raycast_stats(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data, DiagnosticData& diagnostic_data)
+bool TetMesh32::intersect_stats(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data, DiagnosticData& diagnostic_data)
 {
     unsigned int id[4];
     glm::vec2 p[4];
@@ -1115,12 +1115,12 @@ bool TetMesh32::raycast_stats(const Ray& ray, const SourceTet& source_tet, Inter
         return false;
 }
 
-bool TetMesh32::raycast(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
+bool TetMesh32::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
 {
     return false;
 }
 
-bool TetMesh32::raycast(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
+bool TetMesh32::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
 }
@@ -1355,7 +1355,7 @@ int TetMesh20::find_tet(const glm::vec3& point, SourceTet & tet)
     return -1;
 }
 
-bool TetMesh20::raycast(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
+bool TetMesh20::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
     unsigned int id[4];
     glm::vec2 p[4];
@@ -1476,12 +1476,12 @@ bool TetMesh20::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         return false;
 }
 
-bool TetMesh20::raycast(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
+bool TetMesh20::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
 {
     return false;
 }
 
-bool TetMesh20::raycast(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
+bool TetMesh20::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
 }
@@ -1804,7 +1804,7 @@ int TetMesh16::find_tet(const glm::vec3& point, SourceTet& tet)
     return -1;
 }
 
-bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
+bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
     unsigned int id[4];
     glm::vec2 p[4];
@@ -1938,12 +1938,12 @@ bool TetMesh16::raycast(const Ray& ray, const SourceTet& source_tet, Intersectio
         return false;
 }
 
-bool TetMesh16::raycast(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
+bool TetMesh16::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
 {
     return false;
 }
 
-bool TetMesh16::raycast(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
+bool TetMesh16::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
 }
