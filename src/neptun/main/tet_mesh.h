@@ -122,30 +122,30 @@ public:
     // int  find_tet_idx(const glm::vec3& point);
 
     // Casts a ray from a point inside the 'tet'.
-    virtual bool raycast(
+    virtual bool intersect(
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data) = 0;
 
     // Casts a ray from a point on the 'tet_face'
-    virtual bool raycast(
+    virtual bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         IntersectionData& intersection_data) = 0;
 
     // Returns true if a ray can reach to a target_tet_idx'th tet.
-    virtual bool raycast(
+    virtual bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         const int& target_tet_idx = 0) = 0;
 
-    virtual bool raycast_stats(
+    virtual bool intersect_stats(
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data,
         DiagnosticData& diagnostic_data);
 
-    bool raycast_optimized_basis(const Ray& ray, IntersectionData& intersection_data);
+    bool intersect_optimized_basis(const Ray& ray, IntersectionData& intersection_data);
 
     std::vector<Tet>        m_tets;
     std::vector<glm::vec3>  m_points;
@@ -193,26 +193,26 @@ public:
     int  find_tet(const glm::vec3& point, SourceTet& tet) override;
 
     // Casts a ray from a point inside the 'tet'.
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
 
     // Casts a ray from a point inside the 'tet'.
-    virtual bool raycast_stats(
+    virtual bool intersect_stats(
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data,
         DiagnosticData& diagnostic_data) override;
 
     // Casts a ray from a point on the 'tet_face'
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         IntersectionData& intersection_data) override;
 
     // Returns true if a ray can reach to a target_tet_idx'th tet.
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         const int& target_tet_idx = 0) override;
@@ -249,19 +249,19 @@ public:
     // int  find_tet_idx(const glm::vec3& point);
 
     // Casts a ray from a point inside the 'tet'.
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
 
     // Casts a ray from a point on the 'tet_face'
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         IntersectionData& intersection_data) override;
 
     // Returns true if a ray can reach to a target_tet_idx'th tet.
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         const int& target_tet_idx) override;
@@ -295,19 +295,19 @@ public:
     int  find_tet(const glm::vec3& point, SourceTet& tet) override;
 
     // Casts a ray from a point inside the 'tet'.
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
 
     // Casts a ray from a point on the 'tet_face'
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         IntersectionData& intersection_data) override;
 
     // Returns true if a ray can reach to a target_tet_idx'th tet.
-    bool raycast(
+    bool intersect(
         const Ray& ray,
         const TetFace& tet_face,
         const int& target_tet_idx = 0) override;

@@ -882,16 +882,10 @@ BvhEmbree::BvhEmbree(Scene& scene)
 
     initFaces();
 
-    std::cout << "a" << std::endl;
-
     RTCDevice rtc_device = rtcNewDevice("");
     rtc_scene = rtcNewScene(rtc_device);
 
-    std::cout << "b" << std::endl;
-
     RTCGeometry mesh = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
-    std::cout << "c" << std::endl;
 
     glm::vec3* vertices = (glm::vec3*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(glm::vec3), faces.size() * 3);
 
@@ -926,12 +920,9 @@ BvhEmbree::BvhEmbree(Scene& scene)
         triangles[i].v2 = 3 * i + 2;
     }
 
-    std::cout << "e" << std::endl;
-
     rtcCommitGeometry(mesh);
-    unsigned int geomID = rtcAttachGeometry(rtc_scene, mesh);
+    rtcAttachGeometry(rtc_scene, mesh);
     rtcReleaseGeometry(mesh);
-    //return geomID;
     rtcCommitScene(rtc_scene);
 }
 
