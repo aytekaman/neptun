@@ -149,6 +149,7 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
     }
 
     glfwSetDropCallback(window, Editor::DropCallback);
+    glfwSwapInterval(1);
 
     ImGui::CreateContext();
 
