@@ -51,6 +51,35 @@ struct ConstrainedFace
     Face* face;
 };
 
+// Ray that is for tetrahedral mesh traversal
+struct TetRay
+{
+    glm::vec3 origin;
+    glm::vec3 dir;
+    SourceTet source_tet;
+};
+
+// Hit structure that represents a ray-triangle intersection in a tetrahedral mesh
+struct TetHit
+{
+    float t;
+    glm::vec2 bary;
+    unsigned int tet_idx;
+};
+
+// Combined TetRay & TetHit structure to be used for ray primitive intersection queries
+struct TetRayHit
+{
+    TetRay tet_ray;
+    TetHit tet_hit;
+};
+
+struct TetRayHit4
+{
+    TetRay tet_ray[4];
+    TetHit tet_hit[4];
+};
+
 enum class SortingMethod
 {
     Default, // no sorting.
@@ -173,8 +202,9 @@ class TetMesh32 : public TetMesh
 public:
     struct Tet32
     {
-        unsigned int x;
+        
         unsigned int v[3];
+        unsigned int x;
         int n[4];
     };
 
@@ -199,6 +229,12 @@ public:
         IntersectionData& intersection_data) override;
 
     // Casts a ray from a point inside the 'tet'.
+    bool intersect_simd(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data);
+
+    // Casts a ray from a point inside the 'tet'.
     virtual bool intersect_stats(
         const Ray& ray,
         const SourceTet& tet,
@@ -217,7 +253,53 @@ public:
         const TetFace& tet_face,
         const int& target_tet_idx = 0) override;
 
-    std::vector<Tet32> m_tet32s;
+    Tet32* m_tet32s = nullptr;
+};
+
+class TetMesh20 : public TetMesh
+{
+public:
+    // Tet data of 20 bytes. Neighbors are sorted
+    // using their corresponding vertex ids as keys.
+    struct Tet20
+    {
+        unsigned int x;
+        int n[4];
+    };
+
+    TetMesh20(
+        const Scene &scene,
+        const bool preserve_triangles,
+        const bool create_bbox,
+        const float quality = 1.0f);
+
+    TetMesh20(const Scene &scene);
+
+    virtual int get_size_in_bytes();
+
+    void init_acceleration_data() override;
+
+    int  find_tet(const glm::vec3& point, SourceTet& tet) override;
+
+    // Casts a ray from a point inside the 'tet'.
+    bool intersect(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data) override;
+
+    // Casts a ray from a point on the 'tet_face'
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        IntersectionData& intersection_data) override;
+
+    // Returns true if a ray can reach to a target_tet_idx'th tet.
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        const int& target_tet_idx = 0) override;
+
+    std::vector<Tet20> m_tet20s;
 };
 
 class TetMesh16 : public TetMesh
@@ -266,51 +348,9 @@ public:
         const TetFace& tet_face,
         const int& target_tet_idx) override;
 
-    std::vector<Tet16> m_tet16s;
-};
+    void intersect4(TetRayHit4& tet_ray_hit);
 
-class TetMesh20 : public TetMesh
-{
-public:
-    // Tet data of 20 bytes. Neighbors are sorted
-    // using their corresponding vertex ids as keys.
-    struct Tet20
-    {
-        unsigned int x;
-        int n[4];
-    };
+    void intersect4_simd(TetRayHit4& tet_ray_hit);
 
-    TetMesh20(
-        const Scene &scene,
-        const bool preserve_triangles,
-        const bool create_bbox,
-        const float quality = 1.0f);
-
-    TetMesh20(const Scene &scene);
-
-    virtual int get_size_in_bytes();
-
-    void init_acceleration_data() override;
-
-    int  find_tet(const glm::vec3& point, SourceTet& tet) override;
-
-    // Casts a ray from a point inside the 'tet'.
-    bool intersect(
-        const Ray& ray,
-        const SourceTet& tet,
-        IntersectionData& intersection_data) override;
-
-    // Casts a ray from a point on the 'tet_face'
-    bool intersect(
-        const Ray& ray,
-        const TetFace& tet_face,
-        IntersectionData& intersection_data) override;
-
-    // Returns true if a ray can reach to a target_tet_idx'th tet.
-    bool intersect(
-        const Ray& ray,
-        const TetFace& tet_face,
-        const int& target_tet_idx = 0) override;
-
-    std::vector<Tet20> m_tet20s;
+    Tet16* m_tet16s = nullptr;
 };

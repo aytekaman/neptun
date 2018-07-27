@@ -221,8 +221,6 @@ void Scene::build_bvh_embree()
         delete bvh_embree;
 
     bvh_embree = new BvhEmbree(*this);
-
-    std::cout << "embree tree is built." << std::endl;
 }
 
 void Scene::build_kd_tree(int isectCost, int traversalCost, float emptyBonus, int maxPrims, int maxDepth)

@@ -19,7 +19,8 @@ enum Method
     ScTP,
     Fast_basis,
     Kd_tree,
-    BVH,
+    BVH_pbrt,
+    BVH_embree,
     Method_count
 };
 

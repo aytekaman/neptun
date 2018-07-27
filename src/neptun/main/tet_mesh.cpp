@@ -696,7 +696,7 @@ int TetMesh32::get_size_in_bytes()
 {
     int size_in_bytes = 0;
 
-    size_in_bytes += m_tet32s.size() * sizeof(Tet32);
+    size_in_bytes += m_tets.size() * sizeof(Tet32);
     size_in_bytes += m_points.size() * sizeof(glm::vec3);
     size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
 
@@ -710,7 +710,9 @@ void TetMesh32::init_acceleration_data()
 
     clock_t start = clock();
 
-    m_tet32s.resize(m_tets.size());
+    FreeAligned(m_tet32s);
+    m_tet32s = (Tet32*)AllocAligned(m_tets.size() * 32);
+    //m_tet32s = new Tet32[m_tets.size()];
 
     for (int i = 0; i < m_tets.size(); i++)
     {
@@ -760,9 +762,11 @@ void TetMesh32::init_acceleration_data()
     //}
 
     Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
+
+    Logger::Log("a %p", (void*)&m_tet32s[0].x);
 }
 
-float cross(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; };
+inline float cross(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; };
 
 int TetMesh32::find_tet(const glm::vec3& point, SourceTet& tet)
 {
@@ -912,6 +916,8 @@ int TetMesh32::find_tet(const glm::vec3& point, SourceTet& tet)
     return -1;
 }
 
+#include <xmmintrin.h>
+
 bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
     unsigned int id[4];
@@ -920,14 +926,22 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     //int prev_index;
     signed short outIdx = -1;
 
-    const Basis basis(ray.dir);
+    //const Basis basis(ray.dir);
+
+    const float sign = copysignf(1.0f, ray.dir.z);
+
+    const float a = -1.0f / (sign + ray.dir.z);
+    const float b = ray.dir.x * ray.dir.y * a;
+
+    const glm::vec3 right = glm::vec3(1.0f + sign * ray.dir.x * ray.dir.x * a, sign * b, -sign * ray.dir.x);
+    const glm::vec3 up = glm::vec3(b, sign + ray.dir.y * ray.dir.y * a, -ray.dir.y);
 
     for (int i = 0; i < 4; i++)
     {
         id[i] = source_tet.v[i];
         const glm::vec3 point = m_points[id[i]] - ray.origin;
-        p[i].x = glm::dot(basis.right, point);
-        p[i].y = glm::dot(basis.up, point);
+        p[i].x = glm::dot(right, point);
+        p[i].y = glm::dot(up, point);
     }
 
     if (cross(p[2], p[1]) <= 0.0 && cross(p[1], p[3]) <= 0.0 && cross(p[3], p[2]) <= 0.0)
@@ -954,8 +968,8 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
 
         p[outIdx] = p[3];
-        p[3].x = glm::dot(basis.right, newPoint);
-        p[3].y = glm::dot(basis.up, newPoint);
+        p[3].x = glm::dot(right, newPoint);
+        p[3].y = glm::dot(up, newPoint);
 
         //p[3] = basis.project(newPoint);
 
@@ -1002,7 +1016,7 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
 
         intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
         intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
-        intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+        //intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
 
@@ -1363,14 +1377,20 @@ bool TetMesh20::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     //int prev_index;
     signed short outIdx = -1;
 
-    const Basis basis(ray.dir);
+    const float sign = copysignf(1.0f, ray.dir.z);
+
+    const float a = -1.0f / (sign + ray.dir.z);
+    const float b = ray.dir.x * ray.dir.y * a;
+
+    const glm::vec3 right = glm::vec3(1.0f + sign * ray.dir.x * ray.dir.x * a, sign * b, -sign * ray.dir.x);
+    const glm::vec3 up = glm::vec3(b, sign + ray.dir.y * ray.dir.y * a, -ray.dir.y);
 
     for (int i = 0; i < 4; i++)
     {
         id[i] = source_tet.v[i];
         const glm::vec3 point = m_points[id[i]] - ray.origin;
-        p[i].x = glm::dot(basis.right, point);
-        p[i].y = glm::dot(basis.up, point);
+        p[i].x = glm::dot(right, point);
+        p[i].y = glm::dot(up, point);
     }
 
     if (cross(p[2], p[1]) <= 0.0 && cross(p[1], p[3]) <= 0.0 && cross(p[3], p[2]) <= 0.0)
@@ -1399,8 +1419,8 @@ bool TetMesh20::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
 
 
-        p[3].x = glm::dot(basis.right, newPoint);
-        p[3].y = glm::dot(basis.up, newPoint);
+        p[3].x = right.x * newPoint.x + right.y * newPoint.y + right.z * newPoint.z;
+        p[3].y = up.x * newPoint.x + up.y * newPoint.y + up.z * newPoint.z;
 
         //p[3] = basis.project(newPoint);
 
@@ -1507,7 +1527,7 @@ int TetMesh16::get_size_in_bytes()
 {
     int size_in_bytes = 0;
 
-    size_in_bytes += m_tet16s.size() * sizeof(Tet16);
+    size_in_bytes += m_tets.size() * sizeof(Tet16);
     size_in_bytes += m_points.size() * sizeof(glm::vec3);
     size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
 
@@ -1516,7 +1536,8 @@ int TetMesh16::get_size_in_bytes()
 
 void TetMesh16::init_acceleration_data()
 {
-    m_tet16s.resize(m_tets.size());
+    FreeAligned(m_tet16s);
+    m_tet16s = (Tet16*)AllocAligned(m_tets.size() * 16);
 
     std::vector<std::pair<unsigned int, int>> tet_data;
     tet_data.resize(4);
@@ -1946,4 +1967,60 @@ bool TetMesh16::intersect(const Ray& ray, const TetFace& tet_face, IntersectionD
 bool TetMesh16::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
+}
+
+void TetMesh16::intersect4(TetRayHit4& tet_ray_hit)
+{
+    unsigned int id[4][4];
+    glm::vec2 p[4][4];
+
+    const Basis basis[4] = {
+        Basis(tet_ray_hit.tet_ray[0].dir),
+        Basis(tet_ray_hit.tet_ray[1].dir),
+        Basis(tet_ray_hit.tet_ray[2].dir),
+        Basis(tet_ray_hit.tet_ray[3].dir) };
+
+    int index[4];
+    
+    for (int k = 0; k < 4; ++k)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            id[k][i] = tet_ray_hit.tet_ray[k].source_tet.v[i];
+            const glm::vec3 point = m_points[id[k][i]] - tet_ray_hit.tet_ray[k].origin;
+            p[k][i].x = glm::dot(basis[k].right, point);
+            p[k][i].y = glm::dot(basis[k].up, point);
+        }
+    }
+
+    for (int k = 0; k < 4; ++k)
+    {
+        if (cross(p[k][2], p[k][1]) <= 0.0f && cross(p[k][1], p[k][3]) <= 0.0f && cross(p[k][3], p[k][2]) <= 0.0f)
+        {
+            index[k] = tet_ray_hit.tet_ray[k].source_tet.n[0];
+            id[k][0] = id[k][3];
+            p[k][0] = p[k][3];
+        }
+        else if (cross(p[k][2], p[k][3]) <= 0.0f && cross(p[k][3], p[k][0]) <= 0.0f && cross(p[k][0], p[k][2]) <= 0.0f)
+        {
+            index[k] = tet_ray_hit.tet_ray[k].source_tet.n[1];
+            id[k][1] = id[k][3];
+            p[k][1] = p[k][3];
+        }
+        else if (cross(p[k][0], p[k][3]) <= 0.0f && cross(p[k][3], p[k][1]) <= 0.0f && cross(p[k][1], p[k][0]) <= 0.0f)
+        {
+            index[k] = tet_ray_hit.tet_ray[k].source_tet.n[2];
+            id[k][2] = id[k][3];
+            p[k][2] = p[k][3];
+        }
+        else if (cross(p[k][0], p[k][1]) <= 0.0f && cross(p[k][1], p[k][2]) <= 0.0f && cross(p[k][2], p[k][0]) <= 0.0f)
+        {
+            std::swap(id[k][0], id[k][1]);
+            std::swap(p[k][0], p[k][1]);
+
+            index[k] = tet_ray_hit.tet_ray[k].source_tet.n[3];
+        }
+    }
+
+
 }

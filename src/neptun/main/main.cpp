@@ -123,7 +123,7 @@ void build_and_render_times(const std::string folder_name, int N = 100)
         //MethodInfo(Method::Default, "Our method"),
         MethodInfo(Method::Fast_basis, "Fast basis"),
         MethodInfo(Method::Kd_tree, "kd-tree"),
-        MethodInfo(Method::BVH, "BVH")
+        MethodInfo(Method::BVH_pbrt, "BVH")
     };
 
     std::cout << "Method count: " << methodInfos.size() << std::endl;
@@ -305,7 +305,7 @@ void close_surface(const std::string folder_name, int N = 100)
     {
         MethodInfo(Method::Fast_basis, "tet-mesh"),
         MethodInfo(Method::Kd_tree, "kd-tree"),
-        MethodInfo(Method::BVH, "BVH")
+        MethodInfo(Method::BVH_pbrt, "BVH")
     };
 
     Scene scene;

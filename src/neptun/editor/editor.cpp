@@ -184,7 +184,6 @@ Editor::Editor(Scene * scene_, Graphics * graphics_, RayTracer *ray_tracer_) : s
 
     ImGuiIO& io = ImGui::GetIO();
 
-
     io.Fonts->AddFontFromFileTTF("../../fonts/DroidSans.ttf", 14);
     io.Fonts->AddFontFromFileTTF("../../fonts/Consolas.ttf", 12);
 
@@ -703,9 +702,6 @@ void Editor::DrawTetGen()
         ImGui::Checkbox("FFD", &show_ffd);
     }
 
-
-
-
     //if (ray_tracer->kd_tree)
     //{
     //    graphics->DrawCube(ray_tracer->kd_tree->bounds.min, ray_tracer->kd_tree->bounds.max);
@@ -1186,8 +1182,8 @@ void Editor::DrawRenderedFrame()
     //ImGui::InputInt("Size", &ray_tracer->tile_size);
     ImGui::Checkbox("Shadows", &ray_tracer->shadows);
 
-    const char* reps[] = { "Default", "ScTP", "Fast Basis", "kd-tree", "BVH"};
-    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 5);
+    const char* reps[] = { "Default", "ScTP", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
+    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 6);
 
     if (res != ray_tracer->m_resolution)
     {
