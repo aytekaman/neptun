@@ -1165,13 +1165,13 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
         p[i].y = glm::dot(up, point);
     }
 
-    if (p[2].x * p[1].y <= p[2].y * p[1].x && cross(p[1], p[3]) <= 0.0 && cross(p[3], p[2]) <= 0.0)
+    if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
         outIdx = 0;
-    else if (cross(p[2], p[3]) <= 0.0 && cross(p[3], p[0]) <= 0.0 && cross(p[0], p[2]) <= 0.0)
+    else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
         outIdx = 1;
-    else if (cross(p[0], p[3]) <= 0.0 && cross(p[3], p[1]) <= 0.0 && cross(p[1], p[0]) <= 0.0)
+    else if (p[0].x * p[3].y <= p[0].y * p[3].x && p[3].x * p[1].y <= p[3].y * p[1].x && p[1].x * p[0].y <= p[1].y * p[0].x)
         outIdx = 2;
-    else if (cross(p[0], p[1]) <= 0.0 && cross(p[1], p[2]) <= 0.0 && cross(p[2], p[0]) <= 0.0)
+    else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
     {
         outIdx = 3;
         std::swap(id[0], id[1]);
@@ -1523,13 +1523,13 @@ bool TetMesh20::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         p[i].y = glm::dot(up, point);
     }
 
-    if (cross(p[2], p[1]) <= 0.0 && cross(p[1], p[3]) <= 0.0 && cross(p[3], p[2]) <= 0.0)
+    if      (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
         outIdx = 0;
-    else if (cross(p[2], p[3]) <= 0.0 && cross(p[3], p[0]) <= 0.0 && cross(p[0], p[2]) <= 0.0)
+    else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
         outIdx = 1;
-    else if (cross(p[0], p[3]) <= 0.0 && cross(p[3], p[1]) <= 0.0 && cross(p[1], p[0]) <= 0.0)
+    else if (p[0].x * p[3].y <= p[0].y * p[3].x && p[3].x * p[1].y <= p[3].y * p[1].x && p[1].x * p[0].y <= p[1].y * p[0].x)
         outIdx = 2;
-    else if (cross(p[0], p[1]) <= 0.0 && cross(p[1], p[2]) <= 0.0 && cross(p[2], p[0]) <= 0.0)
+    else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
     {
         outIdx = 3;
         std::swap(id[0], id[1]);
@@ -1971,25 +1971,25 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         p[i].y = glm::dot(basis.up, point);
     }
 
-    if (cross(p[2], p[1]) <= 0.0f && cross(p[1], p[3]) <= 0.0f && cross(p[3], p[2]) <= 0.0f)
+    if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
     {
         index = source_tet.n[0];
         id[0] = id[3];
         p[0] = p[3];
     }
-    else if (cross(p[2], p[3]) <= 0.0f && cross(p[3], p[0]) <= 0.0f && cross(p[0], p[2]) <= 0.0f)
+    else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
     {
         index = source_tet.n[1];
         id[1] = id[3];
         p[1] = p[3];
     }
-    else if (cross(p[0], p[3]) <= 0.0f && cross(p[3], p[1]) <= 0.0f && cross(p[1], p[0]) <= 0.0f)
+    else if (p[0].x * p[3].y <= p[0].y * p[3].x && p[3].x * p[1].y <= p[3].y * p[1].x && p[1].x * p[0].y <= p[1].y * p[0].x)
     {
         index = source_tet.n[2];
         id[2] = id[3];
         p[2] = p[3];
     }
-    else if (cross(p[0], p[1]) <= 0.0f && cross(p[1], p[2]) <= 0.0f && cross(p[2], p[0]) <= 0.0f)
+    else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
     {
         std::swap(id[0], id[1]);
         std::swap(p[0], p[1]);
