@@ -1165,8 +1165,6 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
         p[i].y = glm::dot(up, point);
     }
 
-    // a.x * b.y - a.y * b.x
-
     if (p[2].x * p[1].y <= p[2].y * p[1].x && cross(p[1], p[3]) <= 0.0 && cross(p[3], p[2]) <= 0.0)
         outIdx = 0;
     else if (cross(p[2], p[3]) <= 0.0 && cross(p[3], p[0]) <= 0.0 && cross(p[0], p[2]) <= 0.0)
@@ -1187,8 +1185,8 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
     __m128 pa = _mm_set_ps(p[0].x, p[1].x, p[2].x, p[3].x);
     __m128 pb = _mm_set_ps(p[0].y, p[1].y, p[2].y, p[3].y);
 
-    __m128 px = _mm_set_ps(p[3].x, p[3].x, p[3].x, p[3].x);
-    __m128 py = _mm_set_ps(p[3].y, p[3].y, p[3].y, p[3].y);
+    __m128 px = _mm_set_ps1(p[3].x);
+    __m128 py = _mm_set_ps1(p[3].y);
 
     while (index >= 0)
     {
@@ -1203,21 +1201,12 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
         const float pnx = glm::dot(right, newPoint);
         const float pny = glm::dot(up, newPoint);
 
-        px.m128_f32[0] = pnx;
-        px.m128_f32[1] = pnx;
-        px.m128_f32[2] = pnx;
-        px.m128_f32[3] = pnx;
+        px = _mm_set_ps1(pnx);
+        py = _mm_set_ps1(pny);
 
-        py.m128_f32[0] = pny;
-        py.m128_f32[1] = pny;
-        py.m128_f32[2] = pny;
-        py.m128_f32[3] = pny;
-
-        //__m128 px = _mm_set_ps(pa.m128_f32[0], pa.m128_f32[0], pa.m128_f32[0], pa.m128_f32[0]);
-        //__m128 py = _mm_set_ps(pb.m128_f32[0], pb.m128_f32[0], pb.m128_f32[0], pb.m128_f32[0]);
-        __m128 pk = _mm_mul_ps(px, pb);
-        __m128 pl = _mm_mul_ps(py, pa);
-        __m128 pc = _mm_cmpge_ps(pk, pl);
+        const __m128 pk = _mm_mul_ps(px, pb);
+        const __m128 pl = _mm_mul_ps(py, pa);
+        const __m128 pc = _mm_cmpge_ps(pk, pl);
 
         const int a = pc.m128_i32[3] == 0;
         const int b = pc.m128_i32[1] != 0;
