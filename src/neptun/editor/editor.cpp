@@ -1182,8 +1182,8 @@ void Editor::DrawRenderedFrame()
     //ImGui::InputInt("Size", &ray_tracer->tile_size);
     ImGui::Checkbox("Shadows", &ray_tracer->shadows);
 
-    const char* reps[] = { "Default", "ScTP", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
-    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 6);
+    const char* reps[] = { "Default", "Default (SIMD)", "ScTP", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
+    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 7);
 
     if (res != ray_tracer->m_resolution)
     {

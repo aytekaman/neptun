@@ -16,6 +16,7 @@ class Texture;
 enum Method
 {
     Default,
+    DefaultSimd,
     ScTP,
     Fast_basis,
     Kd_tree,

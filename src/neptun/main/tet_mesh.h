@@ -156,6 +156,12 @@ public:
         const SourceTet& tet,
         IntersectionData& intersection_data) = 0;
 
+    // Casts a ray from a point inside the 'tet'.
+    virtual bool intersect_simd(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data);
+
     // Casts a ray from a point on the 'tet_face'
     virtual bool intersect(
         const Ray& ray,
@@ -254,6 +260,8 @@ public:
         const int& target_tet_idx = 0) override;
 
     Tet32* m_tet32s = nullptr;
+
+    glm::vec4* m_padded_points = nullptr;
 };
 
 class TetMesh20 : public TetMesh
