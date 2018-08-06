@@ -15,10 +15,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "basis.h"
-#include "tetgen/tetgen.h"
 #include "logger.h"
 #include "memory.h"
 #include "mesh.h"
+#include "neptun/tet_mesh/tet_mesh_builder_factory.h"
 #include "scene.h"
 #include "sfc_utils.h"
 #include "stats.h"
@@ -208,6 +208,35 @@ void TetMesh::build_from_scene(
         bbox_vertices[i] = glm::vec3(r * glm::vec4(bbox_vertices[i], 1));
     }
 
+    // Temporary tetmesh build code
+    // TODO: Add bounding box vertices/facets to TetMeshIn data structure
+    TetMeshBuilder* tetmesh_builder = TetMeshBuilderFactory::default_builder(); 
+    TetMeshBuilder::TetMeshOut out_data;
+    TetMeshBuilder::TetMeshIn in_data((int)vertices.size(), (int)triangles.size() / 3, triangles.size());
+    
+    in_data.preserve_triangles = preserve_triangles;
+    in_data.quality = quality;
+   
+    // This is probably temporary
+    in_data.points = vertices;
+    in_data.facets = triangles;
+    for (int i = 0; i < in_data.num_facets(); i++){
+        in_data.facet_indices[i] = 3 * i;
+        in_data.facet_markerlist[i] = i + 1;
+    }
+    
+    int success = tetmesh_builder->tetrahedralize(in_data, out_data);
+    if (success != 0){
+        Logger::LogError("TetGen error: %d", success);
+        return;
+    }
+
+    m_points = std::move(out_data.points);
+    m_tets = std::move(out_data.tets);
+    m_air_region_id = out_data.air_region_id;
+    m_constrained_face_count = out_data.constrained_face_count;
+
+    /*
     data.numberofpoints = (int)vertices.size() + bbox_vertex_count;
     data.pointlist = new REAL[data.numberofpoints * 3];
     data.numberoffacets = (int)triangles.size() / 3 + bbox_facet_count;
@@ -227,27 +256,7 @@ void TetMesh::build_from_scene(
         data.pointlist[3 * i + 2] = bbox_vertices[j].z;
     }
 
-    //int j = 0;
-
-    //for (int i = vertices.size(); i < vertices.size() + 8; i++)
-    //{
-    //	data.pointlist[3 * i + 0] = ((j % 8) > 4) ? 20 : -20;
-    //	data.pointlist[3 * i + 1] = ((j % 4) > 2) ? 20 : -20;
-    //	data.pointlist[3 * i + 2] = ((j % 2) > 1) ? 20 : -20;
-
-    //	j++;
-    //}
-
-
-    //for (int i = 0; i < num_lights; i++)
-    //{
-    //	data.pointlist[3 * (i + vertices.size()) + 0] = light_positions[i].x;
-    //	data.pointlist[3 * (i + vertices.size()) + 1] = light_positions[i].y;
-    //	data.pointlist[3 * (i + vertices.size()) + 2] = light_positions[i].z;
-    //}
-
     data.facetmarkerlist = new int[data.numberoffacets];
-
 
 
     for (int i = 0; i < data.numberoffacets - bbox_facet_count; i++)
@@ -366,7 +375,7 @@ void TetMesh::build_from_scene(
                 m_air_region_id = m_tets[i].region_id;
         }
     }
-
+    */
     end = clock();
 
     Logger::Log("Tet Mesh is generated in %f seconds.", float(end - start) / CLOCKS_PER_SEC);
