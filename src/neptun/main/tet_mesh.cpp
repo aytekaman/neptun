@@ -188,6 +188,7 @@ void TetMesh::build_from_scene(
     //	}
     //}
 
+    /*
     int bbox_vertex_count = 8 * create_bbox;
     int bbox_facet_count = 6 * create_bbox;
 
@@ -207,22 +208,76 @@ void TetMesh::build_from_scene(
 
         bbox_vertices[i] = glm::vec3(r * glm::vec4(bbox_vertices[i], 1));
     }
+    */
 
-    // Temporary tetmesh build code
-    // TODO: Add bounding box vertices/facets to TetMeshIn data structure
     TetMeshBuilder* tetmesh_builder = TetMeshBuilderFactory::default_builder(); 
     TetMeshBuilder::TetMeshOut out_data;
     TetMeshBuilder::TetMeshIn in_data((int)vertices.size(), (int)triangles.size() / 3, triangles.size());
     
     in_data.preserve_triangles = preserve_triangles;
     in_data.quality = quality;
-   
+
     // This is probably temporary
     in_data.points = vertices;
     in_data.facets = triangles;
     for (int i = 0; i < in_data.num_facets(); i++){
         in_data.facet_indices[i] = 3 * i;
         in_data.facet_markerlist[i] = i + 1;
+    }
+
+    if (create_bbox){
+        constexpr int face_indices[6][4] = {{0,1,3,2},  // bottom
+                                            {4,5,7,6},  // top
+                                            {1,3,7,5},  // right
+                                            {2,6,7,3},  // back
+                                            {0,4,6,2},  // left
+                                            {0,1,5,4}}; // front
+
+        glm::vec3 bbox[2] = {glm::vec3(-50, -50, -50), // min point
+                             glm::vec3(50, 50, 50)};   // max point
+
+        const int point_index_start = in_data.points.size();
+        const int facet_index_start = in_data.facet_indices.size();
+        const int facets_size_start = in_data.facets.size();
+
+        in_data.points.resize(in_data.points.size() + 8);
+        in_data.facet_markerlist.resize(in_data.facet_markerlist.size() + 6);
+        in_data.facet_indices.resize(in_data.facet_indices.size() + 6);
+        in_data.facets.resize(in_data.facets.size() + (6 * 4));
+
+        // Perturb points
+        glm::vec3 rot = glm::radians((float)m_perturb_points * glm::vec3(0.01f, 0.01f, 0.01f));
+        glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
+
+        // Create bbox vertices
+        for (size_t i = 0; i < 8; i++){
+            const float x = bbox[(i & 0x1)].x;
+            const float y = bbox[(i >> 1) & 0x1].y;
+            const float z = bbox[(i >> 2) & 0x1].z;
+            glm::vec3 p(x, y, z);
+
+            // Apply perturbation
+            if (m_perturb_points){
+                glm::vec3(r * glm::vec4(p, 1));
+            }
+            in_data.points[i + point_index_start] = p;
+        }
+
+        // Add facet indices
+        int facet_index = facet_index_start;
+        int facet_pointer = facets_size_start;
+        
+        for (int i = 0; i < 6; i++){
+            in_data.facet_indices[facet_index] = facet_pointer;
+            in_data.facet_markerlist[facet_index] = 0;
+
+            for (int j = 0; j < 4; j++){
+                in_data.facets[facet_pointer] = face_indices[i][j] + point_index_start;
+
+                facet_pointer++;
+            }
+            facet_index++;
+        }
     }
     
     int success = tetmesh_builder->tetrahedralize(in_data, out_data);

@@ -54,7 +54,6 @@ public:
 private:
     // Maybe instead of copying use the pointers of existing strucure?
     void convert_input(TetMeshIn& src, tetgenio& dst) const{
-        
         // Initialize dst
         dst.numberofpoints = src.num_points();
         dst.pointlist = new REAL[dst.numberofpoints * 3];
@@ -69,13 +68,14 @@ private:
             dst.pointlist[(3 * i) + 1] = p.y;
             dst.pointlist[(3 * i) + 2] = p.z;
         }
-
+        
         std::memcpy(dst.facetmarkerlist, &src.facet_markerlist[0], sizeof(int) * src.num_facets());
         
         for (size_t i = 0; i < src.num_facets(); i++){
             const int current_facet_index = src.facet_indices[i];
             const int next_facet_index = (i == src.num_facets() - 1) ? src.facets_size() : src.facet_indices[i + 1];
             const int num_vertices = next_facet_index - current_facet_index;
+            assert(next_facet_index > current_facet_index);
 
             tetgenio::facet& f = dst.facetlist[i];
             f.numberofpolygons = 1;
@@ -101,19 +101,16 @@ private:
         dst.points.resize(src.numberofpoints);
         dst.tets.resize(src.numberoftetrahedra);
         
-        for (int i = 0; i < src.numberofpoints; i++)
-        {
+        for (int i = 0; i < src.numberofpoints; i++){
             dst.points[i] = glm::make_vec3(&src.pointlist[3 * i]);
         }
 
         dst.constrained_face_count = 0;
 
-        for (int i = 0; i < src.numberoftetrahedra; i++)
-        {
+        for (int i = 0; i < src.numberoftetrahedra; i++){
             dst.tets[i].region_id = (int)src.tetrahedronattributelist[i];
 
-            for (int j = 0; j < 4; j++)
-            {
+            for (int j = 0; j < 4; j++){
                 dst.tets[i].v[j] = src.tetrahedronlist[4 * i + j];
                 dst.tets[i].n[j] = src.neighborlist[4 * i + j];
                 dst.tets[i].face_idx[j] = src.trifacemarkerlist[src.tet2facelist[4 * i + j]];
