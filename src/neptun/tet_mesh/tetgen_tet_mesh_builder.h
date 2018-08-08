@@ -5,7 +5,7 @@
 
 namespace {
     // Naming conflicting problems :(
-    void tetrahedralize2(char* str, tetgenio* in, tetgenio* out){
+    void tetgen_tetrahedralize(char* str, tetgenio* in, tetgenio* out){
         tetrahedralize(str, in, out);
     }
 }
@@ -38,7 +38,7 @@ public:
                     sprintf_s(str, BUFFER_SIZE, "q%.2fnnAfQ", in.quality);
                 #endif
             }
-            tetrahedralize2(str, &in_data,  &out_data);
+            tetgen_tetrahedralize(str, &in_data,  &out_data);
         } catch (int a) {
             success = false;
             return a;
@@ -52,7 +52,7 @@ public:
         return 0;
     }
 private:
-    // Maybe instead of copying use the pointers of existing strucure?
+
     void convert_input(TetMeshIn& src, tetgenio& dst) const{
         // Initialize dst
         dst.numberofpoints = src.num_points();
@@ -88,9 +88,6 @@ private:
             p->numberofvertices = num_vertices;
             p->vertexlist = new int[p->numberofvertices];
             
-            // put vertices in reverse order
-            // why reverse order? idk ...
-            // TODO: Ask
             for (int i = next_facet_index - 1, j = 0; i >= current_facet_index; i--, j++){
                 p->vertexlist[j] = src.facets[i];
             }
