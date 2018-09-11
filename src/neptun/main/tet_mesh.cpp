@@ -987,7 +987,7 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
 
         __m128 dot = _mm_hadd_ps(tp3x, tp3y);
         dot = _mm_hadd_ps(dot, dot);
-        p[i].x = dot.m128_f32[0];
+        p[i].x = dot[0];
         p[i].y = dot.m128_f32[1];
         
         //p[i].x = _mm_dp_ps(new_point, right, mask).m128_f32[0];
