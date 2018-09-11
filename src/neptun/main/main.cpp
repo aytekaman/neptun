@@ -760,6 +760,40 @@ void region_sort(int N = 5000)
     std::cout << render_time_with_regions / N << std::endl;
 }
 
+void simd_comparison()
+{
+    RayTracer ray_tracer;
+
+    Scene scene;
+    scene.load_from_file("Assets\\Armadillo.scene");
+    scene.build_tet_mesh(true, true);
+    scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+
+    int N = 5000;
+
+    float non_simd_fps = 0.0f;
+    float simd_fps = 0.0f;
+
+    for (int k = 0; k < N; ++k)
+    {
+        ray_tracer.method = Method::Default;
+        ray_tracer.Render(scene);
+        non_simd_fps = glm::max(1.0f / ray_tracer.last_render_time, non_simd_fps);
+
+        ray_tracer.method = Method::DefaultSimd;
+        ray_tracer.Render(scene);
+        simd_fps = glm::max(1.0f / ray_tracer.last_render_time, simd_fps);
+    }
+
+    //non_simd_fps /= N;
+    //simd_fps /= N;
+
+    std::cout << "non-simd: " << non_simd_fps << std::endl;
+    std::cout << "    simd: " << simd_fps << std::endl;
+
+    std::cout << "difference: " << glm::abs(non_simd_fps - simd_fps) / non_simd_fps;
+}
+
 #ifdef _WIN32
 extern "C"
 {
@@ -787,6 +821,8 @@ int main(int argc, char** argv)
         std::cout << "Starting in benchmark mode ... " << std::endl;
 
         create_and_render_test_scene();
+
+        simd_comparison();
 
         //if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
         //    build_and_render_times(test_folder_name, 100);
