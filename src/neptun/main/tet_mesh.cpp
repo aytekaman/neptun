@@ -1,6 +1,6 @@
 #include "tet_mesh.h"
 
-#include <immintrin.h>
+#include <pmmintrin.h>
 
 
 
