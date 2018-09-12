@@ -246,10 +246,10 @@ public:
         const SourceTet& tet,
         IntersectionData& intersection_data);
 
-    bool intersect_simd_b(
-        const Ray& ray,
-        const SourceTet& tet,
-        IntersectionData& intersection_data);
+    //bool intersect_simd_b(
+    //    const Ray& ray,
+    //    const SourceTet& tet,
+    //    IntersectionData& intersection_data);
 
     // Casts a ray from a point inside the 'tet'.
     virtual bool intersect_stats(
