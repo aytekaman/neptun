@@ -763,9 +763,12 @@ void region_sort(int N = 5000)
 void simd_comparison()
 {
     RayTracer ray_tracer;
-
     Scene scene;
-    scene.load_from_file("Assets\\Armadillo.scene");
+
+    SceneObject* icosphere = new SceneObject("Icosphere");
+
+    icosphere->mesh = ProceduralMeshGenerator::create_icosphere();
+    scene.add_scene_object(icosphere);
     scene.build_tet_mesh(true, true);
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
 
