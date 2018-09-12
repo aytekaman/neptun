@@ -769,7 +769,7 @@ void simd_comparison()
     scene.build_tet_mesh(true, true);
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
 
-    int N = 5000;
+    int N = 1000;
 
     float non_simd_fps = 0.0f;
     float simd_fps = 0.0f;

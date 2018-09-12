@@ -959,44 +959,25 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     unsigned int id[4];
     glm::vec2 p[4];
 
-    //int prev_index;
-    
-
-    //const Basis basis(ray.dir);
-
     const float sign = copysignf(1.0f, ray.dir.z);
 
     const float a = -1.0f / (sign + ray.dir.z);
     const float b = ray.dir.x * ray.dir.y * a;
 
-    const __m128 right = _mm_set_ps(1.0f + sign * ray.dir.x * ray.dir.x * a, sign * b, -sign * ray.dir.x, 0.0f);
-    const __m128 up = _mm_set_ps(b, sign + ray.dir.y * ray.dir.y * a, -ray.dir.y, 0.0f);
-    const __m128 origin = _mm_set_ps(ray.origin.x, ray.origin.y, ray.origin.z, 0.0f);
-
-    //const int mask = 0xE1;
+    const glm::vec3 right(1.0f + sign * ray.dir.x * ray.dir.x * a, sign * b, -sign * ray.dir.x);
+    const glm::vec3 up(b, sign + ray.dir.y * ray.dir.y * a, -ray.dir.y);
 
     for (int i = 0; i < 4; i++)
     {
         id[i] = source_tet.v[i];
-        
-        const __m128 point = (_mm_load_ps(&m_padded_points[id[i]].x));
-        const __m128 new_point = _mm_sub_ps(point, origin);
-
-        const __m128 tp3x = _mm_mul_ps(new_point, right);
-        const __m128 tp3y = _mm_mul_ps(new_point, up);
-
-        __m128 dot = _mm_hadd_ps(tp3x, tp3y);
-        dot = _mm_hadd_ps(dot, dot);
-        p[i].x = dot[0];
-        p[i].y = dot.m128_f32[1];
-        
-        //p[i].x = _mm_dp_ps(new_point, right, mask).m128_f32[0];
-        //p[i].y = _mm_dp_ps(new_point, up, mask).m128_f32[0];
+        const glm::vec3 point = m_points[id[i]] - ray.origin;
+        p[i].x = glm::dot(right, point);
+        p[i].y = glm::dot(up, point);
     }
 
     signed short outIdx = -1;
 
-    if      (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
+    if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
         outIdx = 0;
     else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
         outIdx = 1;
@@ -1017,19 +998,12 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     {
         id[outIdx] = id[3];
         id[3] = m_tet32s[index].x ^ id[0] ^ id[1] ^ id[2];
-        //const glm::vec3 newPoint = (glm::vec3)m_padded_points[id[3]] - ray.origin;
-
-        const __m128 point = _mm_sub_ps(_mm_load_ps(&m_padded_points[id[3]].x), origin);
-        const __m128 tp3x = _mm_mul_ps(point, right);
-        const __m128 tp3y = _mm_mul_ps(point, up);
-        //const __m128 newPoint_simd = _mm_set_ps(newPoint.x, newPoint.y, newPoint.z, 0.0f);
+        const glm::vec3 newPoint = m_points[id[3]] - ray.origin;
 
         p[outIdx] = p[3];
+        p[3].x = glm::dot(right, newPoint);
+        p[3].y = glm::dot(up, newPoint);
 
-        __m128 dot = _mm_hadd_ps(tp3x, tp3y);
-        dot = _mm_hadd_ps(dot, dot);
-        p[3].x = dot.m128_f32[0];
-        p[3].y = dot.m128_f32[1];
         //p[3] = basis.project(newPoint);
 
         if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
@@ -1075,7 +1049,7 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
 
         intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
         intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
-        //intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+        intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
 
@@ -1263,8 +1237,8 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
 
 
         //p[3].x = right.x * newPoint.x + right.y * newPoint.y + right.z * newPoint.z;
-        p[3].x = _mm_dp_ps(point, right, mask).m128_f32[0];
-        p[3].y = _mm_dp_ps(point, up, mask).m128_f32[0];
+        p[3].x = _mm_cvtss_f32(_mm_dp_ps(point, right, mask));
+        p[3].y = _mm_cvtss_f32(_mm_dp_ps(point, up, mask));
 
         //p[3] = basis.project(newPoint);
 
