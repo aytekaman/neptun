@@ -1,0 +1,23 @@
+armadillo.tetmesh
+0.5 1 20
+0 0 0
+2
+Light
+6 10 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+armadillo
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
