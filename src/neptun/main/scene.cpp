@@ -44,7 +44,7 @@ void Scene::load_from_file(const std::string& scene_file_path)
     ifs >> tet_mesh_file_name;
 
     tet_mesh_file_path =
-        scene_file_path.substr(0, scene_file_path.find_last_of("\\") + 1) + tet_mesh_file_name;
+        scene_file_path.substr(0, scene_file_path.find_last_of("/") + 1) + tet_mesh_file_name;
 
     ifs >> camOrbitX >> camOrbitY >> camDist;
     ifs >> camTarget.x >> camTarget.y >> camTarget.z;
@@ -102,7 +102,7 @@ void Scene::load_from_file(const std::string& scene_file_path)
             ifs >> mesh_file_path;
 
             std::string absolute_mesh_file_path = 
-                scene_file_path.substr(0, scene_file_path.find_last_of("\\") + 1) + mesh_file_path;
+                scene_file_path.substr(0, scene_file_path.find_last_of("/") + 1) + mesh_file_path;
 
             Mesh* mesh = AssetImporter::ImportMesh(absolute_mesh_file_path.c_str());
 
@@ -221,8 +221,6 @@ void Scene::build_bvh_embree()
         delete bvh_embree;
 
     bvh_embree = new BvhEmbree(*this);
-
-    std::cout << "embree tree is built." << std::endl;
 }
 
 void Scene::build_kd_tree(int isectCost, int traversalCost, float emptyBonus, int maxPrims, int maxDepth)

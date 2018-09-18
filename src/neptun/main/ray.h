@@ -20,3 +20,5 @@ struct Ray
         dir = dir_;
     }
 };
+
+

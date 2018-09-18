@@ -1,0 +1,32 @@
+neptune.tetmesh
+0.25 1.5408 25.2382
+1.05856 0.216939 -0.145316
+3
+Light
+6 10 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+neptune
+-6 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+6 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj

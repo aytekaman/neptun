@@ -16,10 +16,12 @@ class Texture;
 enum Method
 {
     Default,
+    DefaultSimd,
     ScTP,
     Fast_basis,
     Kd_tree,
-    BVH,
+    BVH_pbrt,
+    BVH_embree,
     Method_count
 };
 

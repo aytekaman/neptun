@@ -208,14 +208,18 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 {
                     if (method == Method::Default)
                         hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
+                    else if (method == Method::DefaultSimd)
+                        hit = scene.tet_mesh->intersect_simd(ray, source_tet, intersection_data);
                     //else if (method == Method::ScTP)
                     //    hit = scene.tet_mesh->intersect_sctp(ray, intersection_data);
                     //else if (method == Method::Fast_basis)
                     //    hit = scene.tet_mesh->intersect_optimized_basis(ray, intersection_data);
                     else if (method == Method::Kd_tree)
                         hit = scene.kd_tree->Intersect(ray, intersection_data);
-                    else if (method == Method::BVH)
+                    else if (method == Method::BVH_embree)
                         hit = scene.bvh_embree->Intersect(ray, intersection_data);
+                    else if (method == Method::BVH_pbrt)
+                        hit = scene.bvh->Intersect(ray, intersection_data);
                 }
 
                 if (hit)

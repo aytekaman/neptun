@@ -1,0 +1,23 @@
+torus_knot.tetmesh
+0.52 1.2308 20
+0 0 0
+2
+Light
+6 10 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+torus_knot
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj

@@ -1,0 +1,257 @@
+torus_knots.tetmesh
+0.5 1 20
+0 0 0
+28
+Light
+6 10 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+Torus#Knot
+-5 -5 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 -5 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 -5 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 0 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 0 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 5 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 5 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+-5 5 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 -5 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 -5 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 -5 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 0 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 0 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 5 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 5 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+0 5 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 -5 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 -5 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 -5 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 0 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 0 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 5 -5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 5 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+Torus#Knot
+5 5 5
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
