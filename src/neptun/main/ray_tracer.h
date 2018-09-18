@@ -98,8 +98,8 @@ public:
     float last_render_time = 0;
     float avg_test_count;
     int L1_count;
-    float traversed_tetra_count[8] = { 0 };
-    int L1_hit_count[8] = { 0 };
+    float traversed_tetra_count[32] = { 0 };
+    int L1_hit_count[32] = { 0 };
 
     Image* m_visited_tets_image;
     Image* m_locality_image;

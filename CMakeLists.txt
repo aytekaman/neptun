@@ -147,6 +147,9 @@ set (main_sources
     src/neptun/main/utils.cpp
     src/neptun/main/utils.h
     src/neptun/main/filesystem.h
+    src/neptun/tet_mesh/tet_mesh_builder.h
+    src/neptun/tet_mesh/tet_mesh_builder_factory.h
+    src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
 )
 
 source_group ("main\\" FILES
