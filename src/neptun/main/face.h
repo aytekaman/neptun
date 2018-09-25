@@ -11,4 +11,5 @@ struct Face
     glm::vec3 normals[3];
     glm::vec2 uvs[3];
     Material *material = nullptr;
+    bool is_visible = true;
 };

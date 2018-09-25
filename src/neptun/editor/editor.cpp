@@ -435,6 +435,9 @@ void Editor::DrawInspector()
             //	selected_scene_object->mesh->CenterPivot();
             //	selected_scene_object->mesh->isDirty = true;
             //}
+                
+            ImGui::Checkbox("Ignore Tetrahedralization", &selected_scene_object->mesh->m_ignore_tetrahedralization);
+            ImGui::Checkbox("Structure Mesh", &selected_scene_object->mesh->m_structure_mesh);
 
             ImGui::Separator();
         }

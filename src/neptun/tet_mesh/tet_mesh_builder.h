@@ -19,6 +19,9 @@ public:
         std::vector<int> facet_indices;
         std::vector<int> facet_markerlist;
 
+        // Visibility of the face
+        std::vector<bool> is_face_visible; 
+
         // Meshing arguments
         bool preserve_triangles;
         float quality;
@@ -28,7 +31,7 @@ public:
         // facets_size: size of facets array (TODO: Rename?)
         TetMeshIn(int num_points, int num_facets, int facets_size) : points(num_points),
              facets(facets_size), facet_indices(num_facets), facet_markerlist(num_facets), 
-             preserve_triangles(false), quality(5) {}
+             is_face_visible(facets_size, true), preserve_triangles(false), quality(5) {}
 
         // Utility methods
         int num_points() const {
