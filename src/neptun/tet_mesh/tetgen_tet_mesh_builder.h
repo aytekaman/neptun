@@ -47,7 +47,7 @@ public:
         if (!success)
             return false;
 
-        convert_output(out_data, out);
+        convert_output(out_data, in, out);
         
         return 0;
     }
@@ -94,7 +94,7 @@ private:
         }
     }
 
-    void convert_output(tetgenio& src, TetMeshOut& dst) const{
+    void convert_output(tetgenio& src, TetMeshIn &in, TetMeshOut& dst) const{
         dst.points.resize(src.numberofpoints);
         dst.tets.resize(src.numberoftetrahedra);
         
@@ -112,8 +112,15 @@ private:
                 dst.tets[i].n[j] = src.neighborlist[4 * i + j];
                 dst.tets[i].face_idx[j] = src.trifacemarkerlist[src.tet2facelist[4 * i + j]];
 
+                // Set face invisible if is_face_visible flag is false
+            
+                
                 if (dst.tets[i].face_idx[j] > 0)
+                {
                     ++dst.constrained_face_count;
+                    if (!in.is_face_visible[dst.tets[i].face_idx[j] - 1])
+                        dst.tets[i].face_idx[j] = -1;
+                }
 
                 if (dst.tets[i].n[j] == -1)
                     dst.air_region_id = dst.tets[i].region_id;

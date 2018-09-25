@@ -14,6 +14,8 @@ public:
     void center_pivot();
 
     bool m_is_dirty = true;
+    bool m_structure_mesh = false; 
+    bool m_ignore_tetrahedralization = false;
 
     int m_face_count;
     int m_vertex_count;
