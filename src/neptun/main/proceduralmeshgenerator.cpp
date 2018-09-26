@@ -1,5 +1,6 @@
 
 #include <glm/gtc/noise.hpp>
+#include <glm/gtc/random.hpp>
 
 #include "proceduralmeshgenerator.h"
 #include "mesh.h"
@@ -165,54 +166,103 @@ Mesh* ProceduralMeshGenerator::create_icosphere(const float radius, const int n)
     return mesh;
 }
 
-glm::vec3 perlin2d(const float x, const float y, const float multiplier = 1)
+glm::vec3 noise2d(const float x, const float y, const float shift_x = 0, const float shift_y = 0)
 {
-    const float z = glm::perlin(glm::vec2(x * multiplier, y * multiplier));
-    return glm::vec3( x - 0.5, (z + 0.5) / 2, y - 0.5 );
+    float a = 6;
+    float f = 1/8.0f;
+    
+    float da = 0.8;
+    const float df = 4;
+    const int num_octaves = 10;
+
+    float z = 0;
+    
+    for (int i = 0; i < num_octaves; i++)
+    {
+        z += glm::perlin(glm::vec2(x * f + shift_x, y * f + shift_y)) * a;
+        a *= da;
+        da *= 0.4;
+        f *= df;
+    }
+
+    return glm::vec3( x, (z + 0.5) / 4, y);
 }
 
-Mesh* ProceduralMeshGenerator::create_terrain()
+glm::vec3 noise2d(const glm::vec2& v, const glm::vec2& shift = glm::vec2(0.f))
 {
-    const float perlin_multiplier = 3;
- 
-    const glm::ivec2 step_count(30, 30);
+    return noise2d(v.x, v.y, shift.x, shift.y);
+}
+
+Mesh* ProceduralMeshGenerator::create_terrain(const glm::vec2& terrain_size)
+{
+    const glm::vec2 shift = glm::linearRand(glm::vec2(-100, -100), glm::vec2(100, 100));
+
+    const glm::ivec2 step_count(100, 100);
     assert(step_count.x > 0 && step_count.y > 0);
-    const glm::vec2 step_size = 1.0f / glm::vec2(step_count);
+    const glm::vec2 step_size = terrain_size / glm::vec2(step_count);
     
     Mesh* mesh = new Mesh;
+    mesh->m_vertices.reserve(step_count.x * step_count.y * 6);
+    mesh->m_normals.reserve(step_count.x * step_count.y * 6);
+
     int index = 0;
     for (int i = 1; i < step_count.x; i++)
     {
         for (int j = 1; j < step_count.y; j++)
         {
-            const glm::vec2 bounds_coords[2] = { step_size * glm::vec2(i - 1, j - 1),
-                                                 step_size * glm::vec2(i, j)};
+            const glm::vec2 bounds_coords[2] = {step_size * glm::vec2(i - 1, j - 1) - (terrain_size / 2.0f),
+                                                step_size * glm::vec2(i, j) - (terrain_size / 2.0f)};
 
-            const glm::vec3 v[4] = { perlin2d(bounds_coords[0].x, bounds_coords[0].y, perlin_multiplier),
-                                     perlin2d(bounds_coords[0].x, bounds_coords[1].y, perlin_multiplier),
-                                     perlin2d(bounds_coords[1].x, bounds_coords[1].y, perlin_multiplier),
-                                     perlin2d(bounds_coords[1].x, bounds_coords[0].y, perlin_multiplier)
-                                     
+            const glm::vec2 coords[4] = {
+                glm::vec2(bounds_coords[0].x, bounds_coords[0].y),
+                glm::vec2(bounds_coords[0].x, bounds_coords[1].y),
+                glm::vec2(bounds_coords[1].x, bounds_coords[1].y),
+                glm::vec2(bounds_coords[1].x, bounds_coords[0].y)};
+
+            // Positions of the vertices of the current quad
+            const glm::vec3 v[4] = {noise2d(coords[0], shift),
+                                    noise2d(coords[1], shift),
+                                    noise2d(coords[2], shift),
+                                    noise2d(coords[3], shift)};
+
+            // Find normals of the vertices
+            const glm::vec2 cx = glm::vec2(step_size.x / 2.0f, 0);
+            const glm::vec2 cy = glm::vec2(0, step_size.y / 2.0f);
+
+            const glm::vec3 dx[4] = {
+                (noise2d(coords[0] + cx, shift) - noise2d(coords[0] - cx, shift)) / 2.0f,
+                (noise2d(coords[1] + cx, shift) - noise2d(coords[1] - cx, shift)) / 2.0f,
+                (noise2d(coords[2] + cx, shift) - noise2d(coords[2] - cx, shift)) / 2.0f,
+                (noise2d(coords[3] + cx, shift) - noise2d(coords[3] - cx, shift)) / 2.0f};
+
+            const glm::vec3 dy[4] = {
+                (noise2d(coords[0] + cy, shift) - noise2d(coords[0] - cy, shift)) / 2.0f,
+                (noise2d(coords[1] + cy, shift) - noise2d(coords[1] - cy, shift)) / 2.0f,
+                (noise2d(coords[2] + cy, shift) - noise2d(coords[2] - cy, shift)) / 2.0f,
+                (noise2d(coords[3] + cy, shift) - noise2d(coords[3] - cy, shift)) / 2.0f};
+
+            const glm::vec3 n[4] = {
+                -glm::normalize(glm::cross(dx[0], dy[0])),
+                -glm::normalize(glm::cross(dx[1], dy[1])),
+                -glm::normalize(glm::cross(dx[2], dy[2])),
+                -glm::normalize(glm::cross(dx[3], dy[3])),
             };
- 
+
             mesh->m_vertices.push_back(v[0]);
             mesh->m_vertices.push_back(v[1]);
             mesh->m_vertices.push_back(v[2]);
 
-            glm::vec3 normal = glm::normalize(glm::cross(v[1] - v[0], v[2] - v[0]));
-            mesh->m_normals.push_back(normal);
-            mesh->m_normals.push_back(normal);
-            mesh->m_normals.push_back(normal);
-            
-            
+            mesh->m_normals.push_back(n[0]);
+            mesh->m_normals.push_back(n[1]);
+            mesh->m_normals.push_back(n[2]);
+
             mesh->m_vertices.push_back(v[0]);
             mesh->m_vertices.push_back(v[2]);
             mesh->m_vertices.push_back(v[3]);
 
-            normal = glm::normalize(glm::cross(v[2] - v[0], v[3] - v[0]));
-            mesh->m_normals.push_back(normal);
-            mesh->m_normals.push_back(normal);
-            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(n[0]);
+            mesh->m_normals.push_back(n[2]);
+            mesh->m_normals.push_back(n[3]);
         }
     }
     
