@@ -12,6 +12,7 @@ public:
     ~Mesh();
 
     void center_pivot();
+    void calculate_bounds();
 
     bool m_is_dirty = true;
     bool m_structure_mesh = false; 
