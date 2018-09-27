@@ -1311,7 +1311,23 @@ void Editor::DrawRenderedFrame()
 
     ImGui::SameLine();
     ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
+    
+    static std::string save_filename = "";
+    if (ImGui::Button("Save"))
+    {
+        save_filename = "tet_cost_" + std::to_string(clock()) + ".png";
+
+        ray_tracer->save_to_disk(save_filename.c_str(), Tet_cost);
+    }
+
+    if (save_filename.empty() == false)
+    {
+        ImGui::SameLine();
+        ImGui::Text("Saved: %s", save_filename.c_str());
+    }
+
     ImGui::End();
+
 }
 
 void Editor::DrawConsole()
