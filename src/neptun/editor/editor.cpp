@@ -16,6 +16,7 @@
 #include "glm/gtc/random.hpp"
 #include "glm/gtx/euler_angles.hpp"
 #include "glm/gtx/transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include "neptun/main/asset_importer.h"
 #include "neptun/main/bvh.h"
@@ -1421,11 +1422,18 @@ void Editor::DrawBoundingBoxMenu()
     {
         ImGui::Separator();
         ImGui::Text("Bounding Box Settings");
+
         static float bounding_box_padding_size = 0.01;
-        
         ImGui::DragFloat("Padding", &bounding_box_padding_size, 0.01f);
         
-        ImGui::NewLine();
+        // DragFloat negative bug fix
+        if (bounding_box_padding_size < 0)
+            bounding_box_padding_size = 0;
+
+        static int bounding_box_step_count[3] = {4, 4, 4};
+        ImGui::SliderInt3("Subdivision Count", bounding_box_step_count, 1, 50);
+        
+        ImGui:: NewLine();
         ImGui::Separator();
         ImGui::NewLine();
 
@@ -1451,7 +1459,7 @@ void Editor::DrawBoundingBoxMenu()
                 mesh->calculate_bounds();
                 const glm::vec3 mesh_size = mesh->m_bounds_max - mesh->m_bounds_min + (bounding_box_padding_size * 2);
 
-                bounding_box_object->mesh = ProceduralMeshGenerator::create_cube(mesh_size);
+                bounding_box_object->mesh = ProceduralMeshGenerator::create_cube(mesh_size, glm::make_vec3(bounding_box_step_count));
                 bounding_box_object->mesh->m_structure_mesh = true;
 
                 scene->add_scene_object(bounding_box_object); 

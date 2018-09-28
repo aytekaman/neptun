@@ -3,13 +3,12 @@
 
 #include "mesh.h"
 
-Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size)
+Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size, const glm::ivec3& step_count)
 {
     Mesh* mesh = new Mesh();
 
     const glm::vec3 min = -size * 0.5f;
     const glm::vec3 max = +size * 0.5f;
-    const glm::ivec3 step_count(4, 4, 4);
     const glm::vec3 step_size = size / (glm::vec3)step_count;
 
     for (size_t axis = 0; axis < 3; ++axis)
