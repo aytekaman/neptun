@@ -21,6 +21,13 @@
 std::string colors[] = { "cyan", "orange", "red", "blue" };
 std::string marks[] = { "square", "circle", "triangle", "plus" };
 
+#ifdef _WIN32
+    std::string builtin_scenes_folder_path = "../../scenes/";
+#elif
+    std::string builtin_scenes_folder_path = "scenes/";
+#endif
+
+
 struct MethodInfo
 {
     MethodInfo(Method method_, std::string name_)
@@ -764,7 +771,7 @@ void simd_comparison()
 {
     RayTracer ray_tracer;
     Scene scene;
-    scene.load_from_file("../sandbox/scenes/Armadillo.scene");
+    scene.load_from_file(builtin_scenes_folder_path + "Mix.scene");
     scene.build_tet_mesh(true, true);
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
 
