@@ -23,7 +23,7 @@ std::string marks[] = { "square", "circle", "triangle", "plus" };
 
 #ifdef _WIN32
     std::string builtin_scenes_folder_path = "../../scenes/";
-#elif
+#else
     std::string builtin_scenes_folder_path = "scenes/";
 #endif
 
