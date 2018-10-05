@@ -771,7 +771,7 @@ void simd_comparison()
 {
     RayTracer ray_tracer;
     Scene scene;
-    scene.load_from_file(builtin_scenes_folder_path + "Mix.scene");
+    scene.load_from_file(builtin_scenes_folder_path + "Armadillo.scene");
     scene.build_tet_mesh(true, true);
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
 
