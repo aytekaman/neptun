@@ -1251,6 +1251,15 @@ void Editor::DrawRenderedFrame()
 
     ImGui::Begin("Diag");
     ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
+
+    if (ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()))
+    {
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        mouse_pos.x += 40;
+
+        ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255,255,255,255), "test");
+    }
+
     ImGui::SameLine();
     ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
     ImGui::End();
