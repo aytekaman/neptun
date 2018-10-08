@@ -1257,7 +1257,13 @@ void Editor::DrawRenderedFrame()
         ImVec2 mouse_pos = ImGui::GetMousePos();
         mouse_pos.x += 40;
 
-        ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255,255,255,255), "test");
+        glm::ivec2 pixel_coords(
+            int(ImGui::GetMousePos().x - ImGui::GetItemRectMin().x),
+            int(ImGui::GetMousePos().y - ImGui::GetItemRectMin().y));
+
+        std::string pixel = "(" + std::to_string(pixel_coords.x) + ", " + std::to_string(pixel_coords.y) + ")";
+
+        ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
     }
 
     ImGui::SameLine();
