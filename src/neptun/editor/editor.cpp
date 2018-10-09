@@ -1250,6 +1250,9 @@ void Editor::DrawRenderedFrame()
     ImGui::End();
 
     ImGui::Begin("Diag");
+
+    glm::vec2 image_size(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x);
+
     ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
 
     if (ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()))
@@ -1257,11 +1260,24 @@ void Editor::DrawRenderedFrame()
         ImVec2 mouse_pos = ImGui::GetMousePos();
         mouse_pos.x += 40;
 
-        glm::ivec2 pixel_coords(
+        glm::vec2 pixel_coords(
             int(ImGui::GetMousePos().x - ImGui::GetItemRectMin().x),
             int(ImGui::GetMousePos().y - ImGui::GetItemRectMin().y));
 
+        pixel_coords /= image_size;
+        pixel_coords *= ray_tracer->m_resolution;
+
         std::string pixel = "(" + std::to_string(pixel_coords.x) + ", " + std::to_string(pixel_coords.y) + ")";
+
+        ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
+
+        mouse_pos.y += 20;
+
+        std::swap(pixel_coords.x, pixel_coords.y);
+
+        int node_count = ray_tracer->stats.get((glm::ivec2)pixel_coords);
+
+        pixel = std::to_string(node_count);
 
         ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
     }

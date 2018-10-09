@@ -1,5 +1,7 @@
 #pragma once
 
+#include "neptun/math/matrix.h"
+
 #include <atomic>
 #include <vector>
 
@@ -104,6 +106,8 @@ public:
     Image* m_visited_tets_image;
     Image* m_locality_image;
     Image* m_rendered_image;
+
+    Matrix<int> stats;
 
     std::atomic<int> job_index{0};
     glm::ivec2 m_resolution = glm::ivec2(640, 480);
