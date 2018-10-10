@@ -1273,7 +1273,7 @@ void Editor::DrawRenderedFrame()
 
         mouse_pos.y += 20;
 
-        std::swap(pixel_coords.x, pixel_coords.y);
+        //std::swap(pixel_coords.x, pixel_coords.y);
 
         int node_count = ray_tracer->stats.get((glm::ivec2)pixel_coords);
 
