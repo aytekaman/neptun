@@ -1267,7 +1267,7 @@ void Editor::DrawRenderedFrame()
         pixel_coords /= image_size;
         pixel_coords *= ray_tracer->m_resolution;
 
-        std::string pixel = "(" + std::to_string(pixel_coords.x) + ", " + std::to_string(pixel_coords.y) + ")";
+        std::string pixel = "(" + std::to_string((int)pixel_coords.x) + ", " + std::to_string((int)pixel_coords.y) + ")";
 
         ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
 
