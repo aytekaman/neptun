@@ -1255,7 +1255,7 @@ void Editor::DrawRenderedFrame()
 
     ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
 
-    if (ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()))
+    if (ImGui::IsItemHovered())
     {
         ImVec2 mouse_pos = ImGui::GetMousePos();
         mouse_pos.x += 40;
@@ -1271,14 +1271,19 @@ void Editor::DrawRenderedFrame()
 
         ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
 
+        ImVec2 popup_top_left = mouse_pos;
+        ImVec2 popup_bottom_right = popup_top_left;
+        popup_bottom_right.x += 80;
+        popup_bottom_right.y += 200;
+
         mouse_pos.y += 20;
 
-        //std::swap(pixel_coords.x, pixel_coords.y);
 
         int node_count = ray_tracer->stats.get((glm::ivec2)pixel_coords);
 
         pixel = std::to_string(node_count);
 
+        ImGui::GetOverlayDrawList()->AddRectFilled(popup_top_left, popup_bottom_right, ImColor(0, 0, 0, 100));
         ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
     }
 
