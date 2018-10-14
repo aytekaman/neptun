@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CheckFunctionExists)
 
+
+
 if(WIN32)
     add_compile_options("-d2SSAOptimizer-")
 endif()
@@ -23,23 +25,23 @@ endif()
 
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
-set(USE_STATIC_RUNTIME)
+#SET(USE_STATIC_RUNTIME)
 
 include_directories(src)
 include_directories(src/thirdparty)
 
-# Disable unnnecesary GLFW stuff
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-add_definitions(-DEMBREE_STATIC_LIB=1)
-if(UNIX)
-    set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
-    set(EMBREE_TUTORIALS OFF CACHE BOOL "Build Embree with support for ISPC applications." FORCE)
-endif()
+#include Embree
+SET(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
+#OPTION(EMBREE_STATIC_RUNTIME "Use the static version of the C/C++ runtime library." ON)
+OPTION(EMBREE_ISPC_SUPPORT "Build Embree with support for ISPC applications." OFF)
+OPTION(EMBREE_TUTORIALS    "Enable to build Embree tutorials" OFF)
+SET(EMBREE_TASKING_SYSTEM "INTERNAL" CACHE STRING "Selects tasking system")
 add_subdirectory(src/thirdparty/embree-3.2.0)
 
+#include glfw
+option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
+option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
+option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
 add_subdirectory(src/thirdparty/glfw-3.2.1)
 
 set (thirdparty_sources
