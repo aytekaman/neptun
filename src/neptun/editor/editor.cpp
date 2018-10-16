@@ -1250,7 +1250,47 @@ void Editor::DrawRenderedFrame()
     ImGui::End();
 
     ImGui::Begin("Diag");
+
+    glm::vec2 image_size(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x);
+
     ImGui::Image((ImTextureID)(intptr_t)visited_tets_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
+
+    if (ImGui::IsItemHovered())
+    {
+        const ImVec2 mouse_pos = ImGui::GetMousePos();
+
+        glm::vec2 pixel_coords(
+            int(ImGui::GetMousePos().x - ImGui::GetItemRectMin().x),
+            int(ImGui::GetMousePos().y - ImGui::GetItemRectMin().y));
+
+        pixel_coords /= image_size;
+        pixel_coords *= ray_tracer->m_resolution;
+
+        const int visited_node_count = ray_tracer->stats.get((glm::ivec2)pixel_coords);
+
+        const std::string text = std::string("Pixel: (") + std::to_string((int)pixel_coords.x) + ", " + std::to_string((int)pixel_coords.y) + ")\n" +
+            "Visited nodes: " + std::to_string(visited_node_count);
+
+        const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+
+        const int padding = 5;
+
+        ImVec2 text_pos = mouse_pos;
+        text_pos.x += 20;
+
+        ImVec2 popup_top_left = text_pos;
+        popup_top_left.x -= padding;
+        popup_top_left.y -= padding;
+
+        ImVec2 popup_bottom_right = popup_top_left;
+        popup_bottom_right.x += text_size.x + padding * 2;
+        popup_bottom_right.y += text_size.y + padding * 2;
+
+        ImGui::GetOverlayDrawList()->AddRectFilled(popup_top_left, popup_bottom_right, ImColor(0, 0, 0, 200));
+        ImGui::GetOverlayDrawList()->AddRect(popup_top_left, popup_bottom_right, ImColor(128, 128, 128, 255));
+        ImGui::GetOverlayDrawList()->AddText(text_pos, ImColor(255, 255, 255, 255), text.c_str());
+    }
+
     ImGui::SameLine();
     ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
     ImGui::End();

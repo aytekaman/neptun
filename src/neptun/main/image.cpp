@@ -20,7 +20,7 @@ glm::u8vec3* Image::get_pixels() const
 
 void Image::set_pixel(int x, int y, const glm::u8vec3 & pixel)
 {
-    m_pixels[(x * m_width + y)] = pixel;
+    m_pixels[y * m_width + x] = pixel;
 }
 
 void Image::save_to_disk(const char * file_name) const

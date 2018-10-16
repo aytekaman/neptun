@@ -75,15 +75,15 @@ source_group ("thirdparty\\" FILES
 #source_group ("accelerators\\" FILES
 #    ${accelerator_sources}
 #)
-#
-#set (math_sources
-#    src/neptun/math/ray.h
-#    src/neptun/math/ray.cpp
-#)
-#
-#source_group ("math\\" FILES
-#    ${math_sources}
-#)
+
+set (math_sources
+    src/neptun/math/matrix.h
+    src/neptun/math/matrix.cpp
+)
+
+source_group ("math\\" FILES
+    ${math_sources}
+)
 
 set (editor_sources
     src/neptun/editor/editor.h
@@ -161,6 +161,7 @@ source_group ("main\\" FILES
 add_executable (neptun
     ${editor_sources}
     ${main_sources}
+    ${math_sources}
     ${thirdparty_sources}
 )
 

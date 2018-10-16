@@ -35,6 +35,7 @@ RayTracer::RayTracer()
     m_rendered_image = new Image(m_resolution.x, m_resolution.y);
     m_visited_tets_image = new Image(m_resolution.x, m_resolution.y);
     m_locality_image     = new Image(m_resolution.x, m_resolution.y);
+    stats.set_size(m_resolution);
 
     thread_count = std::thread::hardware_concurrency();
     Logger::Log("Number of threads: %d", thread_count);
@@ -137,15 +138,15 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     glm::vec3 cam_pos = camTarget + dir * scene.camDist;
 
     const glm::vec3 forward = glm::normalize(scene.camTarget - cam_pos);
-    const glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
-    const glm::vec3 up = glm::cross(forward, right);
+    const glm::vec3 right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+    const glm::vec3 down = glm::cross(forward, right);
 
     const float aspect = (float)m_resolution.x / m_resolution.y;
     const float scale_y = glm::tan(glm::pi<float>() / 8);
 
-    const glm::vec3 bottom_left = cam_pos + forward - up * scale_y - right * scale_y * aspect;
+    const glm::vec3 top_left = cam_pos + forward - down * scale_y - right * scale_y * aspect;
     const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
-    const glm::vec3 up_step = (up * scale_y * 2.0f) / (float)m_resolution.y;
+    const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
 
     Ray ray(cam_pos);
 
@@ -166,11 +167,11 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
         rect_max = (glm::min)(rect_max, m_resolution);
 
-        for (int i = rect_min.y; i < rect_max.y; i++)
+        for (int j = rect_min.y; j < rect_max.y; j++)
         {
-            for (int j = rect_min.x; j < rect_max.x; j++)
+            for (int i = rect_min.x; i < rect_max.x; i++)
             {
-                ray.dir = glm::normalize(bottom_left + right_step * (float)j + up_step * (float)i - ray.origin);
+                ray.dir = glm::normalize(top_left + right_step * (float)i + down_step * (float)j - ray.origin);
 
                 glm::vec3 pos, normal, color;
                 glm::vec2 uv;
@@ -258,28 +259,34 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 else
                     color = glm::vec3(0.1, 0.1, 0.1);
 
+                glm::ivec2 p_idx = glm::ivec2(i, j);
+
                 if (is_diagnostic)
                 {
                     if (scene.tet_mesh)
                     {
                         total_L1_hit_count += diagnostic_data.L1_hit_count;
 
+                        stats.set(p_idx, diagnostic_data.visited_node_count);
+
                         float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
                         float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
                         glm::vec3 avg_locality_color = Color::jet(scaled_avg_locality);
-                        m_locality_image->set_pixel((m_resolution.y - i - 1), (m_resolution.x - j - 1), avg_locality_color * 255.0f);
+                        //m_locality_image->set_pixel((m_resolution.y - i - 1), (m_resolution.x - j - 1), avg_locality_color * 255.0f);
                     }
 
                     float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
                     glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
-                    m_visited_tets_image->set_pixel((m_resolution.y - i - 1), (m_resolution.x - j - 1), visited_tet_count_color * 255.0f);
+                    m_visited_tets_image->set_pixel(i, j, visited_tet_count_color * 255.0f);
 
                     total_test_count += diagnostic_data.visited_node_count;
                 }
 
-                glm::ivec2 p_idx = glm::ivec2((m_resolution.y - i - 1), (m_resolution.x - j - 1));
+                
 
                 m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
+                if(p_idx.x < 10 && p_idx.y < 10)
+                    m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(1, 0, 0) * 255.0f);
             }
         }
 
@@ -314,4 +321,6 @@ void RayTracer::set_resoultion(const glm::ivec2& resolution)
     m_rendered_image = new Image(m_resolution.x, m_resolution.y);
     m_locality_image = new Image(m_resolution.x, m_resolution.y);
     m_visited_tets_image = new Image(m_resolution.x, m_resolution.y);
+
+    stats.set_size(resolution);
 }
