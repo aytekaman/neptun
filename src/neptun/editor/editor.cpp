@@ -1257,8 +1257,7 @@ void Editor::DrawRenderedFrame()
 
     if (ImGui::IsItemHovered())
     {
-        ImVec2 mouse_pos = ImGui::GetMousePos();
-        mouse_pos.x += 40;
+        const ImVec2 mouse_pos = ImGui::GetMousePos();
 
         glm::vec2 pixel_coords(
             int(ImGui::GetMousePos().x - ImGui::GetItemRectMin().x),
@@ -1267,24 +1266,29 @@ void Editor::DrawRenderedFrame()
         pixel_coords /= image_size;
         pixel_coords *= ray_tracer->m_resolution;
 
-        std::string pixel = "(" + std::to_string((int)pixel_coords.x) + ", " + std::to_string((int)pixel_coords.y) + ")";
+        const int visited_node_count = ray_tracer->stats.get((glm::ivec2)pixel_coords);
 
-        ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
+        const std::string text = std::string("Pixel: (") + std::to_string((int)pixel_coords.x) + ", " + std::to_string((int)pixel_coords.y) + ")\n" +
+            "Visited nodes: " + std::to_string(visited_node_count);
 
-        ImVec2 popup_top_left = mouse_pos;
+        const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+
+        const int padding = 5;
+
+        ImVec2 text_pos = mouse_pos;
+        text_pos.x += 20;
+
+        ImVec2 popup_top_left = text_pos;
+        popup_top_left.x -= padding;
+        popup_top_left.y -= padding;
+
         ImVec2 popup_bottom_right = popup_top_left;
-        popup_bottom_right.x += 80;
-        popup_bottom_right.y += 200;
+        popup_bottom_right.x += text_size.x + padding * 2;
+        popup_bottom_right.y += text_size.y + padding * 2;
 
-        mouse_pos.y += 20;
-
-
-        int node_count = ray_tracer->stats.get((glm::ivec2)pixel_coords);
-
-        pixel = std::to_string(node_count);
-
-        ImGui::GetOverlayDrawList()->AddRectFilled(popup_top_left, popup_bottom_right, ImColor(0, 0, 0, 100));
-        ImGui::GetOverlayDrawList()->AddText(mouse_pos, ImColor(255, 255, 255, 255), pixel.c_str());
+        ImGui::GetOverlayDrawList()->AddRectFilled(popup_top_left, popup_bottom_right, ImColor(0, 0, 0, 200));
+        ImGui::GetOverlayDrawList()->AddRect(popup_top_left, popup_bottom_right, ImColor(128, 128, 128, 255));
+        ImGui::GetOverlayDrawList()->AddText(text_pos, ImColor(255, 255, 255, 255), text.c_str());
     }
 
     ImGui::SameLine();
