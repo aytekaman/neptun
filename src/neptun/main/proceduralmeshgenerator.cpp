@@ -77,6 +77,7 @@ Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size)
     }
 
     mesh->m_vertex_count = mesh->m_vertices.size();
+    mesh->m_face_count = mesh->m_vertex_count / 3;
 
     return mesh;
 }
@@ -159,6 +160,7 @@ Mesh* ProceduralMeshGenerator::create_icosphere(const float radius, const int n)
     subdivide_triangle(mesh, n, vertices[ 9], vertices[ 8], vertices[ 1]);
 
     mesh->m_vertex_count = mesh->m_vertices.size();
+    mesh->m_face_count = mesh->m_vertex_count / 3;
 
     return mesh;
 }
