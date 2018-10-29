@@ -100,11 +100,12 @@ source_group ("math\\" FILES
 )
 
 set (cuda_sources
-     src/neptun/cuda/test1.cu
+    src/neptun/cuda/test1.cu
 )
 
 source_group ("cuda\\" FILES
-	&{cuda_sources}
+    ${cuda_sources}
+)
 
 set (editor_sources
     src/neptun/editor/editor.h
