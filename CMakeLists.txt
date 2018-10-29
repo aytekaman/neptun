@@ -99,6 +99,13 @@ source_group ("math\\" FILES
     ${math_sources}
 )
 
+set (cuda_sources
+     src/neptun/cuda/test1.cu
+)
+
+source_group ("cuda\\" FILES
+	&{cuda_sources}
+
 set (editor_sources
     src/neptun/editor/editor.h
     src/neptun/editor/editor.cpp
@@ -171,6 +178,7 @@ set (main_sources
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
     src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
+    src/neptun/cuda/test1.cu
 )
 
 source_group ("main\\" FILES
@@ -181,6 +189,7 @@ add_executable (neptun
     #${cuda_sources}
     ${editor_sources}
     ${main_sources}
+    ${cuda_sources}
     ${math_sources}
     ${thirdparty_sources}
 )
