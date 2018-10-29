@@ -199,10 +199,10 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 {
                     if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
                         hit = scene.tet_mesh->intersect_stats(ray, source_tet, intersection_data, diagnostic_data);
-                    /*else if (method == Method::Kd_tree)
+                    else if (method == Method::Kd_tree)
                         hit = scene.kd_tree->Intersect_stats(ray, intersection_data, diagnostic_data);
-                    else if (method == Method::BVH)
-                        hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);*/
+                    else if (method == Method::BVH_pbrt)
+                        hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);
                 }
 
                 else
@@ -259,7 +259,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 else
                     color = glm::vec3(0.1, 0.1, 0.1);
 
-                glm::ivec2 p_idx = glm::ivec2(i, j);
+                glm::ivec2 p_idx(i, j);
 
                 if (is_diagnostic)
                 {
@@ -282,11 +282,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                     total_test_count += diagnostic_data.visited_node_count;
                 }
 
-                
-
                 m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
-                if(p_idx.x < 10 && p_idx.y < 10)
-                    m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(1, 0, 0) * 255.0f);
             }
         }
 

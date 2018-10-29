@@ -1148,6 +1148,17 @@ void Editor::DrawScene()
     ImGui::Checkbox("Edged Faces", &edged_faces);
     ImGui::End();
     ImGui::PopStyleColor();
+
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4());
+    ImGui::SetNextWindowPos(ImVec2(display_w - 520, 20));
+    ImGui::Begin("Scene Stats", NULL, ImVec2(-1, 0), 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    
+    const size_t scene_object_count = scene->sceneObjects.size();
+    ImGui::Text("Number of objects: %zd", scene_object_count);
+    const size_t total_triangle_count = scene->get_triangle_count();
+    ImGui::Text("Triangle count: %zd", total_triangle_count);
+    ImGui::End();
+    ImGui::PopStyleColor();
 }
 
 void Editor::DrawRenderedFrame()
