@@ -12,7 +12,7 @@ __global__ void addKernel(int *c, const int *a, const int *b)
     c[i] = a[i] + b[i];
 }
 
-int main()
+/*int main()
 {
     const int arraySize = 5;
     const int a[arraySize] = { 1, 2, 3, 4, 5 };
@@ -38,7 +38,7 @@ int main()
     }
 
     return 0;
-}
+}*/
 
 // Helper function for using CUDA to add vectors in parallel.
 cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
