@@ -179,7 +179,6 @@ set (main_sources
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
     src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
-    src/neptun/cuda/test1.cu
 )
 
 source_group ("main\\" FILES
