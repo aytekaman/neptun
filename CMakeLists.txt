@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CheckFunctionExists)
 
-
+CUDA_ARCH_BIN: 1.1
+CUDA_ARCH_PTX: 1.1
 
 if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
