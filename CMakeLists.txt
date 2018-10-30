@@ -28,6 +28,8 @@ endif()
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 #SET(USE_STATIC_RUNTIME)
+set(__cuda_arch_bin "1.1")
+set(__cuda_arch_ptx "1.1")
 
 include_directories(src)
 include_directories(src/thirdparty)
