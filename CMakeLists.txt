@@ -75,14 +75,6 @@ source_group ("thirdparty\\" FILES
 #    ${accelerator_sources}
 #)
 
-set (math_sources
-    src/neptun/math/matrix.h
-    src/neptun/math/matrix.cpp
-)
-
-source_group ("math\\" FILES
-    ${math_sources}
-)
 
 set (cuda_sources
     src/neptun/cuda/test1.cu
@@ -90,6 +82,15 @@ set (cuda_sources
 
 source_group ("cuda\\" FILES
     ${cuda_sources}
+)
+
+set (math_sources
+    src/neptun/math/matrix.h
+    src/neptun/math/matrix.cpp
+)
+
+source_group ("math\\" FILES
+    ${math_sources}
 )
 
 set (editor_sources
@@ -166,9 +167,9 @@ source_group ("main\\" FILES
 )
 
 add_executable (neptun
+    ${cuda_sources}
     ${editor_sources}
     ${main_sources}
-    ${cuda_sources}
     ${math_sources}
     ${thirdparty_sources}
 )
