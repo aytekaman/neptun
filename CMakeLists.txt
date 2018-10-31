@@ -100,14 +100,6 @@ source_group ("math\\" FILES
     ${math_sources}
 )
 
-set (cuda_sources
-    src/neptun/cuda/test1.cu
-)
-
-source_group ("cuda\\" FILES
-    ${cuda_sources}
-)
-
 set (editor_sources
     src/neptun/editor/editor.h
     src/neptun/editor/editor.cpp
@@ -187,10 +179,9 @@ source_group ("main\\" FILES
 )
 
 add_executable (neptun
-    #${cuda_sources}
+    ${cuda_sources}
     ${editor_sources}
     ${main_sources}
-    ${cuda_sources}
     ${math_sources}
     ${thirdparty_sources}
 )
