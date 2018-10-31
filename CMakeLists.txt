@@ -24,7 +24,6 @@ endif()
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 #SET(USE_STATIC_RUNTIME)
-SET(CUDA_NVCC_FLAGS "-arch=sm_20")
 
 include_directories(src)
 include_directories(src/thirdparty)
