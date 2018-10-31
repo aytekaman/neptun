@@ -3,13 +3,11 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CheckFunctionExists)
 
-
-
 if(WIN32)
-    add_compile_options("-d2SSAOptimizer-")
+    #add_compile_options("-d2SSAOptimizer-")
 endif()
 
-project(neptun) #LANGUAGES CXX CUDA
+project(neptun LANGUAGES CXX CUDA)
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
@@ -75,6 +73,15 @@ source_group ("thirdparty\\" FILES
 #source_group ("accelerators\\" FILES
 #    ${accelerator_sources}
 #)
+
+
+set (cuda_sources
+    src/neptun/cuda/test1.cu
+)
+
+source_group ("cuda\\" FILES
+    ${cuda_sources}
+)
 
 set (math_sources
     src/neptun/math/matrix.h
@@ -159,6 +166,7 @@ source_group ("main\\" FILES
 )
 
 add_executable (neptun
+    ${cuda_sources}
     ${editor_sources}
     ${main_sources}
     ${math_sources}
