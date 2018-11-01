@@ -83,7 +83,8 @@ source_group ("thirdparty\\" FILES
 
 
 set (cuda_sources
-    src/neptun/cuda/test1.cu
+    src/neptun/cuda/raycaster.cu
+    src/neptun/cuda/raycaster.cuh
 )
 
 source_group ("cuda\\" FILES
