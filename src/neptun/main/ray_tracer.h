@@ -74,12 +74,16 @@ enum ImageType
     Locality
 };
 
+extern "C"
+void raycast_gpu(Scene& scene, SourceTet source_tet, int thread_count, std::vector<LightInfo> lightInfos, bool is_diagnostic);
+
 class RayTracer
 {
 public:
     RayTracer();
 
     void Render(Scene &scene, const bool is_diagnostic = false);
+	void render_gpu(Scene &scene, const bool is_diagnostic = false);
 
     void Raytrace_worker(
         Scene &scene,
