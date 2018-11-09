@@ -7,7 +7,7 @@ if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
 endif()
 
-project(neptun LANGUAGES CXX CUDA)
+project(neptun LANGUAGES C CXX)
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
@@ -166,7 +166,7 @@ source_group ("main\\" FILES
 )
 
 add_executable (neptun
-    ${cuda_sources}
+    #${cuda_sources}
     ${editor_sources}
     ${main_sources}
     ${math_sources}
@@ -265,3 +265,10 @@ endif()
 set_target_properties(
     neptun
     PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY  "${CMAKE_SOURCE_DIR}/sandbox/bin/$(Configuration)")
+
+
+# Clang tidy
+file(GLOB_RECURSE CLANG_TIDY_SOURCE_FILES src/neptun/*.c src/neptun/*.cpp)
+file(GLOB_RECURSE CLANG_TIDY_HEADER_FILES src/neptun/*.h src/neptun/*.hpp)
+set(CLANG_TIDY_SAVE_PATH "clang-tidy_report.txt")
+include(cmake/clang-tidy.cmake)
