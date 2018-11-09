@@ -2,17 +2,19 @@
 
 #include <vector>
 
-#include "neptun/main/tet_mesh.h"
 #include "glm/glm.hpp"
+#include "neptun/main/tet_mesh.h"
 
 // Abstract class for all of the tetmesh builders
-class TetMeshBuilder{
+class TetMeshBuilder
+{
 public:
     // Generic Tetmesh input
     //  facets stores the indices of vertices of a face
     //  facet_indices stores the index of the first vertex of each facet for facets array
     //  facet_markerlists store something (boundaries ??)
-    struct TetMeshIn{
+    struct TetMeshIn
+    {
         // Input Data
         std::vector<glm::vec3> points;
         std::vector<int> facets;
@@ -29,26 +31,37 @@ public:
         // num_points: number of vertices
         // num_facets: number of facets
         // facets_size: size of facets array (TODO: Rename?)
-        TetMeshIn(int num_points, int num_facets, int facets_size) : points(num_points),
-             facets(facets_size), facet_indices(num_facets), facet_markerlist(num_facets), 
-             is_face_visible(facets_size, true), preserve_triangles(false), quality(5) {}
+        TetMeshIn(int num_points, int num_facets, int facets_size) 
+            : points(num_points),
+              facets(facets_size),
+              facet_indices(num_facets),
+              facet_markerlist(num_facets), 
+              is_face_visible(facets_size, true),
+              preserve_triangles(false),
+              quality(5) 
+        {     
+        }
 
         // Utility methods
-        int num_points() const {
+        int num_points() const 
+        {
             return points.size();
         }
 
-        int num_facets() const{
+        int num_facets() const
+        {
             return facet_indices.size();
         }
 
-        int facets_size() const{
+        int facets_size() const
+        {
             return facets.size();
         }
     };
 
     // Generic Tetmesh output
-    struct TetMeshOut{
+    struct TetMeshOut
+    {
         // Output Data
         std::vector< glm::vec3 > points;
         std::vector< Tet > tets;
