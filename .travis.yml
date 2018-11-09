@@ -20,6 +20,13 @@ addons:
     - nvidia-cuda-dev
     - nvidia-cuda-toolkit
 install: true
-script:
-  - mkdir build && cd build && cmake ../ && make -r -j 2
-  - ../sandbox/bin/Release/neptun -test
+jobs:
+  include:
+    - stage: build
+    script:
+      - mkdir build && cd build && cmake ../ && make -r -j 2
+      - ../sandbox/bin/Release/neptun -test
+    - stage: code analysis
+    script:
+      - mkdir build && cd build && cmake ../ && make clang-tidy
+      - cat clang_tidy_report.txt
