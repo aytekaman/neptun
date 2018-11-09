@@ -9,6 +9,7 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - llvm-toolchain-trusty-4.0
     packages:
     - gcc-5
     - g++-5
@@ -19,14 +20,18 @@ addons:
     - nvidia-profiler
     - nvidia-cuda-dev
     - nvidia-cuda-toolkit
+    - clang-4.0
+    - clang-tidy-4.0
+
 install: true
 jobs:
   include:
-    - stage: build
+  - stage: build
+    name: Build test
     script:
-      - mkdir build && cd build && cmake ../ && make -r -j 2
-      - ../sandbox/bin/Release/neptun -test
-    - stage: code analysis
-    script:
-      - mkdir build && cd build && cmake ../ && make clang-tidy
-      - cat clang_tidy_report.txt
+    - mkdir build && cd build && cmake ../ && make -r -j 2
+    - "../sandbox/bin/Release/neptun -test"
+  - script:
+    - mkdir build && cd build && cmake ../ && make clang-tidy
+    - cat clang_tidy_report.txt
+    name: Clang Tidy
