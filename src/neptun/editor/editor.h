@@ -29,6 +29,8 @@ public:
 
     void DrawRenderedFrame();
     void DrawConsole();
+    void DrawBoundingBoxMenu();
+
 
     void HandleSelectionGizmos();
     void HandleTransformGizmos();
@@ -39,6 +41,8 @@ public:
 
     bool show_rendered_frame_window = false;
     bool show_console_window = false;
+    bool show_bounding_box_window = false;
+    
     bool show_grid = true;
     bool edged_faces = false;
 

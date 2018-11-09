@@ -1,20 +1,24 @@
 #pragma once
+
 #include "tetgen/tetgen.h"
 #include "tet_mesh_builder.h"
 
-
-namespace {
+namespace 
+{
     // Naming conflicting problems :(
-    void tetgen_tetrahedralize(char* str, tetgenio* in, tetgenio* out){
+    void tetgen_tetrahedralize(char* str, tetgenio* in, tetgenio* out)
+    {
         tetrahedralize(str, in, out);
     }
 }
 
 // Abstract class for all of the tetmesh builders
-class TetgenTetMeshBuilder : public TetMeshBuilder{
+class TetgenTetMeshBuilder : public TetMeshBuilder
+{
 public:
     // Construct tetmesh
-    int tetrahedralize(TetMeshIn& in, TetMeshOut& out) const override{
+    int tetrahedralize(TetMeshIn& in, TetMeshOut& out) const override
+    {
         tetgenio in_data;
         tetgenio out_data;
         convert_input(in, in_data);
@@ -22,16 +26,19 @@ public:
         bool success = true;
 
         //Run tetgen
-        try{
+        try
+        {
             constexpr int BUFFER_SIZE = 128;
             char str[BUFFER_SIZE];
-            if (in.preserve_triangles){
+            if (in.preserve_triangles)
+            {
                 #ifdef HAVE_SNPRINTF
                     snprintf(str, BUFFER_SIZE, "q%.2fYnAfQ", in.quality);
                 #else
                     sprintf_s(str, BUFFER_SIZE, "q%.2fYnAfQ", in.quality);
                 #endif
-            } else{
+            } else
+            {
                 #ifdef HAVE_SNPRINTF
                     snprintf(str, BUFFER_SIZE, "q%.2fnnAfQ", in.quality);
                 #else
@@ -39,7 +46,8 @@ public:
                 #endif
             }
             tetgen_tetrahedralize(str, &in_data,  &out_data);
-        } catch (int a) {
+        } catch (int a) 
+        {
             success = false;
             return a;
         }
@@ -47,13 +55,14 @@ public:
         if (!success)
             return false;
 
-        convert_output(out_data, out);
+        convert_output(out_data, in, out);
         
         return 0;
     }
 private:
 
-    void convert_input(TetMeshIn& src, tetgenio& dst) const{
+    void convert_input(TetMeshIn& src, tetgenio& dst) const
+    {
         // Initialize dst
         dst.numberofpoints = src.num_points();
         dst.pointlist = new REAL[dst.numberofpoints * 3];
@@ -62,7 +71,8 @@ private:
         dst.facetmarkerlist = new int[dst.numberoffacets];
 
         // Fill dst
-        for (size_t i = 0; i < dst.numberofpoints; i++){
+        for (size_t i = 0; i < dst.numberofpoints; i++)
+        {
             glm::vec3& p = src.points[i];
             dst.pointlist[(3 * i) + 0] = p.x;
             dst.pointlist[(3 * i) + 1] = p.y;
@@ -71,7 +81,8 @@ private:
         
         std::memcpy(dst.facetmarkerlist, &src.facet_markerlist[0], sizeof(int) * src.num_facets());
         
-        for (size_t i = 0; i < src.num_facets(); i++){
+        for (size_t i = 0; i < src.num_facets(); i++)
+        {
             const int current_facet_index = src.facet_indices[i];
             const int next_facet_index = (i == src.num_facets() - 1) ? src.facets_size() : src.facet_indices[i + 1];
             const int num_vertices = next_facet_index - current_facet_index;
@@ -88,32 +99,44 @@ private:
             p->numberofvertices = num_vertices;
             p->vertexlist = new int[p->numberofvertices];
             
-            for (int i = next_facet_index - 1, j = 0; i >= current_facet_index; i--, j++){
+            for (int i = next_facet_index - 1, j = 0; i >= current_facet_index; i--, j++)
+            {
                 p->vertexlist[j] = src.facets[i];
             }
         }
     }
 
-    void convert_output(tetgenio& src, TetMeshOut& dst) const{
+    void convert_output(tetgenio& src, TetMeshIn &in, TetMeshOut& dst) const
+    {
         dst.points.resize(src.numberofpoints);
         dst.tets.resize(src.numberoftetrahedra);
         
-        for (int i = 0; i < src.numberofpoints; i++){
+        for (int i = 0; i < src.numberofpoints; i++)
+        {
             dst.points[i] = glm::make_vec3(&src.pointlist[3 * i]);
         }
 
         dst.constrained_face_count = 0;
 
-        for (int i = 0; i < src.numberoftetrahedra; i++){
+        for (int i = 0; i < src.numberoftetrahedra; i++)
+        {
             dst.tets[i].region_id = (int)src.tetrahedronattributelist[i];
 
-            for (int j = 0; j < 4; j++){
+            for (int j = 0; j < 4; j++)
+            {
                 dst.tets[i].v[j] = src.tetrahedronlist[4 * i + j];
                 dst.tets[i].n[j] = src.neighborlist[4 * i + j];
                 dst.tets[i].face_idx[j] = src.trifacemarkerlist[src.tet2facelist[4 * i + j]];
 
+                // Set face invisible if is_face_visible flag is false
+            
+                
                 if (dst.tets[i].face_idx[j] > 0)
+                {
                     ++dst.constrained_face_count;
+                    if (!in.is_face_visible[dst.tets[i].face_idx[j] - 1])
+                        dst.tets[i].face_idx[j] = -1;
+                }
 
                 if (dst.tets[i].n[j] == -1)
                     dst.air_region_id = dst.tets[i].region_id;

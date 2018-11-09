@@ -14,6 +14,7 @@
 #include "GLFW/glfw3.h"
 
 #include "glm/gtc/random.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/euler_angles.hpp"
 #include "glm/gtx/transform.hpp"
 
@@ -227,6 +228,7 @@ void Editor::Draw()
 
     DrawRenderedFrame();
     DrawConsole();
+    DrawBoundingBoxMenu();
 
     HandleSelectionGizmos();
     ImGui::Render();
@@ -353,6 +355,7 @@ void Editor::DrawMainMenuBar()
 
             ImGui::Separator();
 
+            ImGui::MenuItem("Bounding Box", 0, &show_bounding_box_window, true);
             if (ImGui::MenuItem("Steiner Point"))
             {
                 SceneObject* steiner_point = new SceneObject("Steiner point");
@@ -376,6 +379,8 @@ void Editor::DrawMainMenuBar()
         ImGui::EndMainMenuBar();
     }
 }
+
+
 
 void Editor::DrawInspector()
 {
@@ -435,6 +440,9 @@ void Editor::DrawInspector()
             //	selected_scene_object->mesh->CenterPivot();
             //	selected_scene_object->mesh->isDirty = true;
             //}
+                
+            ImGui::Checkbox("Ignore Tetrahedralization", &selected_scene_object->mesh->m_ignore_tetrahedralization);
+            ImGui::Checkbox("Structure Mesh", &selected_scene_object->mesh->m_structure_mesh);
 
             ImGui::Separator();
         }
@@ -1304,7 +1312,23 @@ void Editor::DrawRenderedFrame()
 
     ImGui::SameLine();
     ImGui::Image((ImTextureID)(intptr_t)locality_texture_id, ImVec2(cw, cw * (float)ray_tracer->m_resolution.y / ray_tracer->m_resolution.x));
+    
+    static std::string save_filename = "";
+    if (ImGui::Button("Save"))
+    {
+        save_filename = "tet_cost_" + std::to_string(clock()) + ".png";
+
+        ray_tracer->save_to_disk(save_filename.c_str(), Tet_cost);
+    }
+
+    if (save_filename.empty() == false)
+    {
+        ImGui::SameLine();
+        ImGui::Text("Saved: %s", save_filename.c_str());
+    }
+
     ImGui::End();
+
 }
 
 void Editor::DrawConsole()
@@ -1383,6 +1407,67 @@ void Editor::DrawConsole()
 
     ImGui::PopStyleColor();
 
+    ImGui::End();
+}
+
+void Editor::DrawBoundingBoxMenu()
+{
+    if (show_bounding_box_window == false)
+        return;
+
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse;// = ImGuiWindowFlags_ShowBorders;
+
+    ImGui::SetNextWindowSizeConstraints({200, 200}, {10000, 10000});
+    if (ImGui::Begin("Bounding Box", &show_bounding_box_window, flags))
+    {
+        ImGui::Separator();
+        ImGui::Text("Bounding Box Settings");
+
+        static float bounding_box_padding_size = 0.01;
+        ImGui::DragFloat("Padding", &bounding_box_padding_size, 0.01f);
+        
+        // DragFloat negative bug fix
+        if (bounding_box_padding_size < 0)
+            bounding_box_padding_size = 0;
+
+        static int bounding_box_step_count[3] = {4, 4, 4};
+        ImGui::SliderInt3("Subdivision Count", bounding_box_step_count, 1, 50);
+        
+        ImGui::NewLine();
+        ImGui::Separator();
+        ImGui::NewLine();
+
+        const ImVec2 create_button_size = {50, 30};
+        ImGui::Indent(ImGui::GetWindowWidth() - create_button_size.x - 30);
+        
+        if (ImGui::Button("Create", create_button_size))
+        {
+            for (SceneObject* obj : scene->sceneObjects)
+            {
+                Mesh* mesh = obj->mesh;
+                if (mesh == nullptr || mesh->m_ignore_tetrahedralization || mesh->m_structure_mesh)
+                    continue;
+
+                SceneObject* bounding_box_object = new SceneObject(obj->name + "_BB");
+                
+                bounding_box_object->rot = obj->rot;
+                bounding_box_object->pos = obj->pos;
+                bounding_box_object->scale = obj->scale;
+                bounding_box_object->m_is_visible = false;
+                bounding_box_object->m_is_pickable = false;
+
+                mesh->calculate_bounds();
+                const glm::vec3 mesh_size = mesh->m_bounds_max - mesh->m_bounds_min + (bounding_box_padding_size * 2);
+
+                bounding_box_object->mesh = ProceduralMeshGenerator::create_cube(mesh_size, glm::make_vec3(bounding_box_step_count));
+                bounding_box_object->mesh->m_structure_mesh = true;
+
+                scene->add_scene_object(bounding_box_object); 
+            }
+
+            show_bounding_box_window = false; // Close bounding box window ?
+        }
+    }
     ImGui::End();
 }
 

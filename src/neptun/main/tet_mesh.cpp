@@ -194,7 +194,7 @@ void TetMesh::build_from_scene(
     TetMeshBuilder* tetmesh_builder = TetMeshBuilderFactory::default_builder(); 
     TetMeshBuilder::TetMeshOut out_data;
     TetMeshBuilder::TetMeshIn in_data((int)vertices.size(), (int)triangles.size() / 3, triangles.size());
-    
+
     // Fill TetMeshIn struct
     in_data.preserve_triangles = preserve_triangles;
     in_data.quality = quality;
@@ -204,6 +204,7 @@ void TetMesh::build_from_scene(
     for (int i = 0; i < in_data.num_facets(); i++){
         in_data.facet_indices[i] = 3 * i;
         in_data.facet_markerlist[i] = i + 1;
+        in_data.is_face_visible[i] = faces[i].is_visible;
     }
 
     if (create_bbox){
@@ -446,7 +447,7 @@ void TetMesh::init_faces(const Scene& scene)
     {
         Mesh *mesh = scene.sceneObjects[i]->mesh;
 
-        if (mesh == nullptr)
+        if (mesh == nullptr || mesh->m_ignore_tetrahedralization)
             continue;
 
         glm::mat4 t = glm::translate(glm::mat4(1.0f), scene_objects[i]->pos);
@@ -481,6 +482,7 @@ void TetMesh::init_faces(const Scene& scene)
             //    face.uvs[2] = mesh->uvs[j + 2];
             //}
 
+            face.is_visible = (mesh->m_structure_mesh == false);
             faces.push_back(face);
         }
     }
