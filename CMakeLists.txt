@@ -270,5 +270,5 @@ set_target_properties(
 # Clang tidy
 file(GLOB_RECURSE CLANG_TIDY_SOURCE_FILES src/neptun/*.c src/neptun/*.cpp)
 file(GLOB_RECURSE CLANG_TIDY_HEADER_FILES src/neptun/*.h src/neptun/*.hpp)
-set(CLANG_TIDY_SAVE_PATH "clang-tidy_report.txt")
+set(CLANG_TIDY_SAVE_PATH "clang_tidy_report.txt")
 include(cmake/clang-tidy.cmake)
