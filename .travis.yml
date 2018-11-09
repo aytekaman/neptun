@@ -23,10 +23,10 @@ install: true
 jobs:
   include:
     - stage: build
-    script:
+      script:
       - mkdir build && cd build && cmake ../ && make -r -j 2
       - ../sandbox/bin/Release/neptun -test
     - stage: code analysis
-    script:
+      script:
       - mkdir build && cd build && cmake ../ && make clang-tidy
       - cat clang_tidy_report.txt
