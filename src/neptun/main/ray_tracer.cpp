@@ -222,7 +222,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                     else if (method == Method::BVH_pbrt)
                         hit = scene.bvh->Intersect(ray, intersection_data);
                 }
-
+				//-----------------------------------------------------------------------
                 if (hit)
                 {
                     
@@ -293,7 +293,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     L1_hit_count[thread_idx] = total_L1_hit_count;
 }
 
-void RayTracer::render_gpu(Scene &scene, const bool is_diagnostic = false)
+/*void RayTracer::render_gpu(Scene &scene, const bool is_diagnostic = false)
 {
 	//TetMesh& tet_mesh = *scene.tet_mesh;
 
@@ -349,11 +349,11 @@ void RayTracer::render_gpu(Scene &scene, const bool is_diagnostic = false)
 
 	raycast_gpu(std::ref(scene), source_tet, thread_count, lightInfos, is_diagnostic);
 
-	/*for (int i = 0; i < thread_count; i++)
-	{
-		threads[i]->join();
-		delete threads[i];
-	}*/
+	//for (int i = 0; i < thread_count; i++)
+	//{
+	//	threads[i]->join();
+	//	delete threads[i];
+	//}
 
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
@@ -368,13 +368,22 @@ void RayTracer::render_gpu(Scene &scene, const bool is_diagnostic = false)
 	avg_test_count = 0;
 	L1_count = 0;
 
-	/*for (int i = 0; i < thread_count; i++)
-	{
-		avg_test_count += traversed_tetra_count[i] / (float)thread_count;
-		L1_count += L1_hit_count[i];
-	}
-	*/
+	//for (int i = 0; i < thread_count; i++)
+	//{
+	//	avg_test_count += traversed_tetra_count[i] / (float)thread_count;
+	//	L1_count += L1_hit_count[i];
+	//}
+	
 	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, resolution.x, resolution.y, GL_BGR, GL_UNSIGNED_BYTE, pixels);
+}*/
+
+void RayTracer::ray_caster(Scene & scene,  std::vector<Ray> rays, std::vector<SourceTet> source_tets, std::vector<IntersectionData>output)
+{
+	for (int i = 0; i < rays.size(); i++)
+	{
+		bool hit;
+		hit = scene.tet_mesh->intersect(rays[i], source_tets[i], output[i]);
+	}
 }
 
 void RayTracer::save_to_disk(const char * file_name, ImageType image_type)
