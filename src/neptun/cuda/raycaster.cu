@@ -168,6 +168,4 @@ void raycast_gpu(Scene& scene, SourceTet source_tet, int thread_count, std::vect
 
 	/*const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
 	const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;*/
-
-	raycast_kernel<<<1, m_resolution.x * m_resolution.y >>>(scene, source_tet, ray, top_left, right_step, down_step, lightInfos,is_diagnostic);//!!!!!!!
 }
