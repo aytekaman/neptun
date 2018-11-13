@@ -20,11 +20,9 @@
 #include "light.h"
 #include "logger.h"
 #include "material.h"
-#include "ray.h"
 #include "scene.h"
 #include "stats.h"
 #include "texture.h"
-#include "tet_mesh.h"
 
 #include "color.h"
 
@@ -377,11 +375,13 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, resolution.x, resolution.y, GL_BGR, GL_UNSIGNED_BYTE, pixels);
 }*/
 
-void RayTracer::ray_caster(Scene & scene,  std::vector<Ray> rays, std::vector<SourceTet> source_tets, std::vector<IntersectionData>output)
+void RayTracer::ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData> output)
 {
+    bool hit;
     for (int i = 0; i < rays.size(); i++)
     {
-        scene.tet_mesh->intersect(rays[i], source_tets[i], output[i]);
+        hit = scene.tet_mesh->intersect(rays[i], rays[i].source_tet, output[i]);
+        output[i].hit = hit;
     }
 }
 
