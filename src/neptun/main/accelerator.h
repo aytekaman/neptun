@@ -1,8 +1,9 @@
 
 #pragma once
 
-#include "ray.h"
+#include "glm/glm.hpp"
 
+class Ray;
 class Material;
 
 struct DiagnosticData
@@ -19,6 +20,8 @@ struct IntersectionData
     glm::vec2 uv;
 
     Material* material;
+
+    bool hit;
 
     int tet_idx;
     int neighbor_tet_idx;

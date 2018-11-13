@@ -4,13 +4,13 @@
 
 #include "accelerator.h"
 #include "face.h"
-#include "ray.h"
 
 #include <vector>
 #include <string>
 
 class Material;
 class Scene;
+class Ray;
 
 struct Tet
 {

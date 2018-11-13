@@ -23,6 +23,7 @@
 #include "memory.h"
 #include "mesh.h"
 #include "neptun/tet_mesh/tet_mesh_builder_factory.h"
+#include "ray.h"
 #include "scene.h"
 #include "sfc_utils.h"
 #include "stats.h"
