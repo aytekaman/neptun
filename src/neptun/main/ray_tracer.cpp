@@ -377,11 +377,9 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
 void RayTracer::ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData> output)
 {
-    bool hit;
     for (int i = 0; i < rays.size(); i++)
     {
-        hit = scene.tet_mesh->intersect(rays[i], rays[i].source_tet, output[i]);
-        output[i].hit = hit;
+        output[i].hit = scene.tet_mesh->intersect(rays[i], rays[i].source_tet, output[i]);
     }
 }
 
