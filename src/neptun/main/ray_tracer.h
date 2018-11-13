@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "glm/glm.hpp"
+#include "ray.h"
+#include "tet_mesh.h"
 
 class Bvh;
 class Image;
@@ -74,8 +76,8 @@ enum ImageType
     Locality
 };
 
-extern "C"
-void raycast_gpu(Scene& scene, SourceTet source_tet, int thread_count, std::vector<LightInfo> lightInfos, bool is_diagnostic);
+/*extern "C"
+void raycast_gpu(Scene& scene, SourceTet source_tet, int thread_count, std::vector<LightInfo> lightInfos, bool is_diagnostic);*/
 
 class RayTracer
 {
@@ -83,7 +85,7 @@ public:
     RayTracer();
 
     void Render(Scene &scene, const bool is_diagnostic = false);
-	void render_gpu(Scene &scene, const bool is_diagnostic = false);
+    //void render_gpu(Scene &scene, const bool is_diagnostic = false);
 
     void Raytrace_worker(
         Scene &scene,
@@ -91,11 +93,10 @@ public:
         int thread_idx,
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
+    
+    void ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData> output);
 
-
-    void ray_caster(Scene & scene, std::vector<Ray> rays, std::vector<SourceTet> source_tets, std::vector<IntersectionData>output);
-
-	void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
+    void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
     void set_resoultion(const glm::ivec2& resolution);
 
 
