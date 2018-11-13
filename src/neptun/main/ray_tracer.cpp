@@ -379,11 +379,10 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
 void RayTracer::ray_caster(Scene & scene,  std::vector<Ray> rays, std::vector<SourceTet> source_tets, std::vector<IntersectionData>output)
 {
-	for (int i = 0; i < rays.size(); i++)
-	{
-		bool hit;
-		hit = scene.tet_mesh->intersect(rays[i], source_tets[i], output[i]);
-	}
+    for (int i = 0; i < rays.size(); i++)
+    {
+        scene.tet_mesh->intersect(rays[i], source_tets[i], output[i]);
+    }
 }
 
 void RayTracer::save_to_disk(const char * file_name, ImageType image_type)
