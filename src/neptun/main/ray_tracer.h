@@ -93,6 +93,8 @@ public:
         int thread_idx,
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
+
+    void Raytrace_worker2(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic);
     
     void ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData> output);
 
