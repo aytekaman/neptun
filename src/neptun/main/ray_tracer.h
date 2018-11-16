@@ -76,8 +76,7 @@ enum ImageType
     Locality
 };
 
-/*extern "C"
-void raycast_gpu(Scene& scene, SourceTet source_tet, int thread_count, std::vector<LightInfo> lightInfos, bool is_diagnostic);*/
+extern void ray_caster_gpu(Scene & scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
 
 class RayTracer
 {
@@ -85,7 +84,6 @@ public:
     RayTracer();
 
     void Render(Scene &scene, const bool is_diagnostic = false);
-    //void render_gpu(Scene &scene, const bool is_diagnostic = false);
 
     void Raytrace_worker(
         Scene &scene,
@@ -95,6 +93,8 @@ public:
         bool is_diagnostic);
 
     void Raytrace_worker2(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic);
+
+    void render_gpu(Scene & scene, const bool is_diagnostic);
 
     void ray_caster(Scene & scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
 

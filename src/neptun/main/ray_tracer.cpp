@@ -83,10 +83,8 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
             lightInfos.push_back(li);
         }
     }
-    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();//remove
 
-    Raytrace_worker2(std::ref(scene), source_tet, 0, lightInfos, is_diagnostic);
-    /*std::thread **threads = new std::thread*[thread_count];
+    std::thread **threads = new std::thread*[thread_count];
 
     job_index = thread_count;
 
@@ -103,24 +101,22 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-    delete[] threads;*/
-
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();//remove
+    delete[] threads;
 
     last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
 
     Stats::add_render_time(last_render_time);
 
-    //printf("Rendered in %.3f seconds. (%.1f FPS)\n", last_render_time, 1 / last_render_time);
+    printf("Rendered in %.3f seconds. (%.1f FPS)\n", last_render_time, 1 / last_render_time);
 
     avg_test_count = 0;
     L1_count = 0;
 
-    /*for (int i = 0; i < thread_count; i++)
+    for (int i = 0; i < thread_count; i++)
     {
         avg_test_count += traversed_tetra_count[i] / (float)thread_count;
         L1_count += L1_hit_count[i];
-    }*/
+    }
 
     //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, resolution.x, resolution.y, GL_BGR, GL_UNSIGNED_BYTE, pixels);
 }
@@ -449,89 +445,61 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
     L1_hit_count[thread_idx] = total_L1_hit_count;*/
 }
 
-/*void RayTracer::render_gpu(Scene &scene, const bool is_diagnostic = false)
+void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 {
-	//TetMesh& tet_mesh = *scene.tet_mesh;
+    glm::vec3 camTarget = scene.camTarget;
+    glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
 
-	glm::vec3 camTarget = scene.camTarget;
-	glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+    dir = dir * glm::cos(scene.camOrbitX);
 
-	dir = dir * glm::cos(scene.camOrbitX);
+    dir.y = glm::sin(scene.camOrbitX);
 
-	dir.y = glm::sin(scene.camOrbitX);
+    glm::vec3 cam_pos = camTarget + dir * scene.camDist;
 
-	glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+    Ray ray;
+    ray.origin = cam_pos;
+    SourceTet source_tet;
 
-	Ray ray;
-	ray.origin = cam_pos;
-	SourceTet source_tet;
+    int tet_index = 0;
 
-	int tet_index = 0;
+    if (scene.tet_mesh)
+        tet_index = scene.tet_mesh->find_tet(cam_pos, source_tet);
 
-	if (scene.tet_mesh)
-		tet_index = scene.tet_mesh->find_tet(cam_pos, source_tet);
+    if (tet_index < 0)
+        return;
 
-	if (tet_index < 0)
-		return;
+    std::vector<LightInfo> lightInfos;
 
-	std::vector<LightInfo> lightInfos;
+    for (int i = 0; i < scene.sceneObjects.size(); i++)
+    {
+        if (scene.sceneObjects[i]->light)
+        {
+            LightInfo li;
+            li.pos = scene.sceneObjects[i]->pos;
+            li.color = scene.sceneObjects[i]->light->color;
+            li.intensity = scene.sceneObjects[i]->light->intensity;
 
-	for (int i = 0; i < scene.sceneObjects.size(); i++)
-	{
-		if (scene.sceneObjects[i]->light)
-		{
-			LightInfo li;
-			li.pos = scene.sceneObjects[i]->pos;
-			li.color = scene.sceneObjects[i]->light->color;
-			li.intensity = scene.sceneObjects[i]->light->intensity;
+            SourceTet dummy_source_tet;
 
-			SourceTet dummy_source_tet;
+            if (scene.tet_mesh)
+                li.tet_index = scene.tet_mesh->find_tet(li.pos, dummy_source_tet);
+            li.point_index = scene.sceneObjects[i]->light->point_index;
+            lightInfos.push_back(li);
+        }
+    }
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
-			if (scene.tet_mesh)
-				li.tet_index = scene.tet_mesh->find_tet(li.pos, dummy_source_tet);
-			li.point_index = scene.sceneObjects[i]->light->point_index;
-			lightInfos.push_back(li);
-		}
-	}
+    Raytrace_worker2(std::ref(scene), source_tet, 0, lightInfos, is_diagnostic);
 
-	//std::thread **threads = new std::thread*[thread_count];
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-	//job_index = thread_count;
+    last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
 
-	std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    Stats::add_render_time(last_render_time);
 
-	//for (int i = 0; i < thread_count; i++)
-		//threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
-
-	raycast_gpu(std::ref(scene), source_tet, thread_count, lightInfos, is_diagnostic);
-
-	//for (int i = 0; i < thread_count; i++)
-	//{
-	//	threads[i]->join();
-	//	delete threads[i];
-	//}
-
-	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-	//delete[] threads;
-
-	last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
-
-	Stats::add_render_time(last_render_time);
-
-	//printf("Rendered in %.3f seconds. (%.1f FPS)\n", last_render_time, 1 / last_render_time);
-
-	avg_test_count = 0;
-	L1_count = 0;
-
-	//for (int i = 0; i < thread_count; i++)
-	//{
-	//	avg_test_count += traversed_tetra_count[i] / (float)thread_count;
-	//	L1_count += L1_hit_count[i];
-	//}
-	
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, resolution.x, resolution.y, GL_BGR, GL_UNSIGNED_BYTE, pixels);
-}*/
+    avg_test_count = 0;
+    L1_count = 0;
+}
 
 void RayTracer::ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData>& output)
 {
