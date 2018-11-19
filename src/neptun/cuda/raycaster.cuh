@@ -1,6 +1,4 @@
 #include "cuda_runtime.h"
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
 
 #include "device_launch_parameters.h"
 
@@ -13,6 +11,7 @@
 #include "glm/gtc/constants.hpp"
 
 #include <iostream>
+
 
 __device__
 inline void swapvec2(glm::vec2 &a, glm::vec2 &b)
