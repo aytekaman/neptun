@@ -383,7 +383,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             }*/
         }
     }
-    ray_caster(scene, rays, intersect_data);
+    ray_caster_gpu(scene, rays, intersect_data);
 
     /*glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
     glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);*/
