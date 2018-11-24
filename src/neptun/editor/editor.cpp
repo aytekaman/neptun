@@ -326,12 +326,22 @@ void Editor::DrawMainMenuBar()
                     selected_scene_object = scene->sceneObjects.back();
             }
 
+            if (ImGui::MenuItem("Torus"))
+            {
+                SceneObject* object = new SceneObject("Torus");
+
+                object->mesh = ProceduralMeshGenerator::create_torus();
+                scene->add_scene_object(object);
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects.back();
+            }
+
             if (ImGui::MenuItem("Terrain"))
             {
-                SceneObject* icosphere = new SceneObject("Terrain");
+                SceneObject* terrain = new SceneObject("Terrain");
 
-                icosphere->mesh = ProceduralMeshGenerator::create_terrain();
-                scene->add_scene_object(icosphere);
+                terrain->mesh = ProceduralMeshGenerator::create_terrain();
+                scene->add_scene_object(terrain);
                 if (scene->sceneObjects.size() > 0)
                     selected_scene_object = scene->sceneObjects.back();
             }

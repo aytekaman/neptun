@@ -1,9 +1,12 @@
 
+#include <limits>
+
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/random.hpp>
 
-#include "proceduralmeshgenerator.h"
 #include "mesh.h"
+#include "proceduralmeshgenerator.h"
 
 Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size, const glm::ivec3& step_count)
 {
@@ -269,3 +272,73 @@ Mesh* ProceduralMeshGenerator::create_terrain(const glm::vec2& terrain_size)
     mesh->m_vertex_count = mesh->m_vertices.size();
     return mesh;
 }
+
+Mesh* ProceduralMeshGenerator::create_torus(const glm::ivec2& step_size)
+{
+    Mesh* mesh = new Mesh;
+    constexpr float r_out = 2; // Radius of big circle
+    constexpr float r_in = 1; // Radius of inner circle
+
+    auto find_coord = [&r_out, &r_in]( const glm::vec2& coord) 
+    {
+        const glm::vec2 sin_coord = glm::sin(coord);
+        const glm::vec2 cos_coord = glm::cos(coord);
+        const float t = r_out + (r_in * cos_coord.x);
+
+        const glm::vec3 p(t * cos_coord.y, r_in * sin_coord.x, t * sin_coord.y); // Coord
+
+        // Find normal 
+        // Tangent wrt big circle
+        const glm::vec3 big_tan(-sin_coord.y, 0, cos_coord.y);
+
+        // Tangent wrt small circle
+        const glm::vec3 small_tan(-sin_coord.x * cos_coord.y, cos_coord.x, -sin_coord.x * sin_coord.y);
+
+        // Normal 
+        const glm::vec3 n = glm::cross(big_tan, small_tan);
+        constexpr float epsilon = std::numeric_limits<float>::epsilon();
+        return std::make_pair(p + epsilon, glm::normalize(glm::vec3(-n)));
+    };
+
+    constexpr float TWO_PI = glm::two_pi<float>();
+    const glm::vec2 step_angle = glm::vec2(TWO_PI) / glm::vec2(step_size);
+    for (int si = 0; si < step_size.x; si++)
+    {
+        for (int sj = 0; sj < step_size.y; sj++)
+        {
+            const float i1 = (si % step_size.x) * step_angle.x;
+            const float j1 = (sj % step_size.y) * step_angle.y;
+
+            const float i2 = ((si + 1) % step_size.x) * step_angle.x;
+            const float j2 = ((sj + 1) % step_size.y) * step_angle.y;
+
+            const auto c1 = find_coord(glm::vec2(i1, j1));
+            const auto c2 = find_coord(glm::vec2(i1, j2));
+            const auto c3 = find_coord(glm::vec2(i2, j1));
+            const auto c4 = find_coord(glm::vec2(i2, j2));
+            
+            // First triangle
+            mesh->m_vertices.push_back(c1.first);
+            mesh->m_vertices.push_back(c3.first);
+            mesh->m_vertices.push_back(c2.first);
+
+            mesh->m_normals.push_back(c1.second);
+            mesh->m_normals.push_back(c3.second);
+            mesh->m_normals.push_back(c2.second);
+
+            // Second triangle
+            mesh->m_vertices.push_back(c2.first);
+            mesh->m_vertices.push_back(c3.first);
+            mesh->m_vertices.push_back(c4.first);
+
+            mesh->m_normals.push_back(c2.second);
+            mesh->m_normals.push_back(c3.second);
+            mesh->m_normals.push_back(c4.second);
+        }
+    }
+
+    mesh->m_vertex_count = mesh->m_vertices.size();
+    return mesh;
+}
+
+
