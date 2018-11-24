@@ -2,12 +2,11 @@
 
 #include <pmmintrin.h>
 
-
-
 #include <algorithm>
 #include <ctime>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <limits>
 #include <set>
 #include <vector>
 
@@ -441,6 +440,7 @@ void TetMesh::sort_points(const SortingMethod sorting_method, const unsigned int
 
 void TetMesh::init_faces(const Scene& scene)
 {
+    constexpr float epsilon = std::numeric_limits<float>::epsilon();
     const std::vector<SceneObject*> &scene_objects = scene.sceneObjects;
 
     for (int i = 0, face_idx = 0; i < scene_objects.size(); i++)
@@ -474,6 +474,17 @@ void TetMesh::init_faces(const Scene& scene)
             face.normals[0] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 0], 1));
             face.normals[1] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 1], 1));
             face.normals[2] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 2], 1));
+
+            if (m_perturb_points)
+            {
+                face.vertices[0] += epsilon;
+                face.vertices[1] += epsilon;
+                face.vertices[2] += epsilon;
+
+                face.normals[0] += epsilon;
+                face.normals[1] += epsilon;
+                face.normals[2] += epsilon;
+            }
 
             //if (mesh->uvs.size() > 0)
             //{
