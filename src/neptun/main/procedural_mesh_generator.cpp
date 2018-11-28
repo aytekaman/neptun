@@ -1,3 +1,4 @@
+#include "procedural_mesh_generator.h"
 
 #include <limits>
 
@@ -6,7 +7,6 @@
 #include <glm/gtc/random.hpp>
 
 #include "mesh.h"
-#include "proceduralmeshgenerator.h"
 
 Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size, const glm::ivec3& step_count)
 {

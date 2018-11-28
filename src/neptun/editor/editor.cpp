@@ -18,10 +18,11 @@
 #include "glm/gtx/euler_angles.hpp"
 #include "glm/gtx/transform.hpp"
 
+#include "neptun/editor/graphics.h"
 #include "neptun/main/asset_importer.h"
 #include "neptun/main/bvh.h"
 #include "neptun/main/color.h"
-#include "neptun/editor/graphics.h"
+#include "neptun/main/filesystem.h"
 #include "neptun/main/hilbert.h"
 #include "neptun/main/image.h"
 #include "neptun/main/kd_tree.h"
@@ -29,14 +30,13 @@
 #include "neptun/main/logger.h"
 #include "neptun/main/material.h"
 #include "neptun/main/mesh.h"
-#include "neptun/main/proceduralmeshgenerator.h"
+#include "neptun/main/procedural_mesh_generator.h"
 #include "neptun/main/ray_tracer.h"
 #include "neptun/main/scene.h"
 #include "neptun/main/sceneobject.h"
 #include "neptun/main/stats.h"
 #include "neptun/main/tet_mesh.h"
 #include "neptun/main/texture.h"
-#include "neptun/main/filesystem.h"
 
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
