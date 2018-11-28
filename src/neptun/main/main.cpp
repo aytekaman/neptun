@@ -8,7 +8,7 @@
 #include "neptun/editor/editor.h"
 #include "neptun/editor/graphics.h"
 #include "kd_tree.h"
-#include "proceduralmeshgenerator.h"
+#include "procedural_mesh_generator.h"
 #include "ray_tracer.h"
 #include "scene.h"
 #include "stats.h"

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "glm/glm.hpp"
@@ -12,4 +11,6 @@ public:
                              const glm::ivec3 &step_count = glm::vec3(4, 4, 4));
 
     static Mesh* create_icosphere(const float radius = 1.0f, const int n = 2);
+    static Mesh* create_terrain(const glm::vec2& terrain_size = glm::vec2(10, 10));
+    static Mesh* create_torus(const glm::ivec2& step_size = glm::ivec2(32, 16));
 };
