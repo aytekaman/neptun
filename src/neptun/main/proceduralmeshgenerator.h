@@ -12,4 +12,5 @@ public:
                              const glm::ivec3 &step_count = glm::vec3(4, 4, 4));
 
     static Mesh* create_icosphere(const float radius = 1.0f, const int n = 2);
+    static Mesh* create_terrain();
 };

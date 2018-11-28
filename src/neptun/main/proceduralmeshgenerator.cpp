@@ -1,6 +1,7 @@
 
-#include "proceduralmeshgenerator.h"
+#include <glm/gtc/noise.hpp>
 
+#include "proceduralmeshgenerator.h"
 #include "mesh.h"
 
 Mesh* ProceduralMeshGenerator::create_cube(const glm::vec3& size, const glm::ivec3& step_count)
@@ -161,5 +162,60 @@ Mesh* ProceduralMeshGenerator::create_icosphere(const float radius, const int n)
     mesh->m_vertex_count = mesh->m_vertices.size();
     mesh->m_face_count = mesh->m_vertex_count / 3;
 
+    return mesh;
+}
+
+glm::vec3 perlin2d(const float x, const float y, const float multiplier = 1)
+{
+    const float z = glm::perlin(glm::vec2(x * multiplier, y * multiplier));
+    return glm::vec3( x - 0.5, (z + 0.5) / 2, y - 0.5 );
+}
+
+Mesh* ProceduralMeshGenerator::create_terrain()
+{
+    const float perlin_multiplier = 3;
+ 
+    const glm::ivec2 step_count(30, 30);
+    assert(step_count.x > 0 && step_count.y > 0);
+    const glm::vec2 step_size = 1.0f / glm::vec2(step_count);
+    
+    Mesh* mesh = new Mesh;
+    int index = 0;
+    for (int i = 1; i < step_count.x; i++)
+    {
+        for (int j = 1; j < step_count.y; j++)
+        {
+            const glm::vec2 bounds_coords[2] = { step_size * glm::vec2(i - 1, j - 1),
+                                                 step_size * glm::vec2(i, j)};
+
+            const glm::vec3 v[4] = { perlin2d(bounds_coords[0].x, bounds_coords[0].y, perlin_multiplier),
+                                     perlin2d(bounds_coords[0].x, bounds_coords[1].y, perlin_multiplier),
+                                     perlin2d(bounds_coords[1].x, bounds_coords[1].y, perlin_multiplier),
+                                     perlin2d(bounds_coords[1].x, bounds_coords[0].y, perlin_multiplier)
+                                     
+            };
+ 
+            mesh->m_vertices.push_back(v[0]);
+            mesh->m_vertices.push_back(v[1]);
+            mesh->m_vertices.push_back(v[2]);
+
+            glm::vec3 normal = glm::normalize(glm::cross(v[1] - v[0], v[2] - v[0]));
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+            
+            
+            mesh->m_vertices.push_back(v[0]);
+            mesh->m_vertices.push_back(v[2]);
+            mesh->m_vertices.push_back(v[3]);
+
+            normal = glm::normalize(glm::cross(v[2] - v[0], v[3] - v[0]));
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+            mesh->m_normals.push_back(normal);
+        }
+    }
+    
+    mesh->m_vertex_count = mesh->m_vertices.size();
     return mesh;
 }

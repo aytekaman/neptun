@@ -326,6 +326,16 @@ void Editor::DrawMainMenuBar()
                     selected_scene_object = scene->sceneObjects.back();
             }
 
+            if (ImGui::MenuItem("Terrain"))
+            {
+                SceneObject* icosphere = new SceneObject("Terrain");
+
+                icosphere->mesh = ProceduralMeshGenerator::create_terrain();
+                scene->add_scene_object(icosphere);
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects.back();
+            }
+
             ImGui::Separator();
 
             if (ImGui::MenuItem("Light"))
