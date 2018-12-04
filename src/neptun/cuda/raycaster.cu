@@ -1,16 +1,18 @@
 #include "raycaster.cuh";
 #include <stdio.h>
 
+int N = 640 * 480;
+
 __global__
 void raycast_kernel(/*Scene &a,*/ Ray *rays, int rays_size, IntersectionData *output)
 {
-    int i = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
     {
-        if( i % 2)
-            output[i].hit = true;
+        if ((i / 8) % 2)
+            output[i].hit = 1;
         else
-            output[i].hit = false;
+            output[i].hit = 0;
     }
 }
 
@@ -36,24 +38,33 @@ void ray_caster_gpu(Scene& scene, std::vector<Ray> rays, std::vector<Intersectio
     // Allocate space for device copy of Ray
     cudaMalloc(&d_rays, rays.size() * sizeof(Ray));
     cudaMalloc(&d_intersectdata, rays.size() * sizeof(IntersectionData));
+    cudaError_t error = cudaGetLastError();
+    //printf("CUDA error0: %s\n", cudaGetErrorString(error));
 
     // Copy inputs to device
     cudaMemcpy(d_rays, rays.data(), rays.size() * sizeof(Ray), cudaMemcpyHostToDevice);
+    error = cudaGetLastError();
+    printf("CUDA error1: %s\n", cudaGetErrorString(error));
 
-    // Launch add() kernel on GPU
-    raycast_kernel<<<1, rays.size()>>> (d_rays, rays.size(), d_intersectdata);
+    // Launch kernel on GPU
+    raycast_kernel<<< rays.size() / 1024, 1024>>> (d_rays, rays.size(), d_intersectdata);
+    //cudaDeviceSynchronize();
+    error = cudaGetLastError();
+    printf("CUDA error2: %s\n", cudaGetErrorString(error));
 
     // Copy result back to host
+    //cudaMemcpyToArray(c, 0, 0, d_intersectdata, rays.size() * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
     cudaMemcpy(c, d_intersectdata, rays.size() * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
-    //cudaMemcpy(&output, d_intersectdata, rays.size() * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
+    /*error = cudaGetLastError();
+    printf("CUDA error3: %s\n", cudaGetErrorString(error));*/
 
     // Cleanup
     cudaFree(d_rays);
     cudaFree(d_intersectdata);
 
-    printf("%d", c[1020].hit);
-    printf("%d", c[1021].hit);
+    printf("%d\n", (int)c[110].hit);
+    printf("%d\n", (int)c[1021].hit);
     output.insert(output.begin(), c, c + rays.size());
 
-    //delete[] c;
+    delete[] c;
 }
