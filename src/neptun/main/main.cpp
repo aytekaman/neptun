@@ -5,16 +5,17 @@
 // #include <direct.h>
 
 #include "bvh.h"
+#include "filesystem.h"
+#include "kd_tree.h"
+#include "neptun/argparse/argparse.h"
 #include "neptun/editor/editor.h"
 #include "neptun/editor/graphics.h"
-#include "kd_tree.h"
 #include "procedural_mesh_generator.h"
 #include "ray_tracer.h"
 #include "scene.h"
 #include "stats.h"
 #include "tet_mesh.h"
 #include "utils.h"
-#include "filesystem.h"
 
 #include <glm/gtc/constants.hpp>
 
@@ -807,52 +808,55 @@ extern "C"
 }
 #endif
 
-int main(int argc, char** argv)
+int run_command_line(const argparse::ArgumentData& args)
 {
-    //glm::vec3 n = glm::normalize(glm::vec3(0.5, 1.0, 0.1));
-    //std::cout << n.x << " " << n.y << " " << n.z << std::endl;
-
-
-    std::vector<std::string> args;
-
-    for (int i = 1; i < argc; ++i)
-        args.push_back(argv[i]);
-
-    if (argc > 1)
+    if (args["help"]->cast<bool>())
     {
-        //std::string test_folder_name = Utils::get_timestamp();
-
-        //fs::create_directory(test_folder_name);
-
-        std::cout << "Starting in benchmark mode ... " << std::endl;
-
-        create_and_render_test_scene();
-
-        simd_comparison();
-
-        //if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
-        //    build_and_render_times(test_folder_name, 100);
-
-        //if (std::find(args.begin(), args.end(), "close_surface") != args.end())
-        //    close_surface(test_folder_name);
-
-        //if (std::find(args.begin(), args.end(), "tet_mesh_weight") != args.end())
-        //    tet_mesh_weight(test_folder_name);
-
-        //if (std::find(args.begin(), args.end(), "tet_mesh_sorting") != args.end())
-        //    tet_mesh_sorting(test_folder_name);
-
-        //if (std::find(args.begin(), args.end(), "region_sort") != args.end())
-        //    region_sort();
-
-        return 0;
+        args.print_usage();
+        return EXIT_SUCCESS;
     }
 
-    Scene scene;
-    Graphics graphics;
-    RayTracer ray_tracer;
+    if (args.has_errors())
+    {
+        args.print_errors();
+    }
+    args.print_warnings();
 
-    Editor editor(&scene, &graphics, &ray_tracer);
+    return EXIT_SUCCESS;
+}
 
-    editor.Run();
+int main(int argc, char const *argv[])
+{
+    if (argc > 1)
+    {
+    /*
+        std::cout << "Starting in benchmark mode ... " << std::endl;
+        create_and_render_test_scene();
+        simd_comparison();
+    */
+        const std::string program_name(argv[0]);
+        argparse::ArgumentParser parser(program_name, "Neptun command line interface", run_command_line);
+
+        parser.add_keyword_argument("help", "Prints help", argparse::ArgumentType::BOOL, "h", "false");
+
+        if (parser.has_errors())
+        {
+            std::cerr << "Parser error" << std::endl;
+            return EXIT_FAILURE;
+        } else
+        {
+            return parser.parse(argc - 1, argv + 1);
+        }
+    }
+    else
+    {
+        Scene scene;
+        Graphics graphics;
+        RayTracer ray_tracer;
+
+        Editor editor(&scene, &graphics, &ray_tracer);
+
+        editor.Run();
+        return EXIT_SUCCESS;
+    }
 }

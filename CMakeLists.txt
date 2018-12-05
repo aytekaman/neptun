@@ -159,6 +159,11 @@ set (main_sources
     src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
+    src/neptun/argparse/argparse.h
+    src/neptun/argparse/argparse.cpp
+    src/neptun/argparse/util.h
+    src/neptun/argparse/argument.h
+    src/neptun/argparse/argument.cpp
 )
 
 source_group ("main\\" FILES
