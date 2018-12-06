@@ -31,3 +31,6 @@ inline void swap(unsigned int &a, unsigned int &b)
 
 __device__
 inline float crossv(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; }
+
+__device__
+inline float crossv(const glm::vec3& a, const glm::vec3& b) { return a.x * b.y - a.y * b.x; }
