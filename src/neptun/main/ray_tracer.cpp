@@ -92,8 +92,16 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
-    for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    if (m_use_ray_packets)
+    {
+        for (int i = 0; i < thread_count; i++)
+            threads[i] = new std::thread(&RayTracer::Raytrace_packets_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    }
+    else
+    {
+        for (int i = 0; i < thread_count; i++)
+            threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    }
 
     for (int i = 0; i < thread_count; i++)
     {

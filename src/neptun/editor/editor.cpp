@@ -1223,6 +1223,7 @@ void Editor::DrawRenderedFrame()
 
     const char* reps[] = { "Default", "Default (SIMD)", "ScTP", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
     ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 7);
+    ImGui::Checkbox("Use ray packets", &ray_tracer->m_use_ray_packets);
 
     if (res != ray_tracer->m_resolution)
     {

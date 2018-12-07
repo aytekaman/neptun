@@ -122,6 +122,8 @@ public:
     //glm::u8vec3 *pixels;
     int thread_count;
 
+    bool m_use_ray_packets = false;
+
     //KdTree *kd_tree = nullptr;
     //Bvh *bvh = nullptr;
 
