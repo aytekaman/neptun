@@ -316,7 +316,7 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
     const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
     const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
 
-    Ray ray(cam_pos);
+    Ray ray;
 
     int total_test_count = 0;
     int total_L1_hit_count = 0;
@@ -335,11 +335,14 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
 
         rect_max = (glm::min)(rect_max, m_resolution);
 
-        for (int j = rect_min.y; j < rect_max.y; j++)
+        for (int j = rect_min.y; j < rect_max.y; j += 2)
         {
-            for (int i = rect_min.x; i < rect_max.x; i++)
+            for (int i = rect_min.x; i < rect_max.x; i += 2)
             {
+                
+
                 ray.dir = glm::normalize(top_left + right_step * (float)i + down_step * (float)j - ray.origin);
+
 
                 glm::vec3 pos, normal, color;
                 glm::vec2 uv;
@@ -372,7 +375,6 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
                     else if (method == Method::BVH_pbrt)
                         hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);
                 }
-
                 else
                 {
                     if (method == Method::Default)

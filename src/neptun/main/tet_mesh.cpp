@@ -557,6 +557,10 @@ int TetMesh::find_tet_brute_force(const glm::vec3& point)
     return -1;
 }
 
+void TetMesh::intersect4(const Ray rays[4], const SourceTet & tet, IntersectionData intersection_data[4])
+{
+}
+
 bool TetMesh::intersect_simd(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data)
 {
     return false;
@@ -957,6 +961,14 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     }
     else
         return false;
+}
+
+void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, IntersectionData intersection_data[4])
+{
+    for (int i = 0; i < 4; i++)
+    {
+        intersect(rays[i], tet, intersection_data[i]);
+    }
 }
 
 bool TetMesh32::intersect_stats(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data, DiagnosticData& diagnostic_data)
@@ -1691,6 +1703,10 @@ bool TetMesh20::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         return false;
 }
 
+void TetMesh20::intersect4(const Ray rays[4], const SourceTet & tet, IntersectionData intersection_data[4])
+{
+}
+
 bool TetMesh20::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
 {
     return false;
@@ -2152,6 +2168,10 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     }
     else
         return false;
+}
+
+void TetMesh16::intersect4(const Ray rays[4], const SourceTet & tet, IntersectionData intersection_data[4])
+{
 }
 
 bool TetMesh16::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
