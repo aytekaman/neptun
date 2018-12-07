@@ -37,6 +37,8 @@
 #include "neptun/main/texture.h"
 #include "neptun/main/filesystem.h"
 
+extern void copy_to_gpu(TetMesh32& tet_mesh);
+
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
     for (int i = 0; i < count; i++)
@@ -590,8 +592,11 @@ void Editor::DrawTetGen()
 
         if (current_tet_mesh_type == 0)
         {
-            scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
+            TetMesh32* msh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
+            scene->tet_mesh = msh;
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            copy_to_gpu(*msh);
+            Logger::Log("TetMesh32 data copied to GPU");
         }
         else if (current_tet_mesh_type == 1)
         {
