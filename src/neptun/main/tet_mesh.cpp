@@ -956,11 +956,15 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.hit = true;
 
         return true;
     }
     else
+    {
+        intersection_data.hit = false;
         return false;
+    }
 }
 
 void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, IntersectionData intersection_data[4])

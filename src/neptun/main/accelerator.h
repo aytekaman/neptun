@@ -20,6 +20,8 @@ struct IntersectionData
 
     Material* material;
 
+    bool hit;
+
     int tet_idx;
     int neighbor_tet_idx;
 };
