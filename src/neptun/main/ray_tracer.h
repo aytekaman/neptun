@@ -76,7 +76,7 @@ enum ImageType
     Locality
 };
 
-extern void ray_caster_gpu(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
+extern void ray_caster_gpu(std::vector<Ray> rays, IntersectionData* output);
 
 class RayTracer
 {

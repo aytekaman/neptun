@@ -326,7 +326,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
     std::vector<Ray> rays;
     rays.reserve(m_resolution.x * m_resolution.y);
     rays.resize(rays.capacity());
-    std::vector<IntersectionData> intersect_data;
+    IntersectionData* intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
 
     glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
     glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
@@ -385,7 +385,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             }*/
         }
     }
-    ray_caster_gpu(scene, rays, intersect_data);
+    ray_caster_gpu(rays, intersect_data);
 
     /*glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
     glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);*/
@@ -443,6 +443,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
         }
     }
+    delete[] intersect_data;
 
     /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
     L1_hit_count[thread_idx] = total_L1_hit_count;*/

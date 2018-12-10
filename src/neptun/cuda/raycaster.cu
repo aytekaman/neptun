@@ -1,11 +1,13 @@
 #include "raycaster.cuh";
 #include <stdio.h>
 
-int N = 640 * 480;
+Ray *d_rays;
+IntersectionData* d_intersectdata;
 glm::vec3* d_points;
 TetMesh32::Tet32* d_tets;
 ConstrainedFace* d_cons_faces;
 Face* d_faces;
+unsigned int old_size = 0;
 
 __global__
 void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
@@ -149,35 +151,30 @@ void copy_to_gpu(TetMesh32& tet_mesh)
     printf("CUDA error4: %s\n", cudaGetErrorString(error));
 }
 
-void ray_caster_gpu(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData>& output)
+void ray_caster_gpu(std::vector<Ray> rays, IntersectionData* output)
 {
-    Ray *d_rays;
-    IntersectionData* d_intersectdata;
-
-    IntersectionData* h_intersectdata = new IntersectionData[rays.size()];
-
     // Allocate space for device copy of data
-    cudaMalloc(&d_rays, rays.size() * sizeof(Ray));
-    cudaMalloc(&d_intersectdata, rays.size() * sizeof(IntersectionData));
-    //cudaError_t error = cudaGetLastError();
+    if (old_size != rays.size())
+    {
+        cudaFree(d_rays);
+        cudaFree(d_intersectdata);
+        cudaMalloc(&d_rays, rays.size() * sizeof(Ray));
+        cudaMalloc(&d_intersectdata, rays.size() * sizeof(IntersectionData));
+        //cudaError_t error = cudaGetLastError();
+        old_size = rays.size();
+    }
 
     // Copy inputs to device
     cudaMemcpy(d_rays, rays.data(), rays.size() * sizeof(Ray), cudaMemcpyHostToDevice);
 
     // Launch kernel on GPU
-    raycast_kernel <<< rays.size() / 1024, 1024 >>>(d_rays, rays.size(), d_points, d_tets, d_cons_faces, d_faces, d_intersectdata);
+    raycast_kernel <<< rays.size() / 900, 900 >>>(d_rays, rays.size(), d_points, d_tets, d_cons_faces, d_faces, d_intersectdata);
     //cudaError_t error = cudaGetLastError();
     //printf("CUDA error0: %s\n", cudaGetErrorString(error));
 
     // Copy result back to host
-    cudaMemcpy(h_intersectdata, d_intersectdata, rays.size() * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
+    cudaMemcpy(output, d_intersectdata, rays.size() * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
 
-    // Cleanup
-    cudaFree(d_rays);
-    cudaFree(d_intersectdata);
-
-    //copy the results back to the vector
-    output.insert(output.begin(), h_intersectdata, h_intersectdata + rays.size());
-
-    delete[] h_intersectdata;
+    /*cudaFree(d_rays);
+    cudaFree(d_intersectdata);*/
 }
