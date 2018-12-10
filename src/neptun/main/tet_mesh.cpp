@@ -969,9 +969,114 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
 
 void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, IntersectionData intersection_data[4])
 {
-    for (int i = 0; i < 4; i++)
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
+    //for (int i = 0; i < 4; i++)
+    //{
+    //    intersect(rays[i], tet, intersection_data[i]);
+    //}
+
+    unsigned int id[4][4];
+    glm::vec2 p[4][4];
+
+    const Basis basis[4] = {
+        Basis(rays[0].dir),
+        Basis(rays[1].dir),
+        Basis(rays[2].dir),
+        Basis(rays[3].dir) };
+
+    int index[4];
+
+    for (int k = 0; k < 4; ++k)
     {
-        intersect(rays[i], tet, intersection_data[i]);
+        for (int i = 0; i < 4; i++)
+        {
+            id[k][i] = tet.v[i];
+            const glm::vec3 point = m_points[id[k][i]] - rays[k].origin;
+            p[k][i].x = glm::dot(basis[k].right, point);
+            p[k][i].y = glm::dot(basis[k].up, point);
+        }
+    }
+
+    signed char outIdx[4] = { -1 };
+
+    for (int k = 0; k < 4; ++k)
+    {
+        if (cross(p[k][2], p[k][1]) <= 0.0f && cross(p[k][1], p[k][3]) <= 0.0f && cross(p[k][3], p[k][2]) <= 0.0f)
+        {
+            outIdx[k] = 0;
+        }
+        else if (cross(p[k][2], p[k][3]) <= 0.0f && cross(p[k][3], p[k][0]) <= 0.0f && cross(p[k][0], p[k][2]) <= 0.0f)
+        {
+            outIdx[k] = 1;
+        }
+        else if (cross(p[k][0], p[k][3]) <= 0.0f && cross(p[k][3], p[k][1]) <= 0.0f && cross(p[k][1], p[k][0]) <= 0.0f)
+        {
+            outIdx[k] = 2;
+        }
+        else if (cross(p[k][0], p[k][1]) <= 0.0f && cross(p[k][1], p[k][2]) <= 0.0f && cross(p[k][2], p[k][0]) <= 0.0f)
+        {
+            outIdx[k] = 3;
+
+            std::swap(id[k][0], id[k][1]);
+            std::swap(p[k][0], p[k][1]);
+        }
+    }
+
+    for (int k = 0; k < 4; ++k)
+        index[k] = tet.n[outIdx[k]];
+
+    while (index[0] >= 0 || index[1] >= 0 || index[2] >= 0 || index[3] >= 0)
+    {
+        for (int k = 0; k < 4; ++k)
+        {
+            if (index[k] < 0)
+                continue;
+
+            id[k][outIdx[k]] = id[k][3];
+            id[k][3] = m_tet32s[index[k]].x ^ id[k][0] ^ id[k][1] ^ id[k][2];
+            const glm::vec3 newPoint = m_points[id[k][3]] - rays[k].origin;
+
+            p[k][outIdx[k]] = p[k][3];
+            p[k][3].x = glm::dot(basis[k].right, newPoint);
+            p[k][3].y = glm::dot(basis[k].up, newPoint);
+
+            //p[3] = basis.project(newPoint);
+
+            if (p[k][3].x * p[k][0].y < p[k][3].y * p[k][0].x) // copysignf here?
+            {
+                if (p[k][3].x * p[k][2].y >= p[k][3].y * p[k][2].x)
+                    outIdx[k] = 1;
+                else
+                    outIdx[k] = 0;
+            }
+            else if (p[k][3].x * p[k][1].y < p[k][3].y * p[k][1].x)
+                outIdx[k] = 2;
+            else
+                outIdx[k] = 0;
+
+            //prev_index = index;
+
+            if (id[k][outIdx[k]] == m_tet32s[index[k]].v[0])
+                index[k] = m_tet32s[index[k]].n[0];
+            else if (id[k][outIdx[k]] == m_tet32s[index[k]].v[1])
+                index[k] = m_tet32s[index[k]].n[1];
+            else if (id[k][outIdx[k]] == m_tet32s[index[k]].v[2])
+                index[k] = m_tet32s[index[k]].n[2];
+            else
+                index[k] = m_tet32s[index[k]].n[3];
+        }
+    }
+
+    for (int k = 0; k < 4; ++k)
+    {
+        if (index[k] != -1)
+        {
+            intersection_data[k].hit = true;
+        }
+        else
+            intersection_data[k].hit = false;
     }
 }
 
