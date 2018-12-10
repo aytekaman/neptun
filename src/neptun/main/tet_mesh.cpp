@@ -860,6 +860,9 @@ int TetMesh32::find_tet(const glm::vec3& point, SourceTet& tet)
 
 bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
     unsigned int id[4];
     glm::vec2 p[4];
 
@@ -999,7 +1002,7 @@ void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
         }
     }
 
-    signed char outIdx[4] = { -1 };
+    int outIdx[4] = { -1 };
 
     for (int k = 0; k < 4; ++k)
     {
@@ -1027,12 +1030,19 @@ void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
     for (int k = 0; k < 4; ++k)
         index[k] = tet.n[outIdx[k]];
 
-    while (index[0] >= 0 || index[1] >= 0 || index[2] >= 0 || index[3] >= 0)
+    int mask = 0;
+
+    while (mask != 15)
     {
+#pragma unroll
         for (int k = 0; k < 4; ++k)
         {
             if (index[k] < 0)
+            {
+                mask |= 1 << k;
+
                 continue;
+            }
 
             id[k][outIdx[k]] = id[k][3];
             id[k][3] = m_tet32s[index[k]].x ^ id[k][0] ^ id[k][1] ^ id[k][2];
@@ -1041,8 +1051,13 @@ void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
             p[k][outIdx[k]] = p[k][3];
             p[k][3].x = glm::dot(basis[k].right, newPoint);
             p[k][3].y = glm::dot(basis[k].up, newPoint);
+        }
 
-            //p[3] = basis.project(newPoint);
+#pragma unroll
+        for (int k = 0; k < 4; ++k)
+        {
+            if (index[k] < 0)
+                continue;
 
             if (p[k][3].x * p[k][0].y < p[k][3].y * p[k][0].x) // copysignf here?
             {
@@ -1055,8 +1070,15 @@ void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
                 outIdx[k] = 2;
             else
                 outIdx[k] = 0;
+        }
 
-            //prev_index = index;
+#pragma unroll
+        for (int k = 0; k < 4; ++k)
+        {
+            if (index[k] < 0)
+            {
+                continue;
+            }
 
             if (id[k][outIdx[k]] == m_tet32s[index[k]].v[0])
                 index[k] = m_tet32s[index[k]].n[0];
@@ -1069,10 +1091,31 @@ void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
         }
     }
 
+#pragma unroll
     for (int k = 0; k < 4; ++k)
     {
         if (index[k] != -1)
         {
+            index[k] = (index[k] & 0x7FFFFFFF);
+            const Face& face = *m_constrained_faces[index[k]].face;
+
+            const glm::vec3 *v = face.vertices;
+            const glm::vec3 *n = face.normals;
+            const glm::vec2 *t = face.uvs;
+
+            const glm::vec3 e1 = v[1] - v[0];
+            const glm::vec3 e2 = v[2] - v[0];
+            const glm::vec3 s = rays[k].origin - v[0];
+            const glm::vec3 q = glm::cross(s, e1);
+            const glm::vec3 p = glm::cross(rays[k].dir, e2);
+            const float f = 1.0f / glm::dot(e1, p);
+            const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(rays[k].dir, q));
+
+            intersection_data[k].position = rays[k].origin + f * glm::dot(e2, q) * rays[k].dir;
+            intersection_data[k].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+            intersection_data[k].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+            intersection_data[k].tet_idx = m_constrained_faces[index[k]].tet_idx;
+            intersection_data[k].neighbor_tet_idx = m_constrained_faces[index[k]].other_tet_idx;
             intersection_data[k].hit = true;
         }
         else
@@ -2305,6 +2348,8 @@ void TetMesh16::intersect4(TetRayHit4& tet_ray_hit)
         Basis(tet_ray_hit.tet_ray[3].dir) };
 
     int index[4];
+
+
     
     for (int k = 0; k < 4; ++k)
     {
