@@ -324,6 +324,8 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
 
     int idx = 0;
     std::vector<Ray> rays;
+    rays.reserve(m_resolution.x * m_resolution.y);
+    rays.resize(rays.capacity());
     std::vector<IntersectionData> intersect_data;
 
     glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
@@ -356,7 +358,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             else
                 ray.tMax = 100000000;
 
-            rays.push_back(ray);
+            rays[i + j * m_resolution.x ] = ray;
 
             /*if (is_diagnostic)
             {
