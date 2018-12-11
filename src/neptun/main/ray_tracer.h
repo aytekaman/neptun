@@ -120,6 +120,9 @@ public:
 
     std::atomic<int> job_index{0};
     glm::ivec2 m_resolution = glm::ivec2(640, 480);
+    glm::ivec2 m_old_res = glm::ivec2();
+    IntersectionData* m_intersect_data;
+    std::vector<Ray> m_rays;
     int tile_size = 16;
     //glm::u8vec3 *pixels;
     int thread_count;

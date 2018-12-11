@@ -323,10 +323,16 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
     const int max_job_index = tile_count_x * tile_count_y;
 
     int idx = 0;
-    std::vector<Ray> rays;
-    rays.reserve(m_resolution.x * m_resolution.y);
-    rays.resize(rays.capacity());
-    IntersectionData* intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
+
+    if (m_old_res != m_resolution)
+    {
+        if (!m_intersect_data)
+            delete[] m_intersect_data;
+       m_rays.reserve(m_resolution.x * m_resolution.y);
+        m_rays.resize(m_rays.capacity());
+        m_intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
+        m_old_res = m_resolution;
+    }
 
     glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
     glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
@@ -358,7 +364,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             else
                 ray.tMax = 100000000;
 
-            rays[i + j * m_resolution.x ] = ray;
+            m_rays[i + j * m_resolution.x ] = ray;
 
             /*if (is_diagnostic)
             {
@@ -385,7 +391,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             }*/
         }
     }
-    ray_caster_gpu(rays, intersect_data);
+    ray_caster_gpu(m_rays, m_intersect_data);
 
     /*glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
     glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);*/
@@ -397,7 +403,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
         for (int i = 0; i < m_resolution.x; i++)
         {
             glm::vec3 color;
-            if (intersect_data[i + j * m_resolution.x].hit)
+            if (m_intersect_data[i + j * m_resolution.x].hit)
             {
 
                 color = glm::vec3();
@@ -405,11 +411,11 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
 
                 for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
                 {
-                    Ray shadow_ray(intersect_data[i + j * m_resolution.x].position,
-                        glm::normalize(lightInfos[light_idx].pos - intersect_data[i + j * m_resolution.x].position));
+                    Ray shadow_ray(m_intersect_data[i + j * m_resolution.x].position,
+                        glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position));
                     {
-                        glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersect_data[i + j * m_resolution.x].position);
-                        float diffuse = glm::clamp(glm::dot(intersect_data[i + j * m_resolution.x].normal, to_light), 0.0f, 1.0f);
+                        glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position);
+                        float diffuse = glm::clamp(glm::dot(m_intersect_data[i + j * m_resolution.x].normal, to_light), 0.0f, 1.0f);
                         color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
                     }
                 }
@@ -443,7 +449,6 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
         }
     }
-    delete[] intersect_data;
 
     /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
     L1_hit_count[thread_idx] = total_L1_hit_count;*/
