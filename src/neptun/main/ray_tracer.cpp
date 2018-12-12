@@ -324,9 +324,9 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
     const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
     const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
 
-    Ray ray[4];
-    for (int i = 0; i < 4; ++i)
-        ray[i].origin = cam_pos;
+    glm::vec3 dirs[4];
+    //for (int i = 0; i < 4; ++i)
+    //    ray[i].origin = cam_pos;
 
     int total_test_count = 0;
     int total_L1_hit_count = 0;
@@ -353,15 +353,15 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
                 {
                     for (int ii = 0; ii < 2; ++ii)
                     {
-                        ray[2 * jj + ii].dir =
-                            glm::normalize(top_left + right_step * (float)(i + ii) + down_step * (float)(j + jj) - ray[2 * jj + ii].origin);
-                        ray[2 * jj + ii].tet_idx = 0;
+                        dirs[2 * jj + ii] =
+                            glm::normalize(top_left + right_step * (float)(i + ii) + down_step * (float)(j + jj) - cam_pos);
+                        
                     }
                 }
 
                 IntersectionData intersection_data[4];
 
-                scene.tet_mesh->intersect4(ray, source_tet, intersection_data);
+                scene.tet_mesh->intersect4_common_origin(dirs, cam_pos, source_tet, intersection_data);
 
                 for (int jj = 0; jj < 2; ++jj)
                 {
