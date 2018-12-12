@@ -165,7 +165,7 @@ public:
     // Casts a ray from a point inside the 'tet'.
     virtual void intersect4_common_origin(
         const glm::vec3 dirs[4],
-        const glm::vec3 origin,
+        const glm::vec3& origin,
         const SourceTet& tet,
         IntersectionData intersection_data[4]) = 0;
 
@@ -262,7 +262,7 @@ public:
     // Casts a ray from a point inside the 'tet'.
     void intersect4_common_origin(
         const glm::vec3 dirs[4],
-        const glm::vec3 origin,
+        const glm::vec3& origin,
         const SourceTet& tet,
         IntersectionData intersection_data[4]) override;
 
@@ -341,7 +341,7 @@ public:
     // Casts a ray from a point inside the 'tet'.
     void intersect4_common_origin(
         const glm::vec3 dirs[4],
-        const glm::vec3 origin,
+        const glm::vec3& origin,
         const SourceTet& tet,
         IntersectionData intersection_data[4]) override;
 
@@ -405,7 +405,7 @@ public:
     // Casts a ray from a point inside the 'tet'.
     void intersect4_common_origin(
         const glm::vec3 dirs[4],
-        const glm::vec3 origin,
+        const glm::vec3& origin,
         const SourceTet& tet,
         IntersectionData intersection_data[4]) override;
 

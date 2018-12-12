@@ -561,7 +561,7 @@ void TetMesh::intersect4(const Ray rays[4], const SourceTet & tet, IntersectionD
 {
 }
 
-void TetMesh::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3 origin, const SourceTet & tet, IntersectionData intersection_data[4])
+void TetMesh::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3& origin, const SourceTet & tet, IntersectionData intersection_data[4])
 {
 }
 
@@ -1127,7 +1127,7 @@ void TetMesh32::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
     }
 }
 
-void TetMesh32::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3 origin, const SourceTet & tet, IntersectionData intersection_data[4])
+void TetMesh32::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3& origin, const SourceTet & tet, IntersectionData intersection_data[4])
 {
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
@@ -2016,7 +2016,7 @@ void TetMesh20::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
 {
 }
 
-void TetMesh20::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3 origin, const SourceTet & tet, IntersectionData intersection_data[4])
+void TetMesh20::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3& origin, const SourceTet & tet, IntersectionData intersection_data[4])
 {
 }
 
@@ -2487,7 +2487,7 @@ void TetMesh16::intersect4(const Ray rays[4], const SourceTet & tet, Intersectio
 {
 }
 
-void TetMesh16::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3 origin, const SourceTet & tet, IntersectionData intersection_data[4])
+void TetMesh16::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec3& origin, const SourceTet & tet, IntersectionData intersection_data[4])
 {
 }
 
