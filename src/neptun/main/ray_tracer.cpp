@@ -361,7 +361,7 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
 
                 IntersectionData intersection_data[4];
 
-                scene.tet_mesh->intersect4_common_origin(dirs, cam_pos, source_tet, intersection_data);
+                scene.tet_mesh->intersect4_common_origin_soa(dirs, cam_pos, source_tet, intersection_data);
 
                 for (int jj = 0; jj < 2; ++jj)
                 {
