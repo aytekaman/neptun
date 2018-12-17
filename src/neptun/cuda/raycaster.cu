@@ -110,17 +110,16 @@ void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Te
             const float f = 1.0f / glm::dot(e1, p);
             const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
 
-            output[i].position =  ray.origin + f * glm::dot(e2, q) * ray.dir;//***
+            /*output[i].position =  ray.origin + f * glm::dot(e2, q) * ray.dir;//***
             output[i].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];//***
             output[i].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0]; //***
             output[i].tet_idx = d_cons_faces[index].tet_idx;
-            output[i].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;
+            output[i].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;*/
 
             output[i].hit = true;
         }
         else
             output[i].hit = false;
-
     }
 }
 
@@ -168,9 +167,10 @@ void ray_caster_gpu(std::vector<Ray> rays, IntersectionData* output)
     cudaMemcpy(d_rays, rays.data(), rays.size() * sizeof(Ray), cudaMemcpyHostToDevice);
 
     // Launch kernel on GPU
-    raycast_kernel <<< rays.size() / 1024, 1024 >>>(d_rays, rays.size(), d_points, d_tets, d_cons_faces, d_faces, d_intersectdata);
-    //cudaError_t error = cudaGetLastError();
-    //printf("CUDA error0: %s\n", cudaGetErrorString(error));
+    int t = 1024;
+    raycast_kernel <<< rays.size() / t, t >>>(d_rays, rays.size(), d_points, d_tets, d_cons_faces, d_faces, d_intersectdata);
+    /*cudaError_t error = cudaGetLastError();
+    printf("CUDA error0: %s\n", cudaGetErrorString(error));*/
 
     // Copy result back to host
     cudaMemcpy(output, d_intersectdata, rays.size() * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
