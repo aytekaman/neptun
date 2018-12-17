@@ -407,9 +407,9 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
             {
 
                 color = glm::vec3();
-                //color = glm::vec3(0.0f, 0.0f, 1.0f);
+                color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-                for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                /*for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
                 {
                     Ray shadow_ray(m_intersect_data[i + j * m_resolution.x].position,
                         glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position));
@@ -418,7 +418,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
                         float diffuse = glm::clamp(glm::dot(m_intersect_data[i + j * m_resolution.x].normal, to_light), 0.0f, 1.0f);
                         color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
                     }
-                }
+                }*/
 
             }
             else
