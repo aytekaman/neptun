@@ -339,64 +339,73 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
 
     rect_max = (glm::min)(rect_max, m_resolution);
 
-    for (int j = 0; j < m_resolution.y; j++)
+    while (idx < max_job_index)
     {
-        for (int i = 0; i < m_resolution.x; i++)
+        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+
+        rect_max = (glm::min)(rect_max, m_resolution);
+
+        for (int j = rect_min.y; j < rect_max.y; j++)
         {
-            ray.dir = glm::normalize(top_left + right_step * (float)i + down_step * (float)j - ray.origin);
-            ray.source_tet = source_tet;
-
-            glm::vec3 pos, normal;
-            glm::vec2 uv;
-            Face face;
-
-            DiagnosticData diagnostic_data;
-            diagnostic_data.total_tet_distance = 0;
-            diagnostic_data.visited_node_count = 0;
-            diagnostic_data.L1_hit_count = 0;
-
-            // int tet_index_copy = tet_index;
-
-            if (method == Method::Default ||
-                method == Method::Fast_basis ||
-                method == Method::ScTP)
-                ray.tet_idx = 0;
-            else
-                ray.tMax = 100000000;
-
-            m_rays[i + j * m_resolution.x ] = ray;
-
-            /*if (is_diagnostic)
+            for (int i = rect_min.x; i < rect_max.x; i++)
             {
-                if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
-                    hit = scene.tet_mesh->intersect_stats(ray, source_tet, intersection_data, diagnostic_data);
-                else if (method == Method::Kd_tree)
-                    hit = scene.kd_tree->Intersect_stats(ray, intersection_data, diagnostic_data);
-                else if (method == Method::BVH_pbrt)
-                    hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);
+                ray.dir = glm::normalize(top_left + right_step * (float)i + down_step * (float)j - ray.origin);
+                ray.source_tet = source_tet;
+
+                glm::vec3 pos, normal;
+                glm::vec2 uv;
+                Face face;
+
+                DiagnosticData diagnostic_data;
+                diagnostic_data.total_tet_distance = 0;
+                diagnostic_data.visited_node_count = 0;
+                diagnostic_data.L1_hit_count = 0;
+
+                // int tet_index_copy = tet_index;
+
+                if (method == Method::Default ||
+                    method == Method::Fast_basis ||
+                    method == Method::ScTP)
+                    ray.tet_idx = 0;
+                else
+                    ray.tMax = 100000000;
+
+                m_rays[i + j * m_resolution.x] = ray;
+
+                /*if (is_diagnostic)
+                {
+                    if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
+                        hit = scene.tet_mesh->intersect_stats(ray, source_tet, intersection_data, diagnostic_data);
+                    else if (method == Method::Kd_tree)
+                        hit = scene.kd_tree->Intersect_stats(ray, intersection_data, diagnostic_data);
+                    else if (method == Method::BVH_pbrt)
+                        hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);
+                }
+
+                else
+                {
+                    if (method == Method::Default)
+                        hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
+                    else if (method == Method::DefaultSimd)
+                        hit = scene.tet_mesh->intersect_simd(ray, source_tet, intersection_data);
+                    else if (method == Method::Kd_tree)
+                        hit = scene.kd_tree->Intersect(ray, intersection_data);
+                    else if (method == Method::BVH_embree)
+                        hit = scene.bvh_embree->Intersect(ray, intersection_data);
+                    else if (method == Method::BVH_pbrt)
+                        hit = scene.bvh->Intersect(ray, intersection_data);
+                }*/
             }
-
-            else
-            {
-                if (method == Method::Default)
-                    hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
-                else if (method == Method::DefaultSimd)
-                    hit = scene.tet_mesh->intersect_simd(ray, source_tet, intersection_data);
-                else if (method == Method::Kd_tree)
-                    hit = scene.kd_tree->Intersect(ray, intersection_data);
-                else if (method == Method::BVH_embree)
-                    hit = scene.bvh_embree->Intersect(ray, intersection_data);
-                else if (method == Method::BVH_pbrt)
-                    hit = scene.bvh->Intersect(ray, intersection_data);
-            }*/
         }
+        idx++;
     }
     ray_caster_gpu(m_rays, m_intersect_data);
 
     /*glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
-    glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);*/
+    glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
 
-    rect_max = (glm::min)(rect_max, m_resolution);
+    rect_max = (glm::min)(rect_max, m_resolution);*/
 
     for (int j = 0; j < m_resolution.y; j++)
     {
