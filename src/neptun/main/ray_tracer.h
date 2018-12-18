@@ -95,10 +95,9 @@ public:
     void prepare_rays_gpu(Scene & scene, 
         SourceTet source_tet, 
         int thread_idx,
-        std::vector<LightInfo> lightInfos, 
         bool is_diagnostic);
 
-    void draw_intersectiondata();
+    void draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
 
     void render_gpu(Scene & scene, const bool is_diagnostic);
 
