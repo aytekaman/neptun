@@ -289,7 +289,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     L1_hit_count[thread_idx] = total_L1_hit_count;
 }
 
-void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
+void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread_idx,
+    std::vector<LightInfo> lightInfos, bool is_diagnostic)
 {
     //TetMesh& tet_mesh = *scene.tet_mesh;
 
@@ -322,18 +323,8 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
     const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
     const int max_job_index = tile_count_x * tile_count_y;
 
-    int idx = 0;
-    int rays_index = 0;
-
-    if (m_old_res != m_resolution)
-    {
-        if (!m_intersect_data)
-            delete[] m_intersect_data;
-       m_rays.reserve(m_resolution.x * m_resolution.y);
-        m_rays.resize(m_rays.capacity());
-        m_intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
-        m_old_res = m_resolution;
-    }
+    int idx = thread_idx;
+    unsigned rays_index = 0;
 
     glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
     glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
@@ -372,8 +363,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
                 else
                     ray.tMax = 100000000;
 
-                m_rays[rays_index] = ray;
-                rays_index++;
+                m_rays[rays_index + thread_idx * tile_size * tile_size] = ray;
 
                 /*if (is_diagnostic)
                 {
@@ -400,11 +390,25 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
                 }*/
             }
         }
-        idx++;
+        idx = job_index++;
     }
-    ray_caster_gpu(m_rays, m_intersect_data);
-    idx = 0;
-    rays_index = 0;
+}
+
+void RayTracer::draw_intersectiondata()
+{
+
+    //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_intersect_data);
+
+    const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
+    const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
+    const int max_job_index = tile_count_x * tile_count_y;
+
+    int idx = 0;
+    unsigned int rays_index = 0;
+
+    glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+    glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+    rect_max = (glm::min)(rect_max, m_resolution);
 
     while (idx < max_job_index)
     {
@@ -467,7 +471,6 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
         }
         idx++;
     }
-
     /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
     L1_hit_count[thread_idx] = total_L1_hit_count;*/
 }
@@ -514,11 +517,40 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             lightInfos.push_back(li);
         }
     }
+
+    if (m_old_res != m_resolution)
+    {
+        if (!m_intersect_data)
+            delete[] m_intersect_data;
+        if (!m_rays)
+            delete[] m_rays;
+
+        m_rays = new Ray[m_resolution.x * m_resolution.y];
+        m_intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
+        m_old_res = m_resolution;
+    }
+
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
-    Raytrace_worker2(std::ref(scene), source_tet, 0, lightInfos, is_diagnostic);
+    std::thread **threads = new std::thread*[thread_count];
+
+    job_index = thread_count;
+
+    for (int i = 0; i < thread_count; i++)
+        threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+
+    for (int i = 0; i < thread_count; i++)
+    {
+        threads[i]->join();
+        delete threads[i];
+    }
+
+    ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_intersect_data);
+
+    draw_intersectiondata();
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    delete[] threads;
 
     last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
 

@@ -76,7 +76,7 @@ enum ImageType
     Locality
 };
 
-extern void ray_caster_gpu(std::vector<Ray> rays, IntersectionData* output);
+extern void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output);
 
 class RayTracer
 {
@@ -92,7 +92,13 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
-    void Raytrace_worker2(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic);
+    void prepare_rays_gpu(Scene & scene, 
+        SourceTet source_tet, 
+        int thread_idx,
+        std::vector<LightInfo> lightInfos, 
+        bool is_diagnostic);
+
+    void draw_intersectiondata();
 
     void render_gpu(Scene & scene, const bool is_diagnostic);
 
@@ -122,7 +128,7 @@ public:
     glm::ivec2 m_resolution = glm::ivec2(640, 480);
     glm::ivec2 m_old_res = glm::ivec2();
     IntersectionData* m_intersect_data;
-    std::vector<Ray> m_rays;
+    Ray* m_rays;
     int tile_size = 16;
     //glm::u8vec3 *pixels;
     int thread_count;
