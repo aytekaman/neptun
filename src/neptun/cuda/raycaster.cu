@@ -167,7 +167,7 @@ void ray_caster_gpu(std::vector<Ray> rays, IntersectionData* output)
     cudaMemcpy(d_rays, rays.data(), rays.size() * sizeof(Ray), cudaMemcpyHostToDevice);
 
     // Launch kernel on GPU
-    int t = 1024;
+    int t = 256;
     raycast_kernel <<< rays.size() / t, t >>>(d_rays, rays.size(), d_points, d_tets, d_cons_faces, d_faces, d_intersectdata);
     /*cudaError_t error = cudaGetLastError();
     printf("CUDA error0: %s\n", cudaGetErrorString(error));*/
