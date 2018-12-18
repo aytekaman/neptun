@@ -323,6 +323,7 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
     const int max_job_index = tile_count_x * tile_count_y;
 
     int idx = 0;
+    int rays_index = 0;
 
     if (m_old_res != m_resolution)
     {
@@ -341,8 +342,8 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
 
     while (idx < max_job_index)
     {
-        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
-        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+        rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        rect_max = rect_min + glm::ivec2(tile_size, tile_size);
 
         rect_max = (glm::min)(rect_max, m_resolution);
 
@@ -371,7 +372,8 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
                 else
                     ray.tMax = 100000000;
 
-                m_rays[i + j * m_resolution.x] = ray;
+                m_rays[rays_index] = ray;
+                rays_index++;
 
                 /*if (is_diagnostic)
                 {
@@ -401,62 +403,69 @@ void RayTracer::Raytrace_worker2(Scene& scene, SourceTet source_tet, int thread_
         idx++;
     }
     ray_caster_gpu(m_rays, m_intersect_data);
+    idx = 0;
+    rays_index = 0;
 
-    /*glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
-    glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-
-    rect_max = (glm::min)(rect_max, m_resolution);*/
-
-    for (int j = 0; j < m_resolution.y; j++)
+    while (idx < max_job_index)
     {
-        for (int i = 0; i < m_resolution.x; i++)
+        rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+
+        rect_max = (glm::min)(rect_max, m_resolution);
+
+        for (int j = rect_min.y; j < rect_max.y; j++)
         {
-            glm::vec3 color;
-            if (m_intersect_data[i + j * m_resolution.x].hit)
+            for (int i = rect_min.x; i < rect_max.x; i++)
             {
-
-                color = glm::vec3();
-                color = glm::vec3(1.0f, 1.0f, 1.0f);
-
-                /*for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                glm::vec3 color;
+                if (m_intersect_data[rays_index].hit)
                 {
-                    Ray shadow_ray(m_intersect_data[i + j * m_resolution.x].position,
-                        glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position));
+
+                    color = glm::vec3();
+                    color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+                    /*for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
                     {
-                        glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position);
-                        float diffuse = glm::clamp(glm::dot(m_intersect_data[i + j * m_resolution.x].normal, to_light), 0.0f, 1.0f);
-                        color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                        Ray shadow_ray(m_intersect_data[i + j * m_resolution.x].position,
+                            glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position));
+                        {
+                            glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position);
+                            float diffuse = glm::clamp(glm::dot(m_intersect_data[i + j * m_resolution.x].normal, to_light), 0.0f, 1.0f);
+                            color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                        }
+                    }*/
+
+                }
+                else
+                    color = glm::vec3(0.1, 0.1, 0.1);
+
+                glm::ivec2 p_idx(i, j);
+
+                /*if (is_diagnostic)
+                {
+                    if (scene.tet_mesh)
+                    {
+                        total_L1_hit_count += diagnostic_data.L1_hit_count;
+
+                        stats.set(p_idx, diagnostic_data.visited_node_count);
+
+                        float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
+                        float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
+                        glm::vec3 avg_locality_color = Color::jet(scaled_avg_locality);
                     }
+
+                    float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
+                    glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
+                    m_visited_tets_image->set_pixel(i, j, visited_tet_count_color * 255.0f);
+
+                    total_test_count += diagnostic_data.visited_node_count;
                 }*/
 
+                m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f); 
+                rays_index++;
             }
-            else
-                color = glm::vec3(0.1, 0.1, 0.1);
-
-            glm::ivec2 p_idx(i, j);
-
-            /*if (is_diagnostic)
-            {
-                if (scene.tet_mesh)
-                {
-                    total_L1_hit_count += diagnostic_data.L1_hit_count;
-
-                    stats.set(p_idx, diagnostic_data.visited_node_count);
-
-                    float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
-                    float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
-                    glm::vec3 avg_locality_color = Color::jet(scaled_avg_locality);
-                }
-
-                float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
-                glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
-                m_visited_tets_image->set_pixel(i, j, visited_tet_count_color * 255.0f);
-
-                total_test_count += diagnostic_data.visited_node_count;
-            }*/
-
-            m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
         }
+        idx++;
     }
 
     /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
