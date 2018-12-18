@@ -152,6 +152,7 @@ void copy_to_gpu(TetMesh32& tet_mesh)
 
 void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
 {
+    cudaError_t error;
     // Allocate space for device copy of data
     if (old_size != rays_size)
     {
@@ -159,20 +160,21 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
         cudaFree(d_intersectdata);
         cudaMalloc(&d_rays, rays_size * sizeof(Ray));
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
-        //cudaError_t error = cudaGetLastError();
+        /*error = cudaGetLastError();
+        printf("CUDA error0: %s\n", cudaGetErrorString(error));*/
         old_size = rays_size;
     }
 
     // Copy inputs to device
     cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
-    cudaError_t error = cudaGetLastError();
-    printf("CUDA error0: %s\n", cudaGetErrorString(error));
+    /*error = cudaGetLastError();
+    printf("CUDA error1: %s\n", cudaGetErrorString(error));*/
 
     // Launch kernel on GPU
     int t = 256;
     raycast_kernel <<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets, d_cons_faces, d_faces, d_intersectdata);
-    error = cudaGetLastError();
-    printf("CUDA error1: %s\n", cudaGetErrorString(error));
+    /*error = cudaGetLastError();
+    printf("CUDA error2: %s\n", cudaGetErrorString(error));*/
 
     // Copy result back to host
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);

@@ -289,8 +289,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     L1_hit_count[thread_idx] = total_L1_hit_count;
 }
 
-void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread_idx,
-    std::vector<LightInfo> lightInfos, bool is_diagnostic)
+void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread_idx, bool is_diagnostic)
 {
     //TetMesh& tet_mesh = *scene.tet_mesh;
 
@@ -326,17 +325,14 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
     int idx = thread_idx;
     unsigned rays_index = 0;
 
-    glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
-    glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-
-    rect_max = (glm::min)(rect_max, m_resolution);
-
     while (idx < max_job_index)
     {
-        rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
-        rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
 
         rect_max = (glm::min)(rect_max, m_resolution);
+
+        rays_index = 0;
 
         for (int j = rect_min.y; j < rect_max.y; j++)
         {
@@ -363,8 +359,8 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
                 else
                     ray.tMax = 100000000;
 
-                m_rays[rays_index + thread_idx * tile_size * tile_size] = ray;
-
+                m_rays[rays_index++ + idx * tile_size * tile_size] = ray;
+ 
                 /*if (is_diagnostic)
                 {
                     if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
@@ -394,7 +390,7 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
     }
 }
 
-void RayTracer::draw_intersectiondata()
+void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos)
 {
 
     //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_intersect_data);
@@ -537,7 +533,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     job_index = thread_count;
 
     for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+        threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, is_diagnostic);
 
     for (int i = 0; i < thread_count; i++)
     {
@@ -547,7 +543,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 
     ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_intersect_data);
 
-    draw_intersectiondata();
+    draw_intersectiondata(0, lightInfos);
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     delete[] threads;
