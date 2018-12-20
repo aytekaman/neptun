@@ -289,6 +289,7 @@ void TetMesh::sort(const SortingMethod sorting_method, const unsigned int bit_co
     sort_tets(sorting_method, bit_count, use_regions, swap);
 
     is_dirty = true;
+
 }
 
 void TetMesh::sort_tets(const SortingMethod sorting_method, const unsigned int bit_count, const bool use_regions, const bool swap)
@@ -660,6 +661,7 @@ void TetMesh32::init_acceleration_data()
             {
                 ConstrainedFace cf;
                 cf.face = &faces[m_tets[i].face_idx[j] - 1];
+                cf.face_idx = m_tets[i].face_idx[j] - 1;
                 cf.tet_idx = i;
                 cf.other_tet_idx = n;
                 m_constrained_faces.push_back(cf);
