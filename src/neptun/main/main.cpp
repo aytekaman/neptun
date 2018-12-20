@@ -780,6 +780,8 @@ void simd_comparison()
     float non_simd_fps = 0.0f;
     float simd_fps = 0.0f;
 
+
+
     for (int k = 0; k < N; ++k)
     {
         ray_tracer.method = Method::Default;
@@ -796,6 +798,45 @@ void simd_comparison()
 
     std::cout << "non-simd: " << non_simd_fps << std::endl;
     std::cout << "    simd: " << simd_fps << std::endl;
+
+    std::cout << "difference: " << glm::abs(non_simd_fps - simd_fps) / non_simd_fps;
+}
+
+void ray_packet_comparison()
+{
+    RayTracer ray_tracer;
+    Scene scene;
+    scene.load_from_file(builtin_scenes_folder_path + "Armadillo.scene");
+    scene.tet_mesh = new TetMesh32(scene);
+    scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+
+    int N = 10;
+
+    float non_simd_fps = 0.0f;
+    float simd_fps = 0.0f;
+
+    ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
+
+    for (int k = 0; k < N; ++k)
+    {
+        ray_tracer.m_use_ray_packets = false;
+        ray_tracer.method = Method::Default;
+        ray_tracer.Render(scene);
+        non_simd_fps = glm::max(1.0f / ray_tracer.last_render_time, non_simd_fps);
+    }
+
+    for (int k = 0; k < N; ++k)
+    {
+        ray_tracer.m_use_ray_packets = true;
+        ray_tracer.Render(scene);
+        simd_fps = glm::max(1.0f / ray_tracer.last_render_time, simd_fps);
+    }
+
+    //non_simd_fps /= N;
+    //simd_fps /= N;
+
+    std::cout << "default: " << non_simd_fps << std::endl;
+    std::cout << "packets: " << simd_fps << std::endl;
 
     std::cout << "difference: " << glm::abs(non_simd_fps - simd_fps) / non_simd_fps;
 }
@@ -828,7 +869,7 @@ int main(int argc, char** argv)
 
         create_and_render_test_scene();
 
-        simd_comparison();
+        ray_packet_comparison();
 
         //if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
         //    build_and_render_times(test_folder_name, 100);
