@@ -420,18 +420,18 @@ void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lig
                 if (m_intersect_data[ rays_index + idx * tile_size * tile_size ].hit)
                 {
                     color = glm::vec3();
-                    color = glm::vec3(1.0f, 1.0f, 1.0f);
+                    //color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-                    /*for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                    for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
                     {
-                        Ray shadow_ray(m_intersect_data[i + j * m_resolution.x].position,
-                            glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position));
+                        Ray shadow_ray(m_intersect_data[rays_index + idx * tile_size * tile_size].position,
+                            glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx * tile_size * tile_size].position));
                         {
-                            glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[i + j * m_resolution.x].position);
-                            float diffuse = glm::clamp(glm::dot(m_intersect_data[i + j * m_resolution.x].normal, to_light), 0.0f, 1.0f);
+                            glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx * tile_size * tile_size].position);
+                            float diffuse = glm::clamp(glm::dot(m_intersect_data[rays_index + idx * tile_size * tile_size].normal, to_light), 0.0f, 1.0f);
                             color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
                         }
-                    }*/
+                    }
 
                 }
                 else

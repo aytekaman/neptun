@@ -49,6 +49,7 @@ struct ConstrainedFace
     unsigned int other_tet_idx;
     int n;
     Face* face;
+    int face_idx;
 };
 
 // Ray that is for tetrahedral mesh traversal

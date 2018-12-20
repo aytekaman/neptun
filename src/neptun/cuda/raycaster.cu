@@ -98,7 +98,7 @@ void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Te
         if (index != -1)
         {
             index = (index & 0x7FFFFFFF);
-            const Face& face = d_faces[index];//d_cons_faces[index].face;
+            const Face& face = d_faces[d_cons_faces[index].face_idx];
 
             const glm::vec3 *v = face.vertices;
             const glm::vec3 *n = face.normals;
@@ -112,11 +112,11 @@ void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Te
             const float f = 1.0f / glm::dot(e1, p);
             const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
 
-            /*output[i].position =  ray.origin + f * glm::dot(e2, q) * ray.dir;//***
+            output[i].position =  ray.origin + f * glm::dot(e2, q) * ray.dir;//***
             output[i].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];//***
             output[i].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0]; //***
             output[i].tet_idx = d_cons_faces[index].tet_idx;
-            output[i].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;*/
+            output[i].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;
 
             output[i].hit = true;
         }
