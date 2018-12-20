@@ -393,8 +393,6 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
 void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos)
 {
 
-    //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_intersect_data);
-
     const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
     const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
     const int max_job_index = tile_count_x * tile_count_y;

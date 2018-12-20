@@ -99,7 +99,7 @@ public:
 
     void draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
 
-    void render_gpu(Scene & scene, const bool is_diagnostic);
+    void render_gpu(Scene & scene, const bool is_diagnostic = false);
 
     void ray_caster(Scene & scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
 
