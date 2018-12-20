@@ -620,10 +620,9 @@ void Editor::DrawTetGen()
 
         if (current_tet_mesh_type == 0)
         {
-            TetMesh32* msh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
-            scene->tet_mesh = msh;
+            scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
-            copy_to_gpu(*msh);
+            copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
             Logger::Log("TetMesh32 data copied to GPU");
         }
         else if (current_tet_mesh_type == 1)
@@ -670,6 +669,7 @@ void Editor::DrawTetGen()
             scene->tet_mesh = new TetMesh32(*scene);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
             copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+            Logger::Log("TetMesh32 data copied to GPU");
         }
         else if (current_tet_mesh_type == 1)
         {
@@ -721,6 +721,7 @@ void Editor::DrawTetGen()
         {
             scene->tet_mesh->sort(SortingMethod::Hilbert, bit_count, use_regions, swap);
             copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+            Logger::Log("TetMesh32 data copied to GPU");
         }
 
         ImGui::SameLine();
