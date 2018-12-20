@@ -22,6 +22,7 @@
 
 std::string colors[] = { "cyan", "orange", "red", "blue" };
 std::string marks[] = { "square", "circle", "triangle", "plus" };
+extern void copy_to_gpu(TetMesh32& tet_mesh);
 
 #ifdef _WIN32
     std::string builtin_scenes_folder_path = "../../scenes/";
@@ -772,11 +773,13 @@ void cpu_gpu_comparison()
 {
     RayTracer ray_tracer;
     Scene scene;
-    scene.load_from_file(builtin_scenes_folder_path + "Armadillo.scene");
-    scene.build_tet_mesh(true, true);
+    scene.load_from_file(builtin_scenes_folder_path + "mix.scene");
+    ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
+    scene.tet_mesh = new TetMesh32(scene);
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+    copy_to_gpu(*(TetMesh32*)scene.tet_mesh);
 
-    int N = 1000;
+    int N = 100;
 
     float cpu_fps = 0.0f;
     float gpu_fps = 0.0f;
@@ -796,7 +799,7 @@ void cpu_gpu_comparison()
     //simd_fps /= N;
 
     std::cout << "CPU: " << cpu_fps << std::endl;
-    std::cout << "    GPU: " << gpu_fps << std::endl;
+    std::cout << "GPU: " << gpu_fps << std::endl;
 
     std::cout << "difference: " << glm::abs(gpu_fps - cpu_fps) / cpu_fps;
 }

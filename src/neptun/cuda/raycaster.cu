@@ -1,5 +1,7 @@
 #include "raycaster.cuh";
 #include <stdio.h>
+#include <chrono>
+#include <ctime>
 
 Ray *d_rays;
 IntersectionData* d_intersectdata;
@@ -164,11 +166,20 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
         printf("CUDA error0: %s\n", cudaGetErrorString(error));*/
         old_size = rays_size;
     }
+    float last_render_time = 0;
+
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
     // Copy inputs to device
     cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
     /*error = cudaGetLastError();
     printf("CUDA error1: %s\n", cudaGetErrorString(error));*/
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
+
+    printf("Copy time of Rays to GPU: %f miliseconds\n ", last_render_time);
+
 
     // Launch kernel on GPU
     int t = 256;
