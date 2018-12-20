@@ -412,6 +412,7 @@ void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lig
         rect_max = rect_min + glm::ivec2(tile_size, tile_size);
 
         rect_max = (glm::min)(rect_max, m_resolution);
+        rays_index = 0;
 
         for (int j = rect_min.y; j < rect_max.y; j++)
         {
