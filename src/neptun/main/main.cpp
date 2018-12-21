@@ -807,10 +807,10 @@ void ray_packet_comparison()
     RayTracer ray_tracer;
     Scene scene;
     scene.load_from_file(builtin_scenes_folder_path + "Armadillo.scene");
-    scene.tet_mesh = new TetMesh32(scene);
+    scene.build_tet_mesh(true, true);
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
 
-    int N = 10;
+    int N = 100;
 
     float non_simd_fps = 0.0f;
     float simd_fps = 0.0f;
