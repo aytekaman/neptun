@@ -569,6 +569,10 @@ void TetMesh::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm::v
 {
 }
 
+void TetMesh::intersect16_common_origin_soa(const glm::vec3 dirs[16], const glm::vec3 & origin, const SourceTet & tet, IntersectionData intersection_data[16])
+{
+}
+
 bool TetMesh::intersect_simd(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data)
 {
     return false;
@@ -1320,11 +1324,6 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
-    //for (int i = 0; i < 4; i++)
-    //{
-    //    intersect(rays[i], tet, intersection_data[i]);
-    //}
-
     unsigned int id[4][4];
     glm::vec2 p[4][4];
 
@@ -1476,6 +1475,192 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
 
 #pragma loop( ivdep )
     for (int k = 0; k < 4; ++k)
+    {
+        if (index[k] != -1)
+        {
+            index[k] = (index[k] & 0x7FFFFFFF);
+            const Face& face = *m_constrained_faces[index[k]].face;
+
+            const glm::vec3 *v = face.vertices;
+            const glm::vec3 *n = face.normals;
+            const glm::vec2 *t = face.uvs;
+
+            const glm::vec3 e1 = v[1] - v[0];
+            const glm::vec3 e2 = v[2] - v[0];
+            const glm::vec3 s = origin - v[0];
+            const glm::vec3 q = glm::cross(s, e1);
+            const glm::vec3 p = glm::cross(dirs[k], e2);
+            const float f = 1.0f / glm::dot(e1, p);
+            const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(dirs[k], q));
+
+            intersection_data[k].position = origin + f * glm::dot(e2, q) * dirs[k];
+            intersection_data[k].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+            intersection_data[k].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+            intersection_data[k].tet_idx = m_constrained_faces[index[k]].tet_idx;
+            intersection_data[k].neighbor_tet_idx = m_constrained_faces[index[k]].other_tet_idx;
+            intersection_data[k].hit = true;
+        }
+        else
+            intersection_data[k].hit = false;
+    }
+}
+
+void TetMesh32::intersect16_common_origin_soa(const glm::vec3 dirs[16], const glm::vec3 & origin, const SourceTet & tet, IntersectionData intersection_data[16])
+{
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
+    unsigned int id[4][16];
+    glm::vec2 p[4][16];
+
+    glm::vec3 right[16];
+    glm::vec3 up[16];
+
+    for (int k = 0; k < 16; ++k)
+    {
+        const float sign = copysignf(1.0f, dirs[k].z);
+
+        const float a = -1.0f / (sign + dirs[k].z);
+        const float b = dirs[k].x * dirs[k].y * a;
+
+        right[k] = glm::vec3(1.0f + sign * dirs[k].x * dirs[k].x * a, sign * b, -sign * dirs[k].x);
+        up[k] = glm::vec3(b, sign + dirs[k].y * dirs[k].y * a, -dirs[k].y);
+    }
+
+    int index[16];
+
+    for (int k = 0; k < 16; ++k)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            id[i][k] = tet.v[i];
+            const glm::vec3 point = m_points[id[i][k]] - origin;
+            p[i][k].x = glm::dot(right[k], point);
+            p[i][k].y = glm::dot(up[k], point);
+        }
+    }
+
+    int outIdx[16] = { -1 };
+
+    for (int k = 0; k < 16; ++k)
+    {
+        if (cross(p[2][k], p[1][k]) <= 0.0f && cross(p[1][k], p[3][k]) <= 0.0f && cross(p[3][k], p[2][k]) <= 0.0f)
+        {
+            outIdx[k] = 0;
+        }
+        else if (cross(p[2][k], p[3][k]) <= 0.0f && cross(p[3][k], p[0][k]) <= 0.0f && cross(p[0][k], p[2][k]) <= 0.0f)
+        {
+            outIdx[k] = 1;
+        }
+        else if (cross(p[0][k], p[3][k]) <= 0.0f && cross(p[3][k], p[1][k]) <= 0.0f && cross(p[1][k], p[0][k]) <= 0.0f)
+        {
+            outIdx[k] = 2;
+        }
+        else if (cross(p[0][k], p[1][k]) <= 0.0f && cross(p[1][k], p[2][k]) <= 0.0f && cross(p[2][k], p[0][k]) <= 0.0f)
+        {
+            outIdx[k] = 3;
+
+            std::swap(id[0][k], id[1][k]);
+            std::swap(p[0][k], p[1][k]);
+        }
+    }
+
+    for (int k = 0; k < 16; ++k)
+        index[k] = tet.n[outIdx[k]];
+
+    bool diverged = false;
+
+    while (!diverged)
+    {
+#pragma loop( ivdep )
+        for (int k = 0; k < 16; ++k)
+        {
+            id[outIdx[k]][k] = id[3][k];
+            id[3][k] = m_tet32s[index[k]].x ^ id[0][k] ^ id[1][k] ^ id[2][k];
+        }
+
+        for (int k = 0; k < 16; ++k)
+        {
+            const glm::vec3 newPoint = m_points[id[3][k]] - origin;
+
+            p[outIdx[k]][k] = p[3][k];
+            p[3][k].x = glm::dot(right[k], newPoint);
+            p[3][k].y = glm::dot(up[k], newPoint);
+        }
+
+#pragma loop( ivdep )
+        for (int k = 0; k < 16; ++k)
+        {
+            if (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x) // copysignf here?
+            {
+                if (p[3][k].x * p[2][k].y >= p[3][k].y * p[2][k].x)
+                    outIdx[k] = 1;
+                else
+                    outIdx[k] = 0;
+            }
+            else if (p[3][k].x * p[1][k].y < p[3][k].y * p[1][k].x)
+                outIdx[k] = 2;
+            else
+                outIdx[k] = 0;
+        }
+
+#pragma loop( ivdep )
+        for (int k = 0; k < 16; ++k)
+        {
+            if (id[outIdx[k]][k] == m_tet32s[index[k]].v[0])
+                index[k] = m_tet32s[index[k]].n[0];
+            else if (id[outIdx[k]][k] == m_tet32s[index[k]].v[1])
+                index[k] = m_tet32s[index[k]].n[1];
+            else if (id[outIdx[k]][k] == m_tet32s[index[k]].v[2])
+                index[k] = m_tet32s[index[k]].n[2];
+            else
+                index[k] = m_tet32s[index[k]].n[3];
+        }
+
+        for (int k = 0; k < 16; ++k)
+        {
+            if (index[k] < 0)
+                diverged = true;
+        }
+    }
+
+    for (int k = 0; k < 16; ++k)
+    {
+        while (index[k] >= 0)
+        {
+            id[outIdx[k]][k] = id[3][k];
+            id[3][k] = m_tet32s[index[k]].x ^ id[0][k] ^ id[1][k] ^ id[2][k];
+            const glm::vec3 newPoint = m_points[id[3][k]] - origin;
+
+            p[outIdx[k]][k] = p[3][k];
+            p[3][k].x = glm::dot(right[k], newPoint);
+            p[3][k].y = glm::dot(up[k], newPoint);
+
+            if (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x) // copysignf here?
+            {
+                if (p[3][k].x * p[2][k].y >= p[3][k].y * p[2][k].x)
+                    outIdx[k] = 1;
+                else
+                    outIdx[k] = 0;
+            }
+            else if (p[3][k].x * p[1][k].y < p[3][k].y * p[1][k].x)
+                outIdx[k] = 2;
+            else
+                outIdx[k] = 0;
+
+            if (id[outIdx[k]][k] == m_tet32s[index[k]].v[0])
+                index[k] = m_tet32s[index[k]].n[0];
+            else if (id[outIdx[k]][k] == m_tet32s[index[k]].v[1])
+                index[k] = m_tet32s[index[k]].n[1];
+            else if (id[outIdx[k]][k] == m_tet32s[index[k]].v[2])
+                index[k] = m_tet32s[index[k]].n[2];
+            else
+                index[k] = m_tet32s[index[k]].n[3];
+        }
+    }
+
+#pragma loop( ivdep )
+    for (int k = 0; k < 16; ++k)
     {
         if (index[k] != -1)
         {
@@ -2250,6 +2435,10 @@ void TetMesh20::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
 {
 }
 
+void TetMesh20::intersect16_common_origin_soa(const glm::vec3 dirs[16], const glm::vec3 & origin, const SourceTet & tet, IntersectionData intersection_data[16])
+{
+}
+
 bool TetMesh20::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
 {
     return false;
@@ -2722,6 +2911,10 @@ void TetMesh16::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec
 }
 
 void TetMesh16::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm::vec3 & origin, const SourceTet & tet, IntersectionData intersection_data[4])
+{
+}
+
+void TetMesh16::intersect16_common_origin_soa(const glm::vec3 dirs[16], const glm::vec3 & origin, const SourceTet & tet, IntersectionData intersection_data[16])
 {
 }
 

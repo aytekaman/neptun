@@ -177,6 +177,13 @@ public:
         IntersectionData intersection_data[4]) = 0;
 
     // Casts a ray from a point inside the 'tet'.
+    virtual void intersect16_common_origin_soa(
+        const glm::vec3 dirs[16],
+        const glm::vec3& origin,
+        const SourceTet& tet,
+        IntersectionData intersection_data[16]) = 0;
+
+    // Casts a ray from a point inside the 'tet'.
     virtual bool intersect_simd(
         const Ray& ray,
         const SourceTet& tet,
@@ -281,6 +288,13 @@ public:
         IntersectionData intersection_data[4]) override;
 
     // Casts a ray from a point inside the 'tet'.
+    void intersect16_common_origin_soa(
+        const glm::vec3 dirs[16],
+        const glm::vec3& origin,
+        const SourceTet& tet,
+        IntersectionData intersection_data[16]) override;
+
+    // Casts a ray from a point inside the 'tet'.
     bool intersect_simd(
         const Ray& ray,
         const SourceTet& tet,
@@ -366,6 +380,13 @@ public:
         const SourceTet& tet,
         IntersectionData intersection_data[4]) override;
 
+    // Casts a ray from a point inside the 'tet'.
+    void intersect16_common_origin_soa(
+        const glm::vec3 dirs[16],
+        const glm::vec3& origin,
+        const SourceTet& tet,
+        IntersectionData intersection_data[16]) override;
+
     // Casts a ray from a point on the 'tet_face'
     bool intersect(
         const Ray& ray,
@@ -436,6 +457,13 @@ public:
         const glm::vec3& origin,
         const SourceTet& tet,
         IntersectionData intersection_data[4]) override;
+
+    // Casts a ray from a point inside the 'tet'.
+    void intersect16_common_origin_soa(
+        const glm::vec3 dirs[16],
+        const glm::vec3& origin,
+        const SourceTet& tet,
+        IntersectionData intersection_data[16]) override;
 
     // Casts a ray from a point on the 'tet_face'
     bool intersect(
