@@ -807,10 +807,11 @@ void ray_packet_comparison()
     RayTracer ray_tracer;
     Scene scene;
     scene.load_from_file(builtin_scenes_folder_path + "Armadillo.scene");
-    scene.build_tet_mesh(true, true);
+    scene.tet_mesh = new TetMesh32(scene);
+
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
 
-    int N = 100;
+    int N = 32;
 
     float non_simd_fps = 0.0f;
     float simd_fps = 0.0f;
@@ -819,18 +820,16 @@ void ray_packet_comparison()
 
     for (int k = 0; k < N; ++k)
     {
+        ray_tracer.m_use_ray_packets = true;
+        ray_tracer.Render(scene);
+        simd_fps = glm::max(1.0f / ray_tracer.last_render_time, simd_fps);
+
         ray_tracer.m_use_ray_packets = false;
-        ray_tracer.method = Method::Default;
         ray_tracer.Render(scene);
         non_simd_fps = glm::max(1.0f / ray_tracer.last_render_time, non_simd_fps);
     }
 
-    for (int k = 0; k < N; ++k)
-    {
-        ray_tracer.m_use_ray_packets = true;
-        ray_tracer.Render(scene);
-        simd_fps = glm::max(1.0f / ray_tracer.last_render_time, simd_fps);
-    }
+
 
     //non_simd_fps /= N;
     //simd_fps /= N;

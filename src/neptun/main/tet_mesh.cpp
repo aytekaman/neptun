@@ -1196,8 +1196,6 @@ void TetMesh32::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec
 
     bool diverged = false;
 
-    int d = 0;
-
     while (!diverged)
     {
 #pragma loop( ivdep )
@@ -1248,11 +1246,7 @@ void TetMesh32::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec
             if (index[k] < 0)
                 diverged = true;
         }
-
-        ++d;
     }
-
-    std::cout << d << " " << std::endl;
 
     for (int k = 0; k < 4; ++k)
     {
@@ -1321,7 +1315,7 @@ void TetMesh32::intersect4_common_origin(const glm::vec3 dirs[4], const glm::vec
     }
 }
 
-void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm::vec3 & origin, const SourceTet & tet, IntersectionData intersection_data[4])
+void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm::vec3& origin, const SourceTet& tet, IntersectionData intersection_data[4])
 {
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
@@ -1334,11 +1328,19 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
     unsigned int id[4][4];
     glm::vec2 p[4][4];
 
-    const Basis basis[4] = {
-        Basis(dirs[0]),
-        Basis(dirs[1]),
-        Basis(dirs[2]),
-        Basis(dirs[3]) };
+    glm::vec3 right[4];
+    glm::vec3 up[4];
+
+    for (int k = 0; k < 4; ++k)
+    {
+        const float sign = copysignf(1.0f, dirs[k].z);
+
+        const float a = -1.0f / (sign + dirs[k].z);
+        const float b = dirs[k].x * dirs[k].y * a;
+
+        right[k] = glm::vec3(1.0f + sign * dirs[k].x * dirs[k].x * a, sign * b, -sign * dirs[k].x);
+        up[k] = glm::vec3(b, sign + dirs[k].y * dirs[k].y * a, -dirs[k].y);
+    }
 
     int index[4];
 
@@ -1348,8 +1350,8 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         {
             id[i][k] = tet.v[i];
             const glm::vec3 point = m_points[id[i][k]] - origin;
-            p[i][k].x = glm::dot(basis[k].right, point);
-            p[i][k].y = glm::dot(basis[k].up, point);
+            p[i][k].x = glm::dot(right[k], point);
+            p[i][k].y = glm::dot(up[k], point);
         }
     }
 
@@ -1390,11 +1392,15 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         {
             id[outIdx[k]][k] = id[3][k];
             id[3][k] = m_tet32s[index[k]].x ^ id[0][k] ^ id[1][k] ^ id[2][k];
+        }
+
+        for (int k = 0; k < 4; ++k)
+        {
             const glm::vec3 newPoint = m_points[id[3][k]] - origin;
 
             p[outIdx[k]][k] = p[3][k];
-            p[3][k].x = glm::dot(basis[k].right, newPoint);
-            p[3][k].y = glm::dot(basis[k].up, newPoint);
+            p[3][k].x = glm::dot(right[k], newPoint);
+            p[3][k].y = glm::dot(up[k], newPoint);
         }
 
 #pragma loop( ivdep )
@@ -1424,11 +1430,12 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
                 index[k] = m_tet32s[index[k]].n[2];
             else
                 index[k] = m_tet32s[index[k]].n[3];
+        }
 
+        for (int k = 0; k < 4; ++k)
+        {
             if (index[k] < 0)
-            {
                 diverged = true;
-            }
         }
     }
 
@@ -1441,8 +1448,8 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
             const glm::vec3 newPoint = m_points[id[3][k]] - origin;
 
             p[outIdx[k]][k] = p[3][k];
-            p[3][k].x = glm::dot(basis[k].right, newPoint);
-            p[3][k].y = glm::dot(basis[k].up, newPoint);
+            p[3][k].x = glm::dot(right[k], newPoint);
+            p[3][k].y = glm::dot(up[k], newPoint);
 
             if (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x) // copysignf here?
             {

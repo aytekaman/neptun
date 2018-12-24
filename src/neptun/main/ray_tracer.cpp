@@ -324,7 +324,7 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
     const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
     const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
 
-    glm::vec3 dirs[4];
+    
     //for (int i = 0; i < 4; ++i)
     //    ray[i].origin = cam_pos;
 
@@ -349,6 +349,8 @@ void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int
         {
             for (int i = rect_min.x; i < rect_max.x; i += 2)
             {
+                glm::vec3 dirs[4];
+
                 for (int jj = 0; jj < 2; ++jj)
                 {
                     for (int ii = 0; ii < 2; ++ii)
