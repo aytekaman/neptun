@@ -11,7 +11,8 @@
 #include "glm/gtc/constants.hpp"
 
 #include <iostream>
-
+#include <stdio.h>
+#include <string.h>
 
 __device__
 inline void swapvec2(glm::vec2 &a, glm::vec2 &b)
@@ -34,3 +35,6 @@ inline float crossv(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y -
 
 __device__
 inline float crossv(const glm::vec3& a, const glm::vec3& b) { return a.x * b.y - a.y * b.x; }
+
+__host__
+inline void print_cuda_error(char* msg){cudaError_t error = cudaGetLastError(); printf("%s: %s\n", msg, cudaGetErrorString(error)); }

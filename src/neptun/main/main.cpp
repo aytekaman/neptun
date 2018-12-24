@@ -22,7 +22,9 @@
 
 std::string colors[] = { "cyan", "orange", "red", "blue" };
 std::string marks[] = { "square", "circle", "triangle", "plus" };
-extern void copy_to_gpu(TetMesh32& tet_mesh);
+extern void copy_to_gpu_32(TetMesh32& tet_mesh);
+extern void copy_to_gpu_20(TetMesh20& tet_mesh);
+extern void copy_to_gpu_16(TetMesh16& tet_mesh);
 
 #ifdef _WIN32
     std::string builtin_scenes_folder_path = "../../scenes/";
@@ -777,7 +779,7 @@ void cpu_gpu_comparison()
     ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
     scene.tet_mesh = new TetMesh32(scene);
     scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
-    copy_to_gpu(*(TetMesh32*)scene.tet_mesh);
+    copy_to_gpu_32(*(TetMesh32*)scene.tet_mesh);
 
     int N = 100;
 

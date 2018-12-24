@@ -1,18 +1,19 @@
 #include "raycaster.cuh";
-#include <stdio.h>
 #include <chrono>
 #include <ctime>
 
 Ray *d_rays;
 IntersectionData* d_intersectdata;
 glm::vec3* d_points;
-TetMesh32::Tet32* d_tets;
+TetMesh32::Tet32* d_tets32;
+TetMesh20::Tet20* d_tets20;
+TetMesh16::Tet16* d_tets16;
 ConstrainedFace* d_cons_faces;
 Face* d_faces;
 unsigned int old_size = 0;
 
 __global__
-void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
+void raycast_32(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
@@ -125,31 +126,54 @@ void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Te
     }
 }
 
-void copy_to_gpu(TetMesh32& tet_mesh)
+void copy_to_gpu(TetMesh& tet_mesh)
 {
     cudaFree(d_points);
     cudaMalloc(&d_points, tet_mesh.m_points.size() * sizeof(glm::vec3));
     cudaMemcpy(d_points, tet_mesh.m_points.data(), tet_mesh.m_points.size() * sizeof(glm::vec3), cudaMemcpyHostToDevice);
-    cudaError_t error = cudaGetLastError();
-    printf("CUDA error1: %s\n", cudaGetErrorString(error));
-
-    cudaFree(d_tets);
-    cudaMalloc(&d_tets, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32));
-    cudaMemcpy(d_tets, tet_mesh.m_tet32s, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32), cudaMemcpyHostToDevice);
-    error = cudaGetLastError();
-    printf("CUDA error2: %s\n", cudaGetErrorString(error));
 
     cudaFree(d_cons_faces);
     cudaMalloc(&d_cons_faces, tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace));
     cudaMemcpy(d_cons_faces, tet_mesh.m_constrained_faces.data(), tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace), cudaMemcpyHostToDevice);
-    error = cudaGetLastError();
-    printf("CUDA error3: %s\n", cudaGetErrorString(error));
 
     cudaFree(d_faces);
     cudaMalloc(&d_faces, tet_mesh.faces.size() * sizeof(Face));
     cudaMemcpy(d_faces, tet_mesh.faces.data(), tet_mesh.faces.size() * sizeof(Face), cudaMemcpyHostToDevice);
-    error = cudaGetLastError();
-    printf("CUDA error4: %s\n", cudaGetErrorString(error));
+
+    print_cuda_error("CUDA copy error");
+}
+
+void copy_to_gpu_32(TetMesh32& tet_mesh)
+{
+    copy_to_gpu(tet_mesh);
+
+    cudaFree(d_tets32);
+    cudaMalloc(&d_tets32, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32));
+    cudaMemcpy(d_tets32, (tet_mesh).m_tet32s, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32), cudaMemcpyHostToDevice);
+    
+    print_cuda_error("CUDA copy error32");
+}
+
+void copy_to_gpu_20(TetMesh20& tet_mesh)
+{
+    copy_to_gpu(tet_mesh);
+
+    cudaFree(d_tets20);
+    cudaMalloc(&d_tets20, tet_mesh.m_tets.size() * sizeof(TetMesh20::Tet20));
+    cudaMemcpy(d_tets20, tet_mesh.m_tet20s.data(), tet_mesh.m_tets.size() * sizeof(TetMesh20::Tet20), cudaMemcpyHostToDevice);
+
+    print_cuda_error("CUDA copy error20");
+}
+
+void copy_to_gpu_16(TetMesh16& tet_mesh)
+{
+    copy_to_gpu(tet_mesh);
+
+    cudaFree(d_tets16);
+    cudaMalloc(&d_tets16, tet_mesh.m_tets.size() * sizeof(TetMesh16::Tet16));
+    cudaMemcpy(d_tets16, (tet_mesh).m_tet16s, tet_mesh.m_tets.size() * sizeof(TetMesh16::Tet16), cudaMemcpyHostToDevice);
+
+    print_cuda_error("CUDA copy error16");
 }
 
 void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
@@ -166,7 +190,8 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
         printf("CUDA error0: %s\n", cudaGetErrorString(error));*/
         old_size = rays_size;
     }
-    float last_render_time = 0;
+
+    float copy_time = 0, kernel_time=0;
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
@@ -176,20 +201,23 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
     printf("CUDA error1: %s\n", cudaGetErrorString(error));*/
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
-
-    printf("Copy time of Rays to GPU: %f miliseconds\n ", last_render_time);
+    copy_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
+    printf("Copy time of Rays to GPU: %f ms\n ", copy_time);
 
 
     // Launch kernel on GPU
-    int t = 256;
-    raycast_kernel <<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets, d_cons_faces, d_faces, d_intersectdata);
+    int t = 512;
+    start = std::chrono::steady_clock::now();
+
+    raycast_32<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
+    cudaDeviceSynchronize();
     /*error = cudaGetLastError();
     printf("CUDA error2: %s\n", cudaGetErrorString(error));*/
 
+    end = std::chrono::steady_clock::now();
+    kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
+    printf("Kernel time %f ms\n ", kernel_time);
+
     // Copy result back to host
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
-
-    /*cudaFree(d_rays);
-    cudaFree(d_intersectdata);*/
 }

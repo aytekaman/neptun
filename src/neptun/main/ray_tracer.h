@@ -128,7 +128,7 @@ public:
     glm::ivec2 m_old_res = glm::ivec2();
     IntersectionData* m_intersect_data;
     Ray* m_rays;
-    int tile_size = 16;
+    int tile_size = 8;
     //glm::u8vec3 *pixels;
     int thread_count;
 
