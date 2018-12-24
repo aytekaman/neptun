@@ -37,7 +37,9 @@
 #include "neptun/main/texture.h"
 #include "neptun/main/filesystem.h"
 
-extern void copy_to_gpu(TetMesh32& tet_mesh);
+extern void copy_to_gpu_32(TetMesh32& tet_mesh);
+extern void copy_to_gpu_20(TetMesh20& tet_mesh);
+extern void copy_to_gpu_16(TetMesh16& tet_mesh);
 
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
@@ -594,7 +596,7 @@ void Editor::DrawTetGen()
         {
             scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
-            copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+            copy_to_gpu_32(*(TetMesh32*)scene->tet_mesh);
             Logger::Log("TetMesh32 data copied to GPU");
         }
         else if (current_tet_mesh_type == 1)
@@ -640,7 +642,7 @@ void Editor::DrawTetGen()
         {
             scene->tet_mesh = new TetMesh32(*scene);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
-            copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+            copy_to_gpu_32(*(TetMesh32*)scene->tet_mesh);
             Logger::Log("TetMesh32 data copied to GPU");
         }
         else if (current_tet_mesh_type == 1)
@@ -692,7 +694,7 @@ void Editor::DrawTetGen()
         if (ImGui::Button("Sort (Hilbert)"))
         {
             scene->tet_mesh->sort(SortingMethod::Hilbert, bit_count, use_regions, swap);
-            copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+            copy_to_gpu_32(*(TetMesh32*)scene->tet_mesh);
             Logger::Log("TetMesh32 data copied to GPU");
         }
 
