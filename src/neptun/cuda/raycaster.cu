@@ -146,12 +146,12 @@ void raycast_16(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh16::Tet16*
 
         int index;
 
-        for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
         {
-            id[i] = ray.source_tet.v[i];
-            const glm::vec3 point = d_points[id[i]] - ray.origin;
-            p[i].x = glm::dot(right, point);
-            p[i].y = glm::dot(up, point);
+            id[j] = ray.source_tet.v[j];
+            const glm::vec3 point = d_points[id[j]] - ray.origin;
+            p[j].x = glm::dot(right, point);
+            p[j].y = glm::dot(up, point);
         }
 
         if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
@@ -180,7 +180,10 @@ void raycast_16(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh16::Tet16*
             index = ray.source_tet.n[3];
         }
         else
+        {
             output[i].hit = false;
+            return;
+        }
 
         int nx = ray.source_tet.idx;
 
@@ -260,11 +263,11 @@ void raycast_16(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh16::Tet16*
             const glm::vec3 p = glm::cross(ray.dir, e2);
             const float f = 1.0f / glm::dot(e1, p);
             const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
-            /*output[i].position = ray.origin + f * glm::dot(e2, q) * ray.dir;
+            output[i].position = ray.origin + f * glm::dot(e2, q) * ray.dir;
             output[i].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
             output[i].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
             output[i].tet_idx = d_cons_faces[index].tet_idx;
-            output[i].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;*/
+            output[i].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;
 
             output[i].hit = true;
         }
@@ -344,8 +347,6 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
 
     // Copy inputs to device
     cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
-    /*error = cudaGetLastError();
-    printf("CUDA error1: %s\n", cudaGetErrorString(error));*/
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     copy_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
@@ -360,11 +361,11 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
     raycast_16 <<< rays_size / t, t >> > (d_rays, rays_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
     cudaDeviceSynchronize();
 
-    print_cuda_error("kernel error");
+    //print_cuda_error("kernel error");
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
-    //printf("Kernel time %f ms\n ", kernel_time);
+    printf("Kernel time %f ms\n ", kernel_time);
 
     // Copy result back to host
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
