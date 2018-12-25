@@ -1371,6 +1371,7 @@ void TetMesh20::init_acceleration_data()
             {
                 ConstrainedFace cf;
                 cf.face = &faces[m_tets[i].face_idx[j] - 1];
+                cf.face_idx = m_tets[i].face_idx[j] - 1;
                 cf.tet_idx = i;
                 cf.other_tet_idx = n;
                 m_constrained_faces.push_back(cf);
