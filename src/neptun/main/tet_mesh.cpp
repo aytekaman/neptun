@@ -1758,6 +1758,7 @@ void TetMesh16::init_acceleration_data()
             {
                 ConstrainedFace cf;
                 cf.face = &faces[m_tets[i].face_idx[j] - 1];
+                cf.face_idx = m_tets[i].face_idx[j] - 1;
                 cf.tet_idx = i;
                 cf.other_tet_idx = other_tet_idx;
                 cf.n = (m_constrained_faces.size() + 1) | (1 << 31);
