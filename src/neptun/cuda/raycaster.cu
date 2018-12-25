@@ -471,9 +471,8 @@ void copy_to_gpu_16(TetMesh16& tet_mesh)
     print_cuda_error("CUDA copy error16");
 }
 
-void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
+void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output)
 {
-    cudaError_t error;
     // Allocate space for device copy of data
     if (old_size != rays_size)
     {
@@ -481,8 +480,6 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
         cudaFree(d_intersectdata);
         cudaMalloc(&d_rays, rays_size * sizeof(Ray));
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
-        /*error = cudaGetLastError();
-        printf("CUDA error0: %s\n", cudaGetErrorString(error));*/
         old_size = rays_size;
     }
 
@@ -502,8 +499,19 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, IntersectionData* output)
     int t = 512;
     start = std::chrono::steady_clock::now();
 
-    //raycast_32<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
-    raycast_20 <<< rays_size / t, t >> > (d_rays, rays_size, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
+    if (tet_mesh_type == 0 )
+    {
+        raycast_32<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
+    }
+    else if (tet_mesh_type == 1 )
+    {
+        raycast_20<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
+    }
+    else if (tet_mesh_type == 2 )
+    {
+        raycast_16<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
+    }
+
     cudaDeviceSynchronize();
 
     //print_cuda_error("kernel error");
