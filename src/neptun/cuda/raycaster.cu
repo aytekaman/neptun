@@ -152,12 +152,12 @@ void raycast_20(Ray* rays, int rays_size, glm::vec3* d_points, TetMesh20::Tet20*
 
         const int mask = 0xE1;
 
-        for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
         {
-            id[i] = ray.source_tet.v[i];
-            const glm::vec3 point = d_points[id[i]] - ray.origin;
-            p[i].x = glm::dot(right, point);
-            p[i].y = glm::dot(up, point);
+            id[j] = ray.source_tet.v[j];
+            const glm::vec3 point = d_points[id[j]] - ray.origin;
+            p[j].x = glm::dot(right, point);
+            p[j].y = glm::dot(up, point);
         }
 
         if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
