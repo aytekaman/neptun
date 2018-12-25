@@ -539,7 +539,13 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
         delete threads[i];
     }
 
-    ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_intersect_data);
+    int tetmesh_type = 0;
+    if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
+        tetmesh_type = 1;
+    else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
+        tetmesh_type = 2;
+
+    ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
 
 
     threads = new std::thread*[thread_count];
