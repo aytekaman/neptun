@@ -15,6 +15,10 @@ public:
 
     static float best_render_time;
 
+    static float ray_prep_time;
+    static float gpu_kernel_time;
+    static float draw_time;
+
 private:
     static std::vector<float> s_render_times;
 };
