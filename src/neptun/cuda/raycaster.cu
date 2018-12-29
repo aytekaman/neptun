@@ -5,6 +5,7 @@
 Ray *d_rays;
 IntersectionData* d_intersectdata;
 glm::vec3* d_points;
+glm::vec4* d_padded_points;
 TetMesh32::Tet32* d_tets32;
 TetMesh20::Tet20* d_tets20;
 TetMesh16::Tet16* d_tets16;
@@ -13,7 +14,7 @@ Face* d_faces;
 unsigned int old_size = 0;
 
 __global__
-void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
+void raycast_kernel(Ray *rays, int rays_size, glm::vec4* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
@@ -33,7 +34,7 @@ void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Te
         for (int j = 0; j < 4; j++)
         {
             id[j] = rays[i].source_tet.v[j];
-            const glm::vec3 point = d_points[id[j]] - ray.origin;
+            const glm::vec3 point = glm::vec3(d_points[id[j]]) - ray.origin;
             p[j].x = glm::dot(right, point);
             p[j].y = glm::dot(up, point);
         }
@@ -64,7 +65,7 @@ void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Te
         {
             id[outIdx] = id[3];
             id[3] = d_tets[index].x ^ id[0] ^ id[1] ^ id[2];
-            const glm::vec3 newPoint = d_points[id[3]] - ray.origin;
+            const glm::vec3 newPoint = glm::vec3(d_points[id[3]]) - ray.origin;
 
             p[outIdx] = p[3];
             p[3].x = glm::dot(right, newPoint);
@@ -445,6 +446,10 @@ void copy_to_gpu(TetMesh32& tet_mesh)
     cudaFree(d_tets32);
     cudaMalloc(&d_tets32, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32));
     cudaMemcpy(d_tets32, tet_mesh.m_tet32s, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32), cudaMemcpyHostToDevice);
+
+    cudaFree(d_padded_points);
+    cudaMalloc(&d_padded_points, tet_mesh.m_points.size() * sizeof(glm::vec4));
+    cudaMemcpy(d_padded_points, tet_mesh.m_padded_points, tet_mesh.m_points.size() * sizeof(glm::vec4), cudaMemcpyHostToDevice);
     
     print_cuda_error("CUDA copy error32");
 }
@@ -501,7 +506,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
 
     if (tet_mesh_type == 0 )
     {
-        raycast_kernel <<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
+        raycast_kernel <<< rays_size / t, t >>>(d_rays, rays_size, d_padded_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
     }
     else if (tet_mesh_type == 1 )
     {
