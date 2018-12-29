@@ -13,7 +13,7 @@ Face* d_faces;
 unsigned int old_size = 0;
 
 __global__
-void raycast_32(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
+void raycast_kernel(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
@@ -129,7 +129,7 @@ void raycast_32(Ray *rays, int rays_size, glm::vec3* d_points, TetMesh32::Tet32*
 //------------------------------------------------o-------------------------------------------------------
 
 __global__
-void raycast_20(Ray* rays, int rays_size, glm::vec3* d_points, TetMesh20::Tet20* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
+void raycast_kernel(Ray* rays, int rays_size, glm::vec3* d_points, TetMesh20::Tet20* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
@@ -268,7 +268,7 @@ void raycast_20(Ray* rays, int rays_size, glm::vec3* d_points, TetMesh20::Tet20*
 //------------------------------------------------o-------------------------------------------------------
 
 __global__
-void raycast_16(Ray* rays, int rays_size, glm::vec3* d_points, TetMesh16::Tet16* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
+void raycast_kernel(Ray* rays, int rays_size, glm::vec3* d_points, TetMesh16::Tet16* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
@@ -419,7 +419,7 @@ void raycast_16(Ray* rays, int rays_size, glm::vec3* d_points, TetMesh16::Tet16*
 
 //------------------------------------------------o-------------------------------------------------------
 
-void copy_to_gpu(TetMesh& tet_mesh)
+void copy_to_gpu_helper(TetMesh& tet_mesh)
 {
     cudaFree(d_points);
     cudaMalloc(&d_points, tet_mesh.m_points.size() * sizeof(glm::vec3));
@@ -438,9 +438,9 @@ void copy_to_gpu(TetMesh& tet_mesh)
 
 //------------------------------------------------o-------------------------------------------------------
 
-void copy_to_gpu_32(TetMesh32& tet_mesh)
+void copy_to_gpu(TetMesh32& tet_mesh)
 {
-    copy_to_gpu(tet_mesh);
+    copy_to_gpu_helper(tet_mesh);
 
     cudaFree(d_tets32);
     cudaMalloc(&d_tets32, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32));
@@ -449,9 +449,9 @@ void copy_to_gpu_32(TetMesh32& tet_mesh)
     print_cuda_error("CUDA copy error32");
 }
 
-void copy_to_gpu_20(TetMesh20& tet_mesh)
+void copy_to_gpu(TetMesh20& tet_mesh)
 {
-    copy_to_gpu(tet_mesh);
+    copy_to_gpu_helper(tet_mesh);
 
     cudaFree(d_tets20);
     cudaMalloc(&d_tets20, tet_mesh.m_tets.size() * sizeof(TetMesh20::Tet20));
@@ -460,9 +460,9 @@ void copy_to_gpu_20(TetMesh20& tet_mesh)
     print_cuda_error("CUDA copy error20");
 }
 
-void copy_to_gpu_16(TetMesh16& tet_mesh)
+void copy_to_gpu(TetMesh16& tet_mesh)
 {
-    copy_to_gpu(tet_mesh);
+    copy_to_gpu_helper(tet_mesh);
 
     cudaFree(d_tets16);
     cudaMalloc(&d_tets16, tet_mesh.m_tets.size() * sizeof(TetMesh16::Tet16));
@@ -501,15 +501,15 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
 
     if (tet_mesh_type == 0 )
     {
-        raycast_32<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
+        raycast_kernel <<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
     }
     else if (tet_mesh_type == 1 )
     {
-        raycast_20<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
+        raycast_kernel <<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
     }
     else if (tet_mesh_type == 2 )
     {
-        raycast_16<<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
+        raycast_kernel <<< rays_size / t, t >>>(d_rays, rays_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
     }
 
     cudaDeviceSynchronize();
@@ -518,7 +518,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
-    printf("Kernel time %f ms\n ", kernel_time);
+    //printf("Kernel time %f ms\n ", kernel_time);
 
     // Copy result back to host
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
