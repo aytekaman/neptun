@@ -433,7 +433,7 @@ void copy_to_gpu_helper(TetMesh& tet_mesh)
     cudaMalloc(&d_faces, tet_mesh.faces.size() * sizeof(Face));
     cudaMemcpy(d_faces, tet_mesh.faces.data(), tet_mesh.faces.size() * sizeof(Face), cudaMemcpyHostToDevice);
 
-    print_cuda_error("CUDA copy error");
+    //print_cuda_error("CUDA copy error");
 }
 
 //------------------------------------------------o-------------------------------------------------------
@@ -518,6 +518,8 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
+    Stats::gpu_kernel_time = kernel_time;
+    
     //printf("Kernel time %f ms\n ", kernel_time);
 
     // Copy result back to host

@@ -5,6 +5,7 @@
 #include "neptun/main/basis.h"
 #include "neptun/main/ray_tracer.h"
 #include "neptun/main/scene.h"
+#include "neptun/main/stats.h"
 #include "neptun/main/tet_mesh.h"
 
 #define GLM_FORCE_CUDA

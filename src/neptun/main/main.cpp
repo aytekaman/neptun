@@ -804,6 +804,108 @@ void cpu_gpu_comparison()
     std::cout << "difference: " << glm::abs(gpu_fps - cpu_fps) / cpu_fps;
 }
 
+void gpu_tetmesh_type_comparison()
+{
+    RayTracer ray_tracer;
+    Scene scene;
+    TetMesh32* tet32;
+    TetMesh20* tet20;
+    TetMesh16* tet16;
+    scene.load_from_file(builtin_scenes_folder_path + "mix.scene");
+    ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
+    tet32 = new TetMesh32(scene);
+    tet20 = new TetMesh20(scene);
+    tet16 = new TetMesh16(scene);
+
+    int N = 100;
+
+    float tet32_fps = 0.0f;
+    float tet20_fps = 0.0f;
+    float tet16_fps = 0.0f;
+
+    float tet32_prep_time = std::numeric_limits<float>::infinity();
+    float tet20_prep_time = std::numeric_limits<float>::infinity();
+    float tet16_prep_time = std::numeric_limits<float>::infinity();
+
+    float tet32_kernel_time = std::numeric_limits<float>::infinity();
+    float tet20_kernel_time = std::numeric_limits<float>::infinity();
+    float tet16_kernel_time = std::numeric_limits<float>::infinity();
+
+    float tet32_draw_time = std::numeric_limits<float>::infinity();
+    float tet20_draw_time = std::numeric_limits<float>::infinity();
+    float tet16_draw_time = std::numeric_limits<float>::infinity();
+
+    for (int j = 0; j < 3; j++)
+    {
+        switch(j)
+        {
+            case 0:
+                scene.tet_mesh = tet32;
+                scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+                copy_to_gpu(*(TetMesh32*)scene.tet_mesh);
+                break;
+
+            case 1:
+                scene.tet_mesh = tet20;
+                scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+                copy_to_gpu(*(TetMesh20*)scene.tet_mesh);
+                break;
+            case 2:
+                scene.tet_mesh = tet16;
+                scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+                copy_to_gpu(*(TetMesh16*)scene.tet_mesh);
+                break;
+        }
+
+        for (int k = 0; k < N; ++k)
+        {
+            ray_tracer.method = Method::Default;
+            ray_tracer.render_gpu(scene);
+            if (j == 0)
+            {
+                tet32_fps = glm::max(1.0f / ray_tracer.last_render_time, tet32_fps);
+
+                tet32_prep_time = glm::min(Stats::ray_prep_time, tet32_prep_time);
+                tet32_kernel_time = glm::min(Stats::gpu_kernel_time, tet32_kernel_time);
+                tet32_draw_time = glm::min(Stats::draw_time, tet32_draw_time);
+
+            }
+            else if (j == 1)
+            {
+                tet20_fps = glm::max(1.0f / ray_tracer.last_render_time, tet20_fps);
+
+                tet20_prep_time = glm::min(Stats::ray_prep_time, tet20_prep_time);
+                tet20_kernel_time = glm::min(Stats::gpu_kernel_time, tet20_kernel_time);
+                tet20_draw_time = glm::min(Stats::draw_time, tet20_draw_time);
+            }
+
+            if (j == 2)
+            {
+                tet16_fps = glm::max(1.0f / ray_tracer.last_render_time, tet16_fps);
+
+                tet16_prep_time = glm::min(Stats::ray_prep_time, tet16_prep_time);
+                tet16_kernel_time = glm::min(Stats::gpu_kernel_time, tet16_kernel_time);
+                tet16_draw_time = glm::min(Stats::draw_time, tet16_draw_time);
+            }
+        }
+    }
+
+    std::cout << "-----Tet32 :-----" << std::endl << "FPS: " << tet32_fps << std::endl 
+        << "Ray preparation time: " << tet32_prep_time <<  "ms" << std::endl
+        << "Kernel time: " << tet32_kernel_time << "ms" << std::endl
+        << "Draw time: " << tet32_draw_time << "ms" << std::endl << std::endl;
+    std::cout << "-----Tet20 :-----" << std::endl << "FPS: " << tet20_fps << std::endl
+        << "Ray preparation time: " << tet20_prep_time << "ms" << std::endl
+        << "Kernel time: " << tet20_kernel_time << "ms" << std::endl
+        << "Draw time: " << tet20_draw_time << "ms" << std::endl << std::endl;
+    std::cout << "-----Tet16 :-----" << std::endl << "FPS: " << tet16_fps << std::endl
+        << "Ray preparation time: " << tet16_prep_time << "ms" << std::endl
+        << "Kernel time: " << tet16_kernel_time << "ms" << std::endl
+        << "Draw time: " << tet16_draw_time << "ms" << std::endl;
+
+    //std::cout << "difference: " << glm::abs(gpu_fps - cpu_fps) / cpu_fps;
+}
+
 void simd_comparison()
 {
     RayTracer ray_tracer;
@@ -866,7 +968,8 @@ int main(int argc, char** argv)
         create_and_render_test_scene();
 
         //simd_comparison();
-        cpu_gpu_comparison();
+        //cpu_gpu_comparison();
+        gpu_tetmesh_type_comparison();
 
         //if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
         //    build_and_render_times(test_folder_name, 100);

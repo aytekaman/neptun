@@ -523,13 +523,16 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
         m_intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
         m_old_res = m_resolution;
     }
-
+    //--------------------------------------------
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-
+    //--------------------------------------------
     std::thread **threads = new std::thread*[thread_count];
 
     job_index = thread_count;
 
+    //--------------------------------------------
+    std::chrono::steady_clock::time_point start_2 = std::chrono::steady_clock::now();
+    //--------------------------------------------
     for (int i = 0; i < thread_count; i++)
         threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, is_diagnostic);
 
@@ -538,7 +541,11 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
         threads[i]->join();
         delete threads[i];
     }
-
+    //--------------------------------------------
+    std::chrono::steady_clock::time_point end_2 = std::chrono::steady_clock::now();
+    Stats::ray_prep_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+    //--------------------------------------------
+    
     int tetmesh_type = 0;
     if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
         tetmesh_type = 1;
@@ -551,6 +558,9 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     threads = new std::thread*[thread_count];
     job_index = thread_count;
 
+    //--------------------------------------------
+    start_2 = std::chrono::steady_clock::now();
+    //--------------------------------------------
     for (int i = 0; i < thread_count; i++)
         threads[i] = new std::thread(&RayTracer::draw_intersectiondata, this, i, lightInfos);
 
@@ -559,10 +569,15 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
         threads[i]->join();
         delete threads[i];
     }
+    //--------------------------------------------
+    end_2 = std::chrono::steady_clock::now();
+    Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+    //--------------------------------------------
 
     //draw_intersectiondata(0, lightInfos);
-
+    //--------------------------------------------
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    //--------------------------------------------
     delete[] threads;
 
     last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
