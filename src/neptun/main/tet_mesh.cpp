@@ -686,13 +686,10 @@ void TetMesh32::init_acceleration_data()
 
     for (int i = 0; i < m_points.size(); ++i)
     {
-        for (int i = 0; i < m_points.size(); ++i)
-        {
-            m_padded_points[i].x = m_points[i].x;
-            m_padded_points[i].y = m_points[i].y;
-            m_padded_points[i].z = m_points[i].z;
-            m_padded_points[i].w = 0.0f;
-        }
+        m_padded_points[i].x = 0.0f;
+        m_padded_points[i].y = m_points[i].z;
+        m_padded_points[i].z = m_points[i].y;
+        m_padded_points[i].w = m_points[i].x;
     }
          
 }
@@ -1407,10 +1404,10 @@ void TetMesh20::init_acceleration_data()
 
     for (int i = 0; i < m_points.size(); ++i)
     {
-        m_padded_points[i].x = m_points[i].x;
-        m_padded_points[i].y = m_points[i].y;
-        m_padded_points[i].z = m_points[i].z;
-        m_padded_points[i].w = 0.0f;
+        m_padded_points[i].x = 0.0f;
+        m_padded_points[i].y = m_points[i].z;
+        m_padded_points[i].z = m_points[i].y;
+        m_padded_points[i].w = m_points[i].x;
     }
 }
 
