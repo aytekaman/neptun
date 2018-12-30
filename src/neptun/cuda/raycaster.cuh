@@ -49,3 +49,14 @@ inline float crossv(const glm::vec3& a, const glm::vec3& b) { return a.x * b.y -
 
 __host__
 inline void print_cuda_error(char* msg){cudaError_t error = cudaGetLastError(); printf("%s: %s\n", msg, cudaGetErrorString(error)); }
+
+inline cudaError_t checkCuda(cudaError_t result)
+{
+#if defined(DEBUG) || defined(_DEBUG)
+    if (result != cudaSuccess) {
+        fprintf(stderr, "CUDA Runtime Error: %s\n", cudaGetErrorString(result));
+        assert(result == cudaSuccess);
+    }
+#endif
+    return result;
+}
