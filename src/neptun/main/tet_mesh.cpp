@@ -1318,11 +1318,11 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
-    unsigned int id[4][4];
-    glm::vec2 p[4][4];
+    float right[3][4];
+    float up   [3][4]; 
 
-    glm::vec3 right[4];
-    glm::vec3 up[4];
+    unsigned int id[4][4];
+    float p[2][4][4];
 
     for (int k = 0; k < 4; ++k)
     {
@@ -1331,22 +1331,35 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         const float a = -1.0f / (sign + dirs[k].z);
         const float b = dirs[k].x * dirs[k].y * a;
 
-        right[k] = glm::vec3(1.0f + sign * dirs[k].x * dirs[k].x * a, sign * b, -sign * dirs[k].x);
-        up[k] = glm::vec3(b, sign + dirs[k].y * dirs[k].y * a, -dirs[k].y);
+        right[0][k] = 1.0f + sign * dirs[k].x * dirs[k].x * a;
+        right[1][k] = sign * b;
+        right[2][k] = -sign * dirs[k].x;
+
+        up[0][k] = b;
+        up[1][k] = sign + dirs[k].y * dirs[k].y * a;
+        up[2][k] = -dirs[k].y;
     }
 
     int index[4];
 
-    for (int k = 0; k < 4; ++k)
+
     {
+        //glm::vec3 points[4] = {}
+
         for (int i = 0; i < 4; i++)
         {
-            id[i][k] = tet.v[i];
-            const glm::vec3 point = m_points[id[i][k]] - origin;
-            p[i][k].x = glm::dot(right[k], point);
-            p[i][k].y = glm::dot(up[k], point);
+            for (int k = 0; k < 4; ++k)
+            {
+
+
+                id[i][k] = tet.v[i];
+                const glm::vec3 point = m_points[id[i][k]] - origin;
+                p[0][i][k] = glm::dot(right[k], point);
+                p[1][i][k] = glm::dot(up[k], point);
+            }
         }
     }
+
 
     int outIdx[4] = { -1 };
 
@@ -1383,31 +1396,67 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         for (int k = 0; k < 4; ++k)
         {
             id[outIdx[k]][k] = id[3][k];
-            id[3][k] = m_tet32s[index[k]].x ^ id[0][k] ^ id[1][k] ^ id[2][k];
+            id[3][k] = m_tet32s[index[k]].x;// ^ id[0][k] ^ id[1][k] ^ id[2][k];
         }
 
         for (int k = 0; k < 4; ++k)
-        {
-            const glm::vec3 newPoint = m_points[id[3][k]] - origin;
-
-            p[outIdx[k]][k] = p[3][k];
-            p[3][k].x = glm::dot(right[k], newPoint);
-            p[3][k].y = glm::dot(up[k], newPoint);
-        }
+            id[3][k] ^= id[0][k];
 
         for (int k = 0; k < 4; ++k)
+            id[3][k] ^= id[1][k];
+
+        for (int k = 0; k < 4; ++k)
+            id[3][k] ^= id[2][k];
+
         {
-            if (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x) // copysignf here?
+            float new_points[3][4];
+
+            for (int k = 0; k < 4; ++k)
             {
-                if (p[3][k].x * p[2][k].y >= p[3][k].y * p[2][k].x)
-                    outIdx[k] = 1;
+                const glm::vec3 new_point = m_points[id[3][k]] - origin;
+
+                for (int axis = 0; axis < 3; ++axis)
+                    new_points[axis][k] = new_point[axis];
+            }
+
+            for (int axis = 0; axis < 2; ++axis)
+                for (int k = 0; k < 4; ++k)
+                    p[axis][outIdx[k]][k] = p[axis][3][k];
+
+            for (int k = 0; k < 4; ++k)
+                p[0][3][k] = right[0][k] * new_points[0][k];
+
+            for (int axis = 1; axis < 3; ++axis)
+                p[axis][3][k] += right[axis][k] * new_points[axis][k];
+        }
+
+        {
+            float a[4], b[4];
+            bool r[4];
+
+            for (int k = 0; k < 4; ++k)
+                a[k] = p[0][3][k] * p[1][0][k];
+
+            for (int k = 0; k < 4; ++k)
+                b[k] = p[1][3][k] * p[0][0][k];
+
+            for (int k = 0; k < 4; ++k)
+                r[k] = a[k] < b[k];
+
+            for (int k = 0; k < 4; ++k)
+            {
+                if (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x) // copysignf here?
+                {
+                    if (p[3][k].x * p[2][k].y >= p[3][k].y * p[2][k].x)
+                        outIdx[k] = 1;
+                    else
+                        outIdx[k] = 0;
+                }
+                else if (p[3][k].x * p[1][k].y < p[3][k].y * p[1][k].x)
+                    outIdx[k] = 2;
                 else
                     outIdx[k] = 0;
             }
-            else if (p[3][k].x * p[1][k].y < p[3][k].y * p[1][k].x)
-                outIdx[k] = 2;
-            else
-                outIdx[k] = 0;
         }
 
         for (int k = 0; k < 4; ++k)
