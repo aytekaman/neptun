@@ -1403,13 +1403,15 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         }
 
         for (int k = 0; k < 4; ++k)
+        {
+            if (index[k] < 0)
+                continue;
+
             id[3][k] ^= id[0][k];
 
-        for (int k = 0; k < 4; ++k)
             id[3][k] ^= id[1][k];
 
-        for (int k = 0; k < 4; ++k)
-        {
+
             id[3][k] ^= id[2][k];
         }
             
@@ -1433,16 +1435,22 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
             for (int k = 0; k < 4; ++k)
                 p[0][3][k] = right[0][k] * new_points[0][k];
 
-            for (int axis = 1; axis < 3; ++axis)
+            //for (int axis = 1; axis < 3; ++axis)
                 for (int k = 0; k < 4; ++k)
-                    p[0][3][k] += right[axis][k] * new_points[axis][k];
+                    p[0][3][k] += right[1][k] * new_points[1][k];
+
+                for (int k = 0; k < 4; ++k)
+                    p[0][3][k] += right[2][k] * new_points[2][k];
 
             for (int k = 0; k < 4; ++k)
                 p[1][3][k] = up[0][k] * new_points[0][k];
 
-            for (int axis = 1; axis < 3; ++axis)
+            //for (int axis = 1; axis < 3; ++axis)
                 for (int k = 0; k < 4; ++k)
-                    p[1][3][k] += up[axis][k] * new_points[axis][k];
+                    p[1][3][k] += up[1][k] * new_points[1][k];
+
+                for (int k = 0; k < 4; ++k)
+                    p[1][3][k] += up[2][k] * new_points[2][k];
         }
 
         int r0[4], r1[4], r2[4];
