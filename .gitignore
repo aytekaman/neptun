@@ -3,3 +3,5 @@ build/
 sandbox/
 !sandbox/scenes/*
 *.tetmesh
+
+bin/
