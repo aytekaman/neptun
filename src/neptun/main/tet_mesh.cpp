@@ -1395,6 +1395,9 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
     {
         for (int k = 0; k < 4; ++k)
         {
+            if (index[k] < 0)
+                continue;
+
             id[outIdx[k]][k] = id[3][k];
             id[3][k] = m_tet32s[index[k]].x;// ^ id[0][k] ^ id[1][k] ^ id[2][k];
         }
@@ -1427,12 +1430,15 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
                 p[0][3][k] = right[0][k] * new_points[0][k];
 
             for (int axis = 1; axis < 3; ++axis)
-                p[axis][3][k] += right[axis][k] * new_points[axis][k];
+                for (int k = 0; k < 4; ++k)
+                    p[axis][3][k] += right[axis][k] * new_points[axis][k];
         }
 
+        bool r0[4], r1[4], r2[4];
+
+        // (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x)
         {
             float a[4], b[4];
-            bool r[4];
 
             for (int k = 0; k < 4; ++k)
                 a[k] = p[0][3][k] * p[1][0][k];
@@ -1441,26 +1447,47 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
                 b[k] = p[1][3][k] * p[0][0][k];
 
             for (int k = 0; k < 4; ++k)
-                r[k] = a[k] < b[k];
+                r0[k] = a[k] < b[k];
+        }
+
+        // (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x)
+        {
+            float a[4], b[4];
 
             for (int k = 0; k < 4; ++k)
-            {
-                if (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x) // copysignf here?
-                {
-                    if (p[3][k].x * p[2][k].y >= p[3][k].y * p[2][k].x)
-                        outIdx[k] = 1;
-                    else
-                        outIdx[k] = 0;
-                }
-                else if (p[3][k].x * p[1][k].y < p[3][k].y * p[1][k].x)
-                    outIdx[k] = 2;
-                else
-                    outIdx[k] = 0;
-            }
+                a[k] = p[0][3][k] * p[1][0][k];
+
+            for (int k = 0; k < 4; ++k)
+                b[k] = p[1][3][k] * p[0][0][k];
+
+            for (int k = 0; k < 4; ++k)
+                r0[k] = a[k] < b[k];
+        }
+
+        // (p[3][k].x * p[0][k].y < p[3][k].y * p[0][k].x)
+        {
+            float a[4], b[4];
+
+            for (int k = 0; k < 4; ++k)
+                a[k] = p[0][3][k] * p[1][0][k];
+
+            for (int k = 0; k < 4; ++k)
+                b[k] = p[1][3][k] * p[0][0][k];
+
+            for (int k = 0; k < 4; ++k)
+                r0[k] = a[k] < b[k];
         }
 
         for (int k = 0; k < 4; ++k)
+            outIdx[k] = r0[k] * r1[k] + !r0[k] * r2[k] * 2;
+
+        
+
+        for (int k = 0; k < 4; ++k)
         {
+            if (index[k] < 0)
+                continue;
+
             if (id[outIdx[k]][k] == m_tet32s[index[k]].v[0])
                 index[k] = m_tet32s[index[k]].n[0];
             else if (id[outIdx[k]][k] == m_tet32s[index[k]].v[1])
