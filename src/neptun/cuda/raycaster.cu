@@ -137,7 +137,7 @@ __global__
 void raycast_kernel(Ray* rays, int rays_size, int offset, glm::vec3* d_points, TetMesh20::Tet20* d_tets,
     ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = offset + blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
     {
         Ray ray = rays[i];
@@ -277,7 +277,7 @@ __global__
 void raycast_kernel(Ray* rays, int rays_size, int offset, glm::vec3* d_points, TetMesh16::Tet16* d_tets,
     ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = offset + blockIdx.x * blockDim.x + threadIdx.x;
     if (i < rays_size)
     {
         Ray ray = rays[i];
@@ -489,12 +489,12 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
         old_size = rays_size;
 
-        streams = new cudaStream_t[n_streams];
-        for (int i = 0; i < n_streams; i++)
-        {
-            cudaStreamCreate(&streams[i]);
-            print_cuda_error("Stream creation error");
-        }
+		streams = new cudaStream_t[n_streams];
+		for (int i = 0; i < n_streams; i++)
+		{
+			cudaStreamCreate(&streams[i]);
+			print_cuda_error("Stream creation error");
+		}
     }
 
     unsigned int stream_size = rays_size / n_streams;
@@ -534,10 +534,11 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
             raycast_kernel <<< stream_size / t, t, 0, streams[i] >>> (d_rays, rays_size, offset, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
         }
 
-        print_cuda_error("kernel");
+        //print_cuda_error("kernel");
         cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[i]);
+		//print_cuda_error("copyback");
     }
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
