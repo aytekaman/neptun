@@ -88,6 +88,13 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
+    void Raytrace_packets_worker(
+        Scene &scene,
+        SourceTet source_tet,
+        int thread_idx,
+        std::vector<LightInfo> lightInfos,
+        bool is_diagnostic);
+
 
     void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
     void set_resoultion(const glm::ivec2& resolution);
@@ -114,6 +121,8 @@ public:
     int tile_size = 16;
     //glm::u8vec3 *pixels;
     int thread_count;
+
+    bool m_use_ray_packets = false;
 
     //KdTree *kd_tree = nullptr;
     //Bvh *bvh = nullptr;

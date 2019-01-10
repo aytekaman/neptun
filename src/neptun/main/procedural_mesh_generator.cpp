@@ -300,7 +300,7 @@ Mesh* ProceduralMeshGenerator::create_torus(const glm::ivec2& step_size)
         return std::make_pair(p + epsilon, glm::normalize(glm::vec3(-n)));
     };
 
-    constexpr float TWO_PI = glm::two_pi<float>();
+    const float TWO_PI = glm::two_pi<float>();
     const glm::vec2 step_angle = glm::vec2(TWO_PI) / glm::vec2(step_size);
     for (int si = 0; si < step_size.x; si++)
     {

@@ -92,8 +92,16 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
-    for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    if (m_use_ray_packets)
+    {
+        for (int i = 0; i < thread_count; i++)
+            threads[i] = new std::thread(&RayTracer::Raytrace_packets_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    }
+    else
+    {
+        for (int i = 0; i < thread_count; i++)
+            threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    }
 
     for (int i = 0; i < thread_count; i++)
     {
@@ -291,6 +299,110 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
     traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
     L1_hit_count[thread_idx] = total_L1_hit_count;
+}
+
+void RayTracer::Raytrace_packets_worker(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
+{
+    //TetMesh& tet_mesh = *scene.tet_mesh;
+
+    const glm::vec3 camTarget = scene.camTarget;
+    glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+
+    dir = dir * glm::cos(scene.camOrbitX);
+    dir.y = glm::sin(scene.camOrbitX);
+
+    glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+
+    const glm::vec3 forward = glm::normalize(scene.camTarget - cam_pos);
+    const glm::vec3 right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+    const glm::vec3 down = glm::cross(forward, right);
+
+    const float aspect = (float)m_resolution.x / m_resolution.y;
+    const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+    const glm::vec3 top_left = cam_pos + forward - down * scale_y - right * scale_y * aspect;
+    const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
+    const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
+
+    
+    //for (int i = 0; i < 4; ++i)
+    //    ray[i].origin = cam_pos;
+
+    int total_test_count = 0;
+    int total_L1_hit_count = 0;
+
+
+    const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
+    const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
+    const int max_job_index = tile_count_x * tile_count_y;
+
+    int idx = thread_idx;
+
+    while (idx < max_job_index)
+    {
+        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+
+        rect_max = (glm::min)(rect_max, m_resolution);
+
+        for (int j = rect_min.y; j < rect_max.y; j += 2)
+        {
+            for (int i = rect_min.x; i < rect_max.x; i += 2)
+            {
+                glm::vec3 dirs[4];
+
+                for (int jj = 0; jj < 2; ++jj)
+                {
+                    for (int ii = 0; ii < 2; ++ii)
+                    {
+                        dirs[2 * jj + ii] =
+                            glm::normalize(top_left + right_step * (float)(i + ii) + down_step * (float)(j + jj) - cam_pos);
+                        
+                    }
+                }
+
+                IntersectionData intersection_data[4];
+
+                scene.tet_mesh->intersect4_common_origin_soa(dirs, cam_pos, source_tet, intersection_data);
+
+                for (int jj = 0; jj < 2; ++jj)
+                {
+                    for (int ii = 0; ii < 2; ++ii)
+                    {
+                        glm::vec3 color;
+
+                        if (intersection_data[2 * jj + ii].hit)
+                        {
+
+                            color = glm::vec3();
+
+                            for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                            {
+                                Ray shadow_ray(intersection_data[2 * jj + ii].position, glm::normalize(lightInfos[light_idx].pos - intersection_data[2 * jj + ii].position));
+
+                                // check normals before shooting
+                                //if (!shadows || scene.tet_mesh->intersect(shadow_ray, intersection_data.tet_idx, lightInfos[light_idx].tet_index))
+                                {
+                                    glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersection_data[2 * jj + ii].position);
+                                    float diffuse = glm::clamp(glm::dot(intersection_data[2 * jj + ii].normal, to_light), 0.0f, 1.0f);
+                                    //diffuse = 1.0f;
+                                    color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                                }
+                            }
+                        }
+                        else
+                            color = glm::vec3(0.1, 0.1, 0.1);
+
+                        glm::ivec2 p_idx(i + ii, j + jj);
+
+                        m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
+                    }
+                }
+            }
+        }
+
+        idx = job_index++;
+    }
 }
 
 void RayTracer::save_to_disk(const char * file_name, ImageType image_type)
