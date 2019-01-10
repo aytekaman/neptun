@@ -1340,7 +1340,7 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         up[2][k] = -dirs[k].y;
     }
 
-    alignas(16) int index[4];
+
 
 
     for (int i = 0; i < 4; i++)
@@ -1386,69 +1386,74 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         }
     }
 
+    alignas(16) int index[4];
+
     for (int k = 0; k < 4; ++k)
         index[k] = tet.n[outIdx[k]];
 
     bool diverged = false;
+    bool diverged_at_start = false;
+
+    for (int k = 1; k < 4; ++k)
+    {
+        if (index[0] != index[k])
+        {
+            diverged_at_start = true;
+            diverged = true;
+        }  
+    }
 
     while (!diverged)
     {
-        for (int k = 0; k < 4; ++k)
+        //for (int k = 0; k < 4; ++k)
         {
-            id[outIdx[k]][k] = id[3][k];
-            id[3][k] = m_tet32s[index[k]].x;// ^ id[0][k] ^ id[1][k] ^ id[2][k];
+            id[outIdx[0]][0] = id[3][0];
+            id[3][0] = m_tet32s[index[0]].x ^ id[0][0] ^ id[1][0] ^ id[2][0];
         }
 
-#pragma loop( ivdep )
-        for (int k = 0; k < 4; ++k)
-            id[3][k] ^= id[0][k];
-
-#pragma loop( ivdep )
-        for (int k = 0; k < 4; ++k)
-            id[3][k] ^= id[1][k];
-
-#pragma loop( ivdep )
-        for (int k = 0; k < 4; ++k)
-            id[3][k] ^= id[2][k];
+//#pragma loop( ivdep )
+//        for (int k = 0; k < 4; ++k)
+//            id[3][k] ^= id[0][k];
+//
+//#pragma loop( ivdep )
+//        for (int k = 0; k < 4; ++k)
+//            id[3][k] ^= id[1][k];
+//
+//#pragma loop( ivdep )
+//        for (int k = 0; k < 4; ++k)
+//            id[3][k] ^= id[2][k];
             
         {
-            float new_points[3][4];
 
-            for (int k = 0; k < 4; ++k)
-            {
-                const glm::vec3 new_point = m_points[id[3][k]] - origin;
-
-                for (int axis = 0; axis < 3; ++axis)
-                    new_points[axis][k] = new_point[axis];
-            }
+            const glm::vec3 new_point = m_points[id[3][0]] - origin;
 
             for (int axis = 0; axis < 2; ++axis)
                 for (int k = 0; k < 4; ++k)
-                    p[axis][outIdx[k]][k] = p[axis][3][k];
+                    p[axis][outIdx[0]][k] = p[axis][3][k];
 
 #pragma loop( ivdep )
             for (int k = 0; k < 4; ++k)
-                p[0][3][k] = right[0][k] * new_points[0][k];
+                p[0][3][k] = right[0][k] * new_point[0];
 
 #pragma loop( ivdep )
                 for (int k = 0; k < 4; ++k)
-                    p[0][3][k] += right[1][k] * new_points[1][k];
+                    p[0][3][k] += right[1][k] * new_point[1];
 
 #pragma loop( ivdep )
                 for (int k = 0; k < 4; ++k)
-                    p[0][3][k] += right[2][k] * new_points[2][k];
+                    p[0][3][k] += right[2][k] * new_point[2];
 
 #pragma loop( ivdep )
             for (int k = 0; k < 4; ++k)
-                p[1][3][k] = up[0][k] * new_points[0][k];
+                p[1][3][k] = up[0][k] * new_point[0];
 
 #pragma loop( ivdep )
                 for (int k = 0; k < 4; ++k)
-                    p[1][3][k] += up[1][k] * new_points[1][k];
+                    p[1][3][k] += up[1][k] * new_point[1];
 
 #pragma loop( ivdep )
                 for (int k = 0; k < 4; ++k)
-                    p[1][3][k] += up[2][k] * new_points[2][k];
+                    p[1][3][k] += up[2][k] * new_point[2];
         }
 
         int r0[4], r1[4], r2[4];
@@ -1508,72 +1513,131 @@ void TetMesh32::intersect4_common_origin_soa(const glm::vec3 dirs[4], const glm:
         for (int k = 0; k < 4; ++k)
             outIdx[k] = r0[k] * r1[k] + (1 - r0[k]) * r2[k] * 2;
 
+        const int tix = index[0];
+
         for (int k = 0; k < 4; ++k)
         {
-            if (id[outIdx[k]][k] == m_tet32s[index[k]].v[0])
-                index[k] = m_tet32s[index[k]].n[0];
-            else if (id[outIdx[k]][k] == m_tet32s[index[k]].v[1])
-                index[k] = m_tet32s[index[k]].n[1];
-            else if (id[outIdx[k]][k] == m_tet32s[index[k]].v[2])
-                index[k] = m_tet32s[index[k]].n[2];
+            if (id[outIdx[k]][0] == m_tet32s[tix].v[0])
+                index[k] = m_tet32s[tix].n[0];
+            else if (id[outIdx[k]][0] == m_tet32s[tix].v[1])
+                index[k] = m_tet32s[tix].n[1];
+            else if (id[outIdx[k]][0] == m_tet32s[tix].v[2])
+                index[k] = m_tet32s[tix].n[2];
             else
-                index[k] = m_tet32s[index[k]].n[3];
+                index[k] = m_tet32s[tix].n[3];
         }
 
+#pragma loop( ivdep )
         for (int k = 0; k < 4; ++k)
         {
             if (index[k] < 0)
                 diverged = true;
         }
-    }
 
-    for (int k = 0; k < 4; ++k)
-    {
-        if (index[k] < 0)
-            continue;
-
-        glm::vec2 sp[4] = { {p[0][0][k], p[1][0][k]},
-                            {p[0][1][k], p[1][1][k]},
-                            {p[0][2][k], p[1][2][k]},
-                            {p[0][3][k], p[1][3][k]} };
-
-        unsigned int sid[4] = { id[0][k], id[1][k], id[2][k], id[3][k] };
-
-        const glm::vec3 sright(right[0][k], right[1][k], right[2][k]);
-        const glm::vec3 sup(up[0][k], up[1][k], up[2][k]);
-
-        while (index[k] >= 0)
+#pragma loop( ivdep )
+        for (int k = 1; k < 4; ++k)
         {
-            sid[outIdx[k]] = sid[3];
-            sid[3] = m_tet32s[index[k]].x ^ sid[0] ^ sid[1] ^ sid[2];
-            const glm::vec3 newPoint = m_points[sid[3]] - origin;
-
-            sp[outIdx[k]] = sp[3];
-            sp[3].x = glm::dot(sright, newPoint);
-            sp[3].y = glm::dot(sup, newPoint);
-
-            if (sp[3].x * sp[0].y < sp[3].y * sp[0].x) // copysignf here?
-            {
-                if (sp[3].x * sp[2].y >= sp[3].y * sp[2].x)
-                    outIdx[k] = 1;
-                else
-                    outIdx[k] = 0;
-            }
-            else if (sp[3].x * sp[1].y < sp[3].y * sp[1].x)
-                outIdx[k] = 2;
-            else
-                outIdx[k] = 0;
-
-            if (sid[outIdx[k]] == m_tet32s[index[k]].v[0])
-                index[k] = m_tet32s[index[k]].n[0];
-            else if (sid[outIdx[k]] == m_tet32s[index[k]].v[1])
-                index[k] = m_tet32s[index[k]].n[1];
-            else if (sid[outIdx[k]] == m_tet32s[index[k]].v[2])
-                index[k] = m_tet32s[index[k]].n[2];
-            else
-                index[k] = m_tet32s[index[k]].n[3];
+            if (index[0] != index[k])
+                diverged = true;
         }
     }
+
+    if(diverged_at_start)
+        for (int k = 0; k < 4; ++k)
+        {
+            if (index[k] < 0)
+                continue;
+
+            glm::vec2 sp[4] = { {p[0][0][k], p[1][0][k]},
+                                {p[0][1][k], p[1][1][k]},
+                                {p[0][2][k], p[1][2][k]},
+                                {p[0][3][k], p[1][3][k]} };
+
+            unsigned int sid[4] = { id[0][k], id[1][k], id[2][k], id[3][k] };
+
+            const glm::vec3 sright(right[0][k], right[1][k], right[2][k]);
+            const glm::vec3 sup(up[0][k], up[1][k], up[2][k]);
+
+            while (index[k] >= 0)
+            {
+                sid[outIdx[k]] = sid[3];
+                sid[3] = m_tet32s[index[k]].x ^ sid[0] ^ sid[1] ^ sid[2];
+                const glm::vec3 newPoint = m_points[sid[3]] - origin;
+
+                sp[outIdx[k]] = sp[3];
+                sp[3].x = glm::dot(sright, newPoint);
+                sp[3].y = glm::dot(sup, newPoint);
+
+                if (sp[3].x * sp[0].y < sp[3].y * sp[0].x) // copysignf here?
+                {
+                    if (sp[3].x * sp[2].y >= sp[3].y * sp[2].x)
+                        outIdx[k] = 1;
+                    else
+                        outIdx[k] = 0;
+                }
+                else if (sp[3].x * sp[1].y < sp[3].y * sp[1].x)
+                    outIdx[k] = 2;
+                else
+                    outIdx[k] = 0;
+
+                if (sid[outIdx[k]] == m_tet32s[index[k]].v[0])
+                    index[k] = m_tet32s[index[k]].n[0];
+                else if (sid[outIdx[k]] == m_tet32s[index[k]].v[1])
+                    index[k] = m_tet32s[index[k]].n[1];
+                else if (sid[outIdx[k]] == m_tet32s[index[k]].v[2])
+                    index[k] = m_tet32s[index[k]].n[2];
+                else
+                    index[k] = m_tet32s[index[k]].n[3];
+            }
+        }
+    else
+        for (int k = 0; k < 4; ++k)
+        {
+            if (index[k] < 0)
+                continue;
+
+            glm::vec2 sp[4] = { {p[0][0][k], p[1][0][k]},
+                                {p[0][1][k], p[1][1][k]},
+                                {p[0][2][k], p[1][2][k]},
+                                {p[0][3][k], p[1][3][k]} };
+
+            unsigned int sid[4] = { id[0][0], id[1][0], id[2][0], id[3][0] };
+
+            const glm::vec3 sright(right[0][k], right[1][k], right[2][k]);
+            const glm::vec3 sup(up[0][k], up[1][k], up[2][k]);
+
+            while (index[k] >= 0)
+            {
+                sid[outIdx[k]] = sid[3];
+                sid[3] = m_tet32s[index[k]].x ^ sid[0] ^ sid[1] ^ sid[2];
+                const glm::vec3 newPoint = m_points[sid[3]] - origin;
+
+                sp[outIdx[k]] = sp[3];
+                sp[3].x = glm::dot(sright, newPoint);
+                sp[3].y = glm::dot(sup, newPoint);
+
+                if (sp[3].x * sp[0].y < sp[3].y * sp[0].x) // copysignf here?
+                {
+                    if (sp[3].x * sp[2].y >= sp[3].y * sp[2].x)
+                        outIdx[k] = 1;
+                    else
+                        outIdx[k] = 0;
+                }
+                else if (sp[3].x * sp[1].y < sp[3].y * sp[1].x)
+                    outIdx[k] = 2;
+                else
+                    outIdx[k] = 0;
+
+                if (sid[outIdx[k]] == m_tet32s[index[k]].v[0])
+                    index[k] = m_tet32s[index[k]].n[0];
+                else if (sid[outIdx[k]] == m_tet32s[index[k]].v[1])
+                    index[k] = m_tet32s[index[k]].n[1];
+                else if (sid[outIdx[k]] == m_tet32s[index[k]].v[2])
+                    index[k] = m_tet32s[index[k]].n[2];
+                else
+                    index[k] = m_tet32s[index[k]].n[3];
+            }
+        }
 
     for (int k = 0; k < 4; ++k)
     {
