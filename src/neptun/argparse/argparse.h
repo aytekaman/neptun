@@ -134,10 +134,12 @@ namespace argparse
         const std::set<std::string>& get_errors() const;
         const std::set<std::string>& get_warnings() const;
         std::ostream& print_usage(std::ostream& os = std::cout) const;
+
     private:
         ArgumentData m_arg_data;
 
         bool throw_error(const ArgumentError& err);
         bool parse_args(const int argc, char const* argv[]);
     }; // end of class ArgumentParser
+    
 }// end of namespace argparse 
