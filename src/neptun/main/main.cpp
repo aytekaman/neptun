@@ -810,25 +810,20 @@ extern "C"
 #endif
 
 // Util functions
-//TODO: Move me to filesystem.h
 bool file_exists(const std::string& file_path)
 {
     std::ifstream infile(file_path);
     return infile.good();
 }
 
-struct Resolution
+bool parse_resolution(const std::string& res, std::size_t& width, std::size_t& height)
 {
-    unsigned int width;
-    unsigned int height;
-};
-
-inline std::istream& operator>>(std::istream& is, Resolution& r)
-{
-    // To fail use : is.setstate(std::ios::failbit);
+    std::stringstream ss(res);
     char c;
-    return is >> r.width >> c >> r.height;
-}
+    bool success = (ss >> width >> c >> height >> std::ws).fail() == false && (ss.get() == EOF);
+
+    return width != 0 && height != 0 && success && (c == 'x' || c == ',');
+} 
 
 // Commands
 int command_render_scene(const argparse::ArgumentData& args)
@@ -850,10 +845,20 @@ int command_render_scene(const argparse::ArgumentData& args)
     const std::string scene_file = args["scene"]->value();
     const std::string output_file = args["output"]->value();
     const std::string rendering_method = args["method"]->value();
-    const Resolution output_resolution = args["resolution"]->cast<Resolution>();
     const bool diagnostic = args["diagnostic"]->cast<bool>();
     const std::string output_base = output_file.substr(0, output_file.find_last_of('.'));
-    std::cout << output_file << " " << output_base << std::endl;
+
+    // Parse resolution pair
+    const std::string output_resolution = args["resolution"]->value();
+    size_t image_width, image_height;
+
+    if (parse_resolution(output_resolution, image_width, image_height) == false)
+    {
+        // Parse error
+        std::cerr << "Incorrect resolution format" << std::endl;
+        args.print_usage();
+        return EXIT_FAILURE;
+    }
 
     if (output_file.substr(output_file.size() - 4) != ".png")
     {
@@ -897,14 +902,17 @@ int command_render_scene(const argparse::ArgumentData& args)
         return EXIT_FAILURE;
     }
 
-    ray_tracer.set_resoultion(glm::ivec2(output_resolution.width, output_resolution.height));
+    ray_tracer.set_resoultion(glm::ivec2(image_width, image_height));
     ray_tracer.Render(scene, diagnostic);
     ray_tracer.m_rendered_image->save_to_disk(output_file.c_str());
-    
+    std::cout << "Rendered image saved at : " << output_file << std::endl;
+
     if (diagnostic)
     {
         const std::string diag_filename = output_base + "_diag.png";
         ray_tracer.m_visited_tets_image->save_to_disk(diag_filename.c_str());
+        
+        std::cout << "Diagnostic image saved at : " << output_file << std::endl;
     }
 
     return EXIT_SUCCESS;
@@ -922,38 +930,44 @@ int run_editor()
     return EXIT_SUCCESS;
 }
 
-
 int run_command_line(int argc, char const* argv[])
 {
-    const std::string program_name(argv[0]);
-    const std::string command_name(argv[1]);
-
     struct Command
     {
         std::string name;
         std::string desc;
-        bool operator==(const Command& command) const { return name == command.name; }
-        bool operator==(const std::string& name) const { return (*this).name == name; }
-        bool operator<(const Command& command) const { return name < command.name; }
     };
 
+    if (argc < 2)
+    {
+        return EXIT_FAILURE;
+    }
+
+    const std::string program_name(argv[0]);
+    const std::string command_name(argv[1]);
+
     const std::vector<Command> commands = {
+        {"list", "Lists all available commands"},
         {"editor", "Runs editor"},
         {"simd_benchmark", "Benchmark simd intersection"},
         {"render", "Renders a scene"}
-    }; 
+    };
 
-    auto command_it = std::find(commands.begin(), commands.end(), command_name);
+    auto command_it = std::find_if(commands.begin(), commands.end(), [command_name](const Command& c){ return c.name == command_name; });
 
     // Command not found
-    if (command_it == commands.end())
+    if (command_it == commands.end() || command_it->name == "list")
     {
         // Print available commands
         std::ostringstream help_text;
-        help_text << "Unrecognized command " << command_name << std::endl
-                  << "Usage: " << program_name << " <command> \n"
+
+        if (command_it == commands.end())
+            help_text << "Unrecognized command " << command_name << "\n";
+
+        help_text << "Usage: " << program_name << " <command> \n"
                   << "Commands:\n"
                   << std::left; 
+        
         for (Command c : commands)
         {
             help_text << "  " << std::setw(20) << c.name << std::setw(0) << c.desc << "\n";
@@ -964,11 +978,11 @@ int run_command_line(int argc, char const* argv[])
     }
 
     Command command = *command_it;
-    if (command == "editor")
+    if (command.name == "editor")
     {
         return run_editor();
     } 
-    else if (command == "simd_benchmark")
+    else if (command.name == "simd_benchmark")
     {
         std::cout << "Starting in benchmark mode ... " << std::endl;
         create_and_render_test_scene();
@@ -976,7 +990,7 @@ int run_command_line(int argc, char const* argv[])
 
         return EXIT_SUCCESS;
     }
-    else if (command == "render")
+    else if (command.name == "render")
     {
         using argparse::ArgumentType;
         argparse::ArgumentParser parser(program_name + " render",
@@ -1000,11 +1014,6 @@ int main(int argc, char const* argv[])
 {
     if (argc > 1)
     {
-    /*
-        std::cout << "Starting in benchmark mode ... " << std::endl;
-        create_and_render_test_scene();
-        simd_comparison();
-    */
         run_command_line(argc, argv);
     }
     else
