@@ -5,16 +5,18 @@
 // #include <direct.h>
 
 #include "bvh.h"
+#include "filesystem.h"
+#include "image.h"
+#include "kd_tree.h"
+#include "neptun/argparse/argparse.h"
 #include "neptun/editor/editor.h"
 #include "neptun/editor/graphics.h"
-#include "kd_tree.h"
 #include "procedural_mesh_generator.h"
 #include "ray_tracer.h"
 #include "scene.h"
 #include "stats.h"
 #include "tet_mesh.h"
 #include "utils.h"
-#include "filesystem.h"
 
 #include <glm/gtc/constants.hpp>
 
@@ -807,47 +809,117 @@ extern "C"
 }
 #endif
 
-int main(int argc, char** argv)
+// Util functions
+bool file_exists(const std::string& file_path)
 {
-    //glm::vec3 n = glm::normalize(glm::vec3(0.5, 1.0, 0.1));
-    //std::cout << n.x << " " << n.y << " " << n.z << std::endl;
+    std::ifstream infile(file_path);
+    return infile.good();
+}
 
+bool parse_resolution(const std::string& res, std::size_t& width, std::size_t& height)
+{
+    std::stringstream ss(res);
+    char c;
+    bool success = (ss >> width >> c >> height >> std::ws).fail() == false && (ss.get() == EOF);
 
-    std::vector<std::string> args;
+    return width != 0 && height != 0 && success && (c == 'x' || c == ',');
+} 
 
-    for (int i = 1; i < argc; ++i)
-        args.push_back(argv[i]);
-
-    if (argc > 1)
+// Commands
+int command_render_scene(const argparse::ArgumentData& args)
+{
+    args.print_warnings();
+    if (args.has_errors())
     {
-        //std::string test_folder_name = Utils::get_timestamp();
-
-        //fs::create_directory(test_folder_name);
-
-        std::cout << "Starting in benchmark mode ... " << std::endl;
-
-        create_and_render_test_scene();
-
-        simd_comparison();
-
-        //if (std::find(args.begin(), args.end(), "build_and_render_times") != args.end())
-        //    build_and_render_times(test_folder_name, 100);
-
-        //if (std::find(args.begin(), args.end(), "close_surface") != args.end())
-        //    close_surface(test_folder_name);
-
-        //if (std::find(args.begin(), args.end(), "tet_mesh_weight") != args.end())
-        //    tet_mesh_weight(test_folder_name);
-
-        //if (std::find(args.begin(), args.end(), "tet_mesh_sorting") != args.end())
-        //    tet_mesh_sorting(test_folder_name);
-
-        //if (std::find(args.begin(), args.end(), "region_sort") != args.end())
-        //    region_sort();
-
-        return 0;
+        args.print_errors();
+        args.print_usage();
+        return EXIT_FAILURE;
     }
 
+    if (args["help"]->cast<bool>())
+    {
+        args.print_usage();
+        return EXIT_SUCCESS;
+    }
+
+    const std::string scene_file = args["scene"]->value();
+    const std::string output_file = args["output"]->value();
+    const std::string rendering_method = args["method"]->value();
+    const bool diagnostic = args["diagnostic"]->cast<bool>();
+    const std::string output_base = output_file.substr(0, output_file.find_last_of('.'));
+
+    // Parse resolution pair
+    const std::string output_resolution = args["resolution"]->value();
+    size_t image_width, image_height;
+
+    if (parse_resolution(output_resolution, image_width, image_height) == false)
+    {
+        // Parse error
+        std::cerr << "Incorrect resolution format" << std::endl;
+        args.print_usage();
+        return EXIT_FAILURE;
+    }
+
+    if (output_file.substr(output_file.size() - 4) != ".png")
+    {
+        std::cerr << "Output file must end with \".png\"\n";
+        return EXIT_FAILURE;
+    }
+
+    if (file_exists(scene_file) == false)
+    {
+        std::cerr << "Cannot find scene file" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    Scene scene;
+    RayTracer ray_tracer;
+    scene.load_from_file(scene_file);
+
+    if (rendering_method == "tet_mesh")
+    {
+        scene.build_tet_mesh(true, true);
+        scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+    } 
+    else if (rendering_method == "bvh")
+    {
+        scene.build_bvh();
+        ray_tracer.method = Method::BVH_pbrt;
+    }
+    else if (rendering_method == "kd")
+    {
+        scene.build_kd_tree();
+        ray_tracer.method = Method::Kd_tree;
+    }
+    else if (rendering_method == "embree") 
+    {
+        scene.build_bvh_embree();
+        ray_tracer.method = Method::BVH_embree;
+    }
+    else 
+    {
+        std::cerr << "Unrecognized rendering method " << rendering_method << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    ray_tracer.set_resoultion(glm::ivec2(image_width, image_height));
+    ray_tracer.Render(scene, diagnostic);
+    ray_tracer.m_rendered_image->save_to_disk(output_file.c_str());
+    std::cout << "Rendered image saved at : " << output_file << std::endl;
+
+    if (diagnostic)
+    {
+        const std::string diag_filename = output_base + "_diag.png";
+        ray_tracer.m_visited_tets_image->save_to_disk(diag_filename.c_str());
+        
+        std::cout << "Diagnostic image saved at : " << output_file << std::endl;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int run_editor()
+{
     Scene scene;
     Graphics graphics;
     RayTracer ray_tracer;
@@ -855,4 +927,97 @@ int main(int argc, char** argv)
     Editor editor(&scene, &graphics, &ray_tracer);
 
     editor.Run();
+    return EXIT_SUCCESS;
+}
+
+int run_command_line(int argc, char const* argv[])
+{
+    struct Command
+    {
+        std::string name;
+        std::string desc;
+    };
+
+    if (argc < 2)
+    {
+        return EXIT_FAILURE;
+    }
+
+    const std::string program_name(argv[0]);
+    const std::string command_name(argv[1]);
+
+    const std::vector<Command> commands = {
+        {"list", "Lists all available commands"},
+        {"editor", "Runs editor"},
+        {"simd_benchmark", "Benchmark simd intersection"},
+        {"render", "Renders a scene"}
+    };
+
+    auto command_it = std::find_if(commands.begin(), commands.end(), [command_name](const Command& c){ return c.name == command_name; });
+
+    // Command not found
+    if (command_it == commands.end() || command_it->name == "list")
+    {
+        // Print available commands
+        std::ostringstream help_text;
+
+        if (command_it == commands.end())
+            help_text << "Unrecognized command " << command_name << "\n";
+
+        help_text << "Usage: " << program_name << " <command> \n"
+                  << "Commands:\n"
+                  << std::left; 
+        
+        for (Command c : commands)
+        {
+            help_text << "  " << std::setw(20) << c.name << std::setw(0) << c.desc << "\n";
+        }
+
+        std::cout << help_text.str();
+        return EXIT_FAILURE;
+    }
+
+    Command command = *command_it;
+    if (command.name == "editor")
+    {
+        return run_editor();
+    } 
+    else if (command.name == "simd_benchmark")
+    {
+        std::cout << "Starting in benchmark mode ... " << std::endl;
+        create_and_render_test_scene();
+        simd_comparison();
+
+        return EXIT_SUCCESS;
+    }
+    else if (command.name == "render")
+    {
+        using argparse::ArgumentType;
+        argparse::ArgumentParser parser(program_name + " render",
+                                        "render given scene",
+                                        command_render_scene);
+        
+        parser.add_positional_argument("scene", "Scene file to be rendered")
+              .add_keyword_argument("method", "Rendering method. (tet_mesh, bvh, kd, embree)", ArgumentType::STRING, "m", "tet_mesh")
+              .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
+              .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "640x480")
+              .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
+              .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d");
+
+        return parser.parse(argc - 2, argv + 2);
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int main(int argc, char const* argv[])
+{
+    if (argc > 1)
+    {
+        run_command_line(argc, argv);
+    }
+    else
+    {
+        run_editor();
+    }
 }

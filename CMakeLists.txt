@@ -106,6 +106,11 @@ source_group ("editor\\" FILES
 )
 
 set (main_sources
+    src/neptun/argparse/argparse.cpp
+    src/neptun/argparse/argparse.h
+    src/neptun/argparse/argument.cpp
+    src/neptun/argparse/argument.h
+    src/neptun/argparse/util.h
     src/neptun/main/accelerator.cpp
     src/neptun/main/accelerator.h
     src/neptun/main/asset_importer.cpp
@@ -120,6 +125,7 @@ set (main_sources
     src/neptun/main/component.cpp
     src/neptun/main/component.h
     src/neptun/main/face.h
+    src/neptun/main/filesystem.h
     src/neptun/main/hilbert.c
     src/neptun/main/hilbert.h
     src/neptun/main/image.cpp
@@ -138,9 +144,9 @@ set (main_sources
     src/neptun/main/mesh.h
     src/neptun/main/procedural_mesh_generator.cpp
     src/neptun/main/procedural_mesh_generator.h
-    src/neptun/main/ray.h
     src/neptun/main/ray_tracer.cpp
     src/neptun/main/ray_tracer.h
+    src/neptun/main/ray.h
     src/neptun/main/scene.cpp
     src/neptun/main/scene.h
     src/neptun/main/sceneobject.cpp
@@ -155,9 +161,8 @@ set (main_sources
     src/neptun/main/texture.h
     src/neptun/main/utils.cpp
     src/neptun/main/utils.h
-    src/neptun/main/filesystem.h
-    src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
+    src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
 )
 
