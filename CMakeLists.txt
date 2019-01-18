@@ -34,7 +34,11 @@ SET(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
 OPTION(EMBREE_ISPC_SUPPORT "Build Embree with support for ISPC applications." OFF)
 OPTION(EMBREE_TUTORIALS    "Enable to build Embree tutorials" OFF)
 SET(EMBREE_TASKING_SYSTEM "INTERNAL" CACHE STRING "Selects tasking system")
-add_subdirectory(src/thirdparty/embree-3.2.4)
+
+message(STATUS ${embree_DIR})
+
+FIND_PACKAGE(embree 3.2 REQUIRED)
+INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
 
 #include glfw
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
@@ -179,8 +183,8 @@ add_executable (neptun
 )
 
 #Link & include embree
-TARGET_LINK_LIBRARIES(neptun embree)
-INCLUDE_DIRECTORIES(src/thirdparty/embree-3.2.4/include/)
+TARGET_LINK_LIBRARIES(neptun ${EMBREE_LIBRARY})
+#INCLUDE_DIRECTORIES(src/thirdparty/embree-3.2.4/include/)
 
 # Find and link to OpenGL
 include(FindOpenGL)

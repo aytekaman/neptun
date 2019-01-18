@@ -822,6 +822,9 @@ bool parse_resolution(const std::string& res, std::size_t& width, std::size_t& h
     char c;
     bool success = (ss >> width >> c >> height >> std::ws).fail() == false && (ss.get() == EOF);
 
+    std::cout << width << " " << height << std::endl;
+    std::cout << success << std::endl;
+
     return width != 0 && height != 0 && success && (c == 'x' || c == ',');
 } 
 
@@ -850,6 +853,9 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     // Parse resolution pair
     const std::string output_resolution = args["resolution"]->value();
+
+    std::cout << output_resolution << std::endl;
+
     size_t image_width, image_height;
 
     if (parse_resolution(output_resolution, image_width, image_height) == false)
