@@ -534,13 +534,71 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
             raycast_kernel <<< stream_size / t, t, 0, streams[i] >>> (d_rays, rays_size, offset, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
         }
 
+		printf("pre-copy id: %d\n", i);
         //print_cuda_error("kernel");
         cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[i]);
 		//print_cuda_error("copyback");
+		printf("post-copy id: %d\n", i);
     }
     //cudaDeviceSynchronize();
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
     Stats::gpu_kernel_time = kernel_time;
+}
+
+void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, int idt, IntersectionData* output)
+{
+	// Allocate space for device copy of data
+	if (old_size != rays_size)
+	{
+		cudaFree(d_rays);
+		cudaFree(d_intersectdata);
+		cudaMalloc(&d_rays, rays_size * sizeof(Ray));
+		cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
+		old_size = rays_size;
+
+		streams = new cudaStream_t[n_streams];
+		/*for (int i = 0; i < n_streams; i++)
+		{
+			cudaStreamCreate(&streams[i]);
+			print_cuda_error("Stream creation error");
+		}*/
+	}
+	check_cuda(cudaStreamCreate(&streams[idt]));
+	unsigned int stream_size = rays_size / n_streams;
+	int stream_bytes = stream_size * sizeof(Ray);
+
+	int t = 512;
+
+	//for (int i = 0; i < n_streams; i++) {
+		int offset = idt * stream_size;
+		check_cuda(cudaMemcpyAsync(&d_rays[offset], &rays[offset], stream_bytes, cudaMemcpyHostToDevice, streams[idt]));
+
+		if (tet_mesh_type == 0)
+		{
+			raycast_kernel <<< stream_size / t, t, 0, streams[idt] >>> (d_rays, rays_size, offset, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
+		}
+		else if (tet_mesh_type == 1)
+		{
+			raycast_kernel <<< stream_size / t, t, 0, streams[idt] >>> (d_rays, rays_size, offset, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
+		}
+		else if (tet_mesh_type == 2)
+		{
+			raycast_kernel <<< stream_size / t, t, 0, streams[idt] >>> (d_rays, rays_size, offset, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
+		}
+		check_cuda(cudaGetLastError());
+		//print_cuda_error("kernel");
+	//}
+	//cudaDeviceSynchronize();
+
+	//for (int i = 0; i < n_streams; i++)
+	//{
+		//offset = idt * stream_size;
+		/*check_cuda*/(cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[idt]));
+		//print_cuda_error("copyback");
+	//}
+
+		check_cuda(cudaStreamDestroy(streams[idt]));
+		printf("idt: %d\n", idt);
 }
