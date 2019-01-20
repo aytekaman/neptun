@@ -93,8 +93,8 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
-    void prepare_rays_gpu(Scene & scene, 
-        SourceTet source_tet, 
+    void prepare_rays_gpu(Scene & scene,
+        SourceTet source_tet,
         int thread_idx,
         bool is_diagnostic);
 
@@ -124,7 +124,7 @@ public:
 
     Matrix<int> stats;
 
-    std::atomic<int> job_index{0};
+    std::atomic<int> job_index{ 0 };
     glm::ivec2 m_resolution = glm::ivec2(640, 480);
     glm::ivec2 m_old_res = glm::ivec2();
     IntersectionData* m_intersect_data;

@@ -20,17 +20,17 @@
 __device__
 inline void swapvec2(glm::vec2 &a, glm::vec2 &b)
 {
-	glm::vec2 t = a;
-	a = b;
-	b = t;
+    glm::vec2 t = a;
+    a = b;
+    b = t;
 }
 
 __device__
 inline void swap(unsigned int &a, unsigned int &b)
 {
-	unsigned int t = a;
-	a = b;
-	b = t;
+    unsigned int t = a;
+    a = b;
+    b = t;
 }
 
 __device__
@@ -48,7 +48,7 @@ __device__
 inline float crossv(const glm::vec3& a, const glm::vec3& b) { return a.x * b.y - a.y * b.x; }
 
 __host__
-inline void print_cuda_error(char* msg){cudaError_t error = cudaGetLastError(); printf("%s: %s\n", msg, cudaGetErrorString(error)); }
+inline void print_cuda_error(char* msg) { cudaError_t error = cudaGetLastError(); printf("%s: %s\n", msg, cudaGetErrorString(error)); }
 
 inline cudaError_t check_cuda(cudaError_t result)
 {
