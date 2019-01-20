@@ -595,7 +595,6 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
     //--------------------------------------------
 
-    //draw_intersectiondata(0, lightInfos);
     //--------------------------------------------
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //--------------------------------------------
