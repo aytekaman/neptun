@@ -386,8 +386,29 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
                 }*/
             }
         }
+		if (idx % (max_job_index / 8) == 0 && idx!=0)
+		{
+			int tetmesh_type = 0;
+			if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
+				tetmesh_type = 1;
+			else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
+				tetmesh_type = 2;
+			//printf("idt-call: %d\n", idx / (max_job_index / 8) - 1);
+			ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, idx / (max_job_index / 8)-1, m_intersect_data);
+		}
         idx = job_index++;
     }
+
+	if (idx == max_job_index)
+	{
+		int tetmesh_type = 0;
+		if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
+			tetmesh_type = 1;
+		else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
+			tetmesh_type = 2;
+		//printf("idt-call: %d\n", idx / (max_job_index / 8) - 1);
+		ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, idx / (max_job_index / 8) - 1, m_intersect_data);
+	}
 }
 
 void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos)
@@ -552,7 +573,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
         tetmesh_type = 2;
 
-    ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
+    //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
 
 
     threads = new std::thread*[thread_count];
