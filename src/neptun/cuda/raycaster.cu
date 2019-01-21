@@ -14,7 +14,7 @@ Face* d_faces;
 cudaStream_t* streams;
 
 unsigned int old_size = 0;
-int n_streams = 8;
+const int NSTREAMS = 8;
 
 __global__
 void raycast_kernel(Ray *rays, int rays_size, int offset, glm::vec3* d_points, TetMesh32::Tet32* d_tets, 
@@ -489,15 +489,15 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
         old_size = rays_size;
 
-		streams = new cudaStream_t[n_streams];
-		for (int i = 0; i < n_streams; i++)
+		streams = new cudaStream_t[NSTREAMS];
+		for (int i = 0; i < NSTREAMS; i++)
 		{
 			cudaStreamCreate(&streams[i]);
 			print_cuda_error("Stream creation error");
 		}
     }
 
-    unsigned int stream_size = rays_size / n_streams;
+    unsigned int stream_size = rays_size / NSTREAMS;
     int stream_bytes = stream_size * sizeof(Ray);
 
     float /*copy_time = 0,*/ kernel_time=0;
@@ -517,7 +517,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
 
     start = std::chrono::steady_clock::now();
 
-    for (int i = 0; i < n_streams; i++) {
+    for (int i = 0; i < NSTREAMS; i++) {
         int offset = i * stream_size;
         cudaMemcpyAsync(&d_rays[offset], &rays[offset], stream_bytes, cudaMemcpyHostToDevice, streams[i]);
 
@@ -560,7 +560,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned
         cudaMalloc(&d_rays, rays_size * sizeof(Ray));
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
 
-        /*for (int i = 0; i < n_streams; i++)
+        /*for (int i = 0; i < num_streams; i++)
         {
             cudaStreamCreate(&streams[i]);
             print_cuda_error("Stream creation error");
