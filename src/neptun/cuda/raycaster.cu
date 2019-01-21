@@ -545,11 +545,11 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
     Stats::gpu_kernel_time = kernel_time;
 }
 
-void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, int idt, IntersectionData* output)
+void ray_caster_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output)
 {
     if (!streams)
     {
-        streams = new cudaStream_t[n_streams];
+        streams = new cudaStream_t[num_streams];
     }
     // Allocate space for device copy of data
     if (old_size != rays_size)
@@ -567,7 +567,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
         }*/
     }
     cudaStreamCreate(&streams[idt]);
-    unsigned int stream_size = rays_size / n_streams;
+    unsigned int stream_size = rays_size / num_streams;
     int stream_bytes = stream_size * sizeof(Ray);
 
     int t = 512;
@@ -575,6 +575,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
 
     if (streams)
     {
+        //printf("idt-start: %d\n", idt);
         cudaMemcpyAsync(&d_rays[offset], &rays[offset], stream_bytes, cudaMemcpyHostToDevice, streams[idt]);
         //print_cuda_error("copy");
 
@@ -598,5 +599,6 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
         cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[idt]);
         //print_cuda_error("copyback");
         cudaStreamDestroy(streams[idt]);
+        //printf("idt-end: %d\n", idt);
     }
 }

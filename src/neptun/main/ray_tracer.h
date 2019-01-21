@@ -77,7 +77,7 @@ enum ImageType
 };
 
 extern void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
-extern void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, int idt, IntersectionData* output);
+extern void ray_caster_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
 
 class RayTracer
 {

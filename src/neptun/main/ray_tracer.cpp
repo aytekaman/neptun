@@ -386,15 +386,15 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
                 }*/
             }
         }
-        if (idx % (max_job_index / 8) == 0 && idx != 0)
+        if (idx % (max_job_index / thread_count) == 0 && idx != 0)
         {
             int tetmesh_type = 0;
             if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
                 tetmesh_type = 1;
             else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
                 tetmesh_type = 2;
-            //printf("idt-call: %d\n", idx / (max_job_index / 8) - 1);
-            ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, idx / (max_job_index / 8) - 1, m_intersect_data);
+            //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
+            ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, idx / (max_job_index / thread_count) - 1, m_intersect_data);
         }
         idx = job_index++;
     }
@@ -406,8 +406,8 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
             tetmesh_type = 1;
         else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
             tetmesh_type = 2;
-        //printf("idt-call: %d\n", idx / (max_job_index / 8) - 1);
-        ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, idx / (max_job_index / 8) - 1, m_intersect_data);
+        //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
+        ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, idx / (max_job_index / thread_count) - 1, m_intersect_data);
     }
 }
 
