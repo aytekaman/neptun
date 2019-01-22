@@ -1,1 +1,1 @@
-cmake .. -G "Visual Studio 15 Win64" -Dembree_DIR="C:/Program Files/Intel/Embree3 x64"
+cmake .. -G "Visual Studio 15 Win64" -DNEPTUN_DEPS_STAGE_DIR="c:/dev/neptun-deps/stage/vc15"
