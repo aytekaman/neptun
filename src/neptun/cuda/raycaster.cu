@@ -500,7 +500,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
     unsigned int stream_size = rays_size / NSTREAMS;
     int stream_bytes = stream_size * sizeof(Ray);
 
-    float /*copy_time = 0,*/ kernel_time=0;
+    float kernel_time=0;
 
     std::chrono::steady_clock::time_point start, end;
 
@@ -551,12 +551,6 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned
         cudaFree(d_intersectdata);
         cudaMalloc(&d_rays, rays_size * sizeof(Ray));
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
-
-        /*for (int i = 0; i < num_streams; i++)
-        {
-            cudaStreamCreate(&streams[i]);
-            print_cuda_error("Stream creation error");
-        }*/
     }
     cudaStreamCreate(&streams[idt]);
     unsigned int stream_size = rays_size / num_streams;
