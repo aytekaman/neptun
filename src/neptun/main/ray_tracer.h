@@ -93,6 +93,13 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
+    void raytrace_worker_gpu(
+        Scene & scene,
+        SourceTet source_tet,
+        int thread_idx,
+        std::vector<LightInfo> lightInfos,
+        bool is_diagnostic);
+
     void prepare_rays_gpu(Scene & scene,
         SourceTet source_tet,
         int thread_idx,
@@ -130,7 +137,6 @@ public:
     glm::ivec2 m_old_res = glm::ivec2();
     IntersectionData* m_intersect_data;
     Ray* m_rays;
-    std::vector<LightInfo> m_li;
     int tile_size = 8;
     //glm::u8vec3 *pixels;
     int thread_count;

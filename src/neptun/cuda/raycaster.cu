@@ -502,15 +502,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_typ
 
     float /*copy_time = 0,*/ kernel_time=0;
 
-    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-
-    // Copy inputs to device
-    //cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
-
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    //copy_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
-    //printf("Copy time of Rays to GPU: %f ms\n ", copy_time);
-
+    std::chrono::steady_clock::time_point start, end;
 
     // Launch kernel on GPU
     int t = 512;
@@ -575,9 +567,7 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned
 
     if (streams)
     {
-        //printf("idt-start: %d\n", idt);
         cudaMemcpyAsync(&d_rays[offset], &rays[offset], stream_bytes, cudaMemcpyHostToDevice, streams[idt]);
-        //print_cuda_error("copy");
 
         if (tet_mesh_type == 0)
         {
@@ -591,14 +581,9 @@ void ray_caster_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned
         {
             raycast_kernel <<< stream_size / t, t, 0, streams[idt] >>> (d_rays, rays_size, offset, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
         }
-        //check_cuda(cudaGetLastError());
-
-        //print_cuda_error("kernel");
 
         offset = idt * stream_size;
         cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[idt]);
-        //print_cuda_error("copyback");
         cudaStreamDestroy(streams[idt]);
-        //printf("idt-end: %d\n", idt);
     }
 }
