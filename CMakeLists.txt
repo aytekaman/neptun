@@ -176,32 +176,29 @@ add_executable (neptun
     ${thirdparty_sources}
 )
 
-#Link & include embree
-TARGET_LINK_LIBRARIES(neptun ${EMBREE_LIBRARY})
-
-        target_link_libraries (neptun
-            # Order matters here.
-            # See appleseed-deps\src\embree\readme.pdf, section 3.3 CMake Configuration for details.
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/math.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/simd.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/sys.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/tasking.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_sse42.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx2.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/lexers.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/math.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/simd.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/sys.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/tasking.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_sse42.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx2.lib
-        )
-#INCLUDE_DIRECTORIES(src/thirdparty/embree-3.2.4/include/)
+# Link against embree
+target_link_libraries (neptun
+    # Order matters here.
+    # See appleseed-deps\src\embree\readme.pdf, section 3.3 CMake Configuration for details.
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/math.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/simd.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/sys.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/tasking.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_sse42.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx.lib
+    debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx2.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/lexers.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/math.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/simd.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/sys.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/tasking.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_sse42.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx.lib
+    optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx2.lib
+)
 
 # Find and link to OpenGL
 include(FindOpenGL)
