@@ -394,7 +394,9 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
             else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
                 tetmesh_type = 2;
             //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-            ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, idx / (max_job_index / thread_count) - 1, m_intersect_data);
+            int stream_num = idx / (max_job_index / thread_count) - 1;
+            ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, stream_num, m_intersect_data);
+            draw_intersectiondata(stream_num * (max_job_index / thread_count), idx, m_li);
         }
         idx = job_index++;
     }
@@ -407,7 +409,9 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
         else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
             tetmesh_type = 2;
         //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-        ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, idx / (max_job_index / thread_count) - 1, m_intersect_data);
+        int stream_num = idx / (max_job_index / thread_count) - 1;
+        ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, stream_num, m_intersect_data);
+        draw_intersectiondata(stream_num * (max_job_index / thread_count), idx, m_li);
     }
 }
 
@@ -490,6 +494,84 @@ void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lig
     L1_hit_count[thread_idx] = total_L1_hit_count;*/
 }
 
+void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos)
+{
+    const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
+    const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
+    const int max_job_index = tile_count_x * tile_count_y;
+
+    unsigned int rays_index = 0;
+    int idx = set_start;
+
+    glm::ivec2 rect_min;
+    glm::ivec2 rect_max;
+    rect_max = (glm::min)(rect_max, m_resolution);
+
+    while (idx < max_job_index || idx < set_end)
+    {
+        rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+
+        rect_max = (glm::min)(rect_max, m_resolution);
+        rays_index = 0;
+
+        for (int j = rect_min.y; j < rect_max.y; j++)
+        {
+            for (int i = rect_min.x; i < rect_max.x; i++)
+            {
+                glm::vec3 color;
+                if (m_intersect_data[rays_index + idx * tile_size * tile_size].hit)
+                {
+                    color = glm::vec3();
+                    //color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+                    for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+                    {
+                        Ray shadow_ray(m_intersect_data[rays_index + idx * tile_size * tile_size].position,
+                            glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx * tile_size * tile_size].position));
+                        {
+                            glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx * tile_size * tile_size].position);
+                            float diffuse = glm::clamp(glm::dot(m_intersect_data[rays_index + idx * tile_size * tile_size].normal, to_light), 0.0f, 1.0f);
+                            color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                        }
+                    }
+
+                }
+                else
+                    color = glm::vec3(0.1, 0.1, 0.1);
+
+                glm::ivec2 p_idx(i, j);
+
+                /*if (is_diagnostic)
+                {
+                    if (scene.tet_mesh)
+                    {
+                        total_L1_hit_count += diagnostic_data.L1_hit_count;
+
+                        stats.set(p_idx, diagnostic_data.visited_node_count);
+
+                        float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
+                        float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
+                        glm::vec3 avg_locality_color = Color::jet(scaled_avg_locality);
+                    }
+
+                    float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
+                    glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
+                    m_visited_tets_image->set_pixel(i, j, visited_tet_count_color * 255.0f);
+
+                    total_test_count += diagnostic_data.visited_node_count;
+                }*/
+
+                m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
+                rays_index++;
+            }
+        }
+        idx++;
+    }
+    /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
+    L1_hit_count[thread_idx] = total_L1_hit_count;*/
+}
+
 void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 {
     glm::vec3 camTarget = scene.camTarget;
@@ -529,7 +611,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             if (scene.tet_mesh)
                 li.tet_index = scene.tet_mesh->find_tet(li.pos, dummy_source_tet);
             li.point_index = scene.sceneObjects[i]->light->point_index;
-            lightInfos.push_back(li);
+            m_li.push_back(li);
         }
     }
 
@@ -582,14 +664,14 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     //--------------------------------------------
     start_2 = std::chrono::steady_clock::now();
     //--------------------------------------------
-    for (int i = 0; i < thread_count; i++)
+    /*for (int i = 0; i < thread_count; i++)
         threads[i] = new std::thread(&RayTracer::draw_intersectiondata, this, i, lightInfos);
 
     for (int i = 0; i < thread_count; i++)
     {
         threads[i]->join();
         delete threads[i];
-    }
+    }*/
     //--------------------------------------------
     end_2 = std::chrono::steady_clock::now();
     Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
