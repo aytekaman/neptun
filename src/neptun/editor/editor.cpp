@@ -1245,6 +1245,7 @@ void Editor::DrawRenderedFrame()
 
     //ImGui::Text("Triangle count: %d", scene->tet_mesh->face_count);
     ImGui::InputInt("Thread count", &ray_tracer->thread_count);
+    ImGui::InputInt("GPU Stream count", &ray_tracer->m_stream_count);
 
     //ImGui::Checkbox("Multi-threading", &ray_tracer->multi_threading);
 
