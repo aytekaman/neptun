@@ -37,6 +37,7 @@ RayTracer::RayTracer()
 
     thread_count = std::thread::hardware_concurrency();
     Logger::Log("Number of threads: %d", thread_count);
+    m_stream_count = thread_count;
 }
 
 void RayTracer::Render(Scene & scene, const bool is_diagnostic)
@@ -387,7 +388,7 @@ void RayTracer::raytrace_worker_gpu(Scene & scene, SourceTet source_tet, int thr
                 }*/
             }
         }
-        if (idx % (max_job_index / thread_count) == 0 && idx != 0)
+        if (idx % (max_job_index / m_stream_count) == 0 && idx != 0)
         {
             int tetmesh_type = 0;
             if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
@@ -395,9 +396,9 @@ void RayTracer::raytrace_worker_gpu(Scene & scene, SourceTet source_tet, int thr
             else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
                 tetmesh_type = 2;
             //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-            int stream_num = idx / (max_job_index / thread_count) - 1;
-            ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, stream_num, m_intersect_data);
-            draw_intersectiondata(stream_num * (max_job_index / thread_count), idx, lightInfos);
+            int stream_num = idx / (max_job_index / m_stream_count) - 1;
+            ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
+            draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
         }
         idx = job_index++;
     }
@@ -410,9 +411,9 @@ void RayTracer::raytrace_worker_gpu(Scene & scene, SourceTet source_tet, int thr
         else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
             tetmesh_type = 2;
         //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-        int stream_num = idx / (max_job_index / thread_count) - 1;
-        ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, thread_count, tetmesh_type, stream_num, m_intersect_data);
-        draw_intersectiondata(stream_num * (max_job_index / thread_count), idx, lightInfos);
+        int stream_num = idx / (max_job_index / m_stream_count) - 1;
+        ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
+        draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
     }
 }
 void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread_idx, bool is_diagnostic)

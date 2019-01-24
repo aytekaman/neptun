@@ -140,6 +140,7 @@ public:
     int tile_size = 8;
     //glm::u8vec3 *pixels;
     int thread_count;
+    int m_stream_count;
 
     //KdTree *kd_tree = nullptr;
     //Bvh *bvh = nullptr;
