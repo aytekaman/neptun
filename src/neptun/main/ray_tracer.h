@@ -76,9 +76,9 @@ enum ImageType
     Locality
 };
 
-extern void Traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
-extern void Traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
-extern void Traverse_rays_gpu(Scene & scene, SourceTet source_tet, glm::ivec2 resolution, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
+extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
+extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
+extern void traverse_rays_gpu(Scene & scene, SourceTet source_tet, glm::ivec2 resolution, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
 
 class RayTracer
 {
@@ -94,24 +94,24 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
-    void Raytrace_worker_gpu(
+    void raytrace_worker_gpu(
         Scene & scene,
         SourceTet source_tet,
         int thread_idx,
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
-    void Prepare_rays_gpu(Scene & scene,
+    void prepare_rays_gpu(Scene & scene,
         SourceTet source_tet,
         int thread_idx,
         bool is_diagnostic);
 
-    void Draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
-    void Draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos);
+    void draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
+    void draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos);
 
     void Render_gpu(Scene & scene, const bool is_diagnostic = false);
 
-    void Ray_caster(Scene & scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
+    void ray_caster(Scene & scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
 
     void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
     void set_resoultion(const glm::ivec2& resolution);
