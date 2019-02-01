@@ -78,7 +78,7 @@ enum ImageType
 
 extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
 extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
-extern void traverse_rays_gpu(Scene & scene, SourceTet source_tet, glm::ivec2 resolution, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
+extern void cast_rays_gpu(Scene & scene, SourceTet source_tet, int res_x, int rez_y, unsigned int tet_mesh_type, IntersectionData* output);
 
 class RayTracer
 {
@@ -109,7 +109,7 @@ public:
     void draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
     void draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos);
 
-    void Render_gpu(Scene & scene, const bool is_diagnostic = false);
+    void render_gpu(Scene & scene, const bool is_diagnostic = false);
 
     void ray_caster(Scene & scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
 

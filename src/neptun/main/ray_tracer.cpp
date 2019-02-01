@@ -653,7 +653,7 @@ void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<Li
     }
 }
 
-void RayTracer::Render_gpu(Scene & scene, const bool is_diagnostic)
+void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 {
     glm::vec3 camTarget = scene.camTarget;
     glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
@@ -745,7 +745,8 @@ void RayTracer::Render_gpu(Scene & scene, const bool is_diagnostic)
         tetmesh_type = 2;
 
     //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
-    traverse_rays_gpu(scene, source_tet, m_resolution, m_resolution.x * m_resolution.y, tetmesh_type, m_intersect_data);
+
+    cast_rays_gpu(scene, source_tet, m_resolution.x, m_resolution.y, tetmesh_type, m_intersect_data);
 
 
     threads = new std::thread*[thread_count];
