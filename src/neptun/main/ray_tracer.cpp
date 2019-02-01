@@ -291,7 +291,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 }
 
 
-void RayTracer::Raytrace_worker_gpu(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
+void RayTracer::raytrace_worker_gpu(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
 {
     //TetMesh& tet_mesh = *scene.tet_mesh;
 
@@ -397,8 +397,8 @@ void RayTracer::Raytrace_worker_gpu(Scene & scene, SourceTet source_tet, int thr
                 tetmesh_type = 2;
             //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
             int stream_num = idx / (max_job_index / m_stream_count) - 1;
-            Traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
-            Draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
+            traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
+            draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
         }
         idx = job_index++;
     }
@@ -412,11 +412,11 @@ void RayTracer::Raytrace_worker_gpu(Scene & scene, SourceTet source_tet, int thr
             tetmesh_type = 2;
         //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
         int stream_num = idx / (max_job_index / m_stream_count) - 1;
-        Traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
-        Draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
+        traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
+        draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
     }
 }
-void RayTracer::Prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread_idx, bool is_diagnostic)
+void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread_idx, bool is_diagnostic)
 {
     //TetMesh& tet_mesh = *scene.tet_mesh;
 
@@ -517,7 +517,7 @@ void RayTracer::Prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
     }
 }
 
-void RayTracer::Draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos)
+void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos)
 {
 
     const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
@@ -596,7 +596,7 @@ void RayTracer::Draw_intersectiondata(int thread_idx, std::vector<LightInfo> lig
     L1_hit_count[thread_idx] = total_L1_hit_count;*/
 }
 
-void RayTracer::Draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos)
+void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos)
 {
     const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
     const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
@@ -715,7 +715,7 @@ void RayTracer::Render_gpu(Scene & scene, const bool is_diagnostic)
     job_index = thread_count;
     
     /*for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::Raytrace_worker_gpu, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+        threads[i] = new std::thread(&RayTracer::raytrace_worker_gpu, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
 
     for (int i = 0; i < thread_count; i++)
     {
@@ -745,7 +745,7 @@ void RayTracer::Render_gpu(Scene & scene, const bool is_diagnostic)
         tetmesh_type = 2;
 
     //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
-    Traverse_rays_gpu(scene, source_tet, m_resolution, m_resolution.x * m_resolution.y, tetmesh_type, m_intersect_data);
+    traverse_rays_gpu(scene, source_tet, m_resolution, m_resolution.x * m_resolution.y, tetmesh_type, m_intersect_data);
 
 
     threads = new std::thread*[thread_count];
@@ -756,7 +756,7 @@ void RayTracer::Render_gpu(Scene & scene, const bool is_diagnostic)
     //--------------------------------------------
     for (int i = 0; i < thread_count; i++)
     {
-        void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::Draw_intersectiondata;
+        void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata;
         threads[i] = new std::thread(mem_funct, this, i, lightInfos);
     }
 
@@ -783,7 +783,7 @@ void RayTracer::Render_gpu(Scene & scene, const bool is_diagnostic)
     L1_count = 0;
 }
 
-void RayTracer::Ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData>& output)
+void RayTracer::ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData>& output)
 {
     for (int i = 0; i < rays.size(); i++)
     {
