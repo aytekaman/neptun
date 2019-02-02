@@ -143,7 +143,7 @@ public:
     //glm::u8vec3 *pixels;
     int thread_count;
     int m_stream_count;
-    bool gpu_init_rays = false;
+    bool gpu_init_rays = true;
 
     //KdTree *kd_tree = nullptr;
     //Bvh *bvh = nullptr;
