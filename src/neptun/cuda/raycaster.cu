@@ -1058,6 +1058,7 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_
     {
         ray_traversal_kernel <<< rays_size / t, t >>> (d_rays, rays_size, 0, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
     }
+    cudaDeviceSynchronize();
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
@@ -1176,6 +1177,8 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
     {
         ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
     }
+    cudaDeviceSynchronize();
+
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
     Stats::gpu_kernel_time = kernel_time;
