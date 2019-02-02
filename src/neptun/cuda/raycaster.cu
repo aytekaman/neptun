@@ -1129,6 +1129,14 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
         cudaMalloc(&d_res, sizeof(glm::ivec2));
         old_size = rays_size;
+
+        cudaFree(d_source_tet);
+        cudaFree(d_scene);
+        cudaMalloc(&d_source_tet, sizeof(SourceTet));
+        cudaMalloc(&d_scene, sizeof(Scene));
+        cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_res, new glm::ivec2(resolution), sizeof(glm::ivec2), cudaMemcpyHostToDevice);
     }
 
     if (scene.camTarget != old_target)
