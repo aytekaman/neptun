@@ -592,6 +592,46 @@ void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lig
     L1_hit_count[thread_idx] = total_L1_hit_count;*/
 }
 
+void RayTracer::draw_intersectiondata_rowmajor(int thread_idx, std::vector<LightInfo> lightInfos)
+{
+    int idx = thread_idx;
+    unsigned int rays_index = 0;
+
+    while (idx < m_resolution.x * m_resolution.y)
+    {
+        //rays_index = 0;
+        glm::vec3 color;
+        if (m_intersect_data[rays_index + idx].hit)
+        {
+            color = glm::vec3();
+            //color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+            for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+            {
+                Ray shadow_ray(m_intersect_data[rays_index + idx].position,
+                    glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx].position));
+                {
+                    glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx].position);
+                    float diffuse = glm::clamp(glm::dot(m_intersect_data[rays_index + idx].normal, to_light), 0.0f, 1.0f);
+                    color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+                }
+            }
+
+        }
+        else
+            color = glm::vec3(0.1, 0.1, 0.1);
+
+        glm::ivec2 p_idx(idx % m_resolution.x, idx / m_resolution.x);
+
+        m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
+        //rays_index++;
+                
+        idx = job_index++;
+    }
+    /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
+    L1_hit_count[thread_idx] = total_L1_hit_count;*/
+}
+
 void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos)
 {
     const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
@@ -742,7 +782,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 
     //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
 
-    cast_rays_gpu(m_rays, scene, source_tet, m_resolution, tetmesh_type, m_intersect_data);
+    cast_rays_gpu(m_rays, scene, source_tet, m_resolution, tile_size, tetmesh_type, m_intersect_data);
 
 
     threads = new std::thread*[thread_count];
@@ -753,7 +793,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     //--------------------------------------------
     for (int i = 0; i < thread_count; i++)
     {
-        void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata;
+        void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
         threads[i] = new std::thread(mem_funct, this, i, lightInfos);
     }
 
