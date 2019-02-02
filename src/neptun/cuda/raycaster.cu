@@ -41,9 +41,14 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
         const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
         const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
 
+        const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
+
         const float aspect = (float)resolution.x / resolution.y;
         const float scale_y = glm::tan(glm::pi<float>() / 8);
 
+        const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
+        const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
+        
         const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
         const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
         const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
@@ -52,13 +57,15 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
         const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
         const int max_job_index = tile_count_x * tile_count_y;
             
-        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
         glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
         rect_max = (glm::min)(rect_max, resolution);
 
-        glm::ivec2 pixel_coords = rect_min + glm::ivec2(idx % resolution.x, idx/ resolution.x);
+        int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
 
-        int outputindex = pixel_coords.x * resolution.y + pixel_coords.y;
+        glm::ivec2 pixel_coords = glm::ivec2( rect_min.x + tile_offset % tile_size , rect_min.y + tile_offset / tile_size);
+
+        int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
 
         //j = rect_min.y
         //i = rect_min.x
@@ -100,7 +107,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
         }
         else
         {
-            output[idx].hit = false;
+            output[outputindex].hit = false;
             return;
         }
 
@@ -159,16 +166,16 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
             const float f = 1.0f / glm::dot(e1, p);
             const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray_dir, q));
 
-            output[idx].position = ray_origin + f * glm::dot(e2, q) * ray_dir;//***
-            output[idx].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];//***
-            output[idx].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0]; //***
-            output[idx].tet_idx = d_cons_faces[index].tet_idx;
-            output[idx].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;
+            output[outputindex].position = ray_origin + f * glm::dot(e2, q) * ray_dir;//***
+            output[outputindex].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];//***
+            output[outputindex].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0]; //***
+            output[outputindex].tet_idx = d_cons_faces[index].tet_idx;
+            output[outputindex].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;
 
-            output[idx].hit = true;
+            output[outputindex].hit = true;
         }
         else
-            output[idx].hit = false;
+            output[outputindex].hit = false;
     }
 }
 
@@ -735,7 +742,7 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsig
     }
 }
 
-void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, unsigned int tet_mesh_type, IntersectionData* output)
+void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, IntersectionData* output)
 {
     unsigned int rays_size = resolution.x * resolution.y;
     // Allocate space for device copy of data
@@ -753,7 +760,7 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
     if (scene.camTarget != old_target)
     {
         cudaFree(d_source_tet);
-        cudaFree(d_source_tet);
+        cudaFree(d_scene);
         cudaMalloc(&d_source_tet, sizeof(SourceTet));
         cudaMalloc(&d_scene, sizeof(Scene));
         old_target = scene.camTarget;
@@ -770,30 +777,27 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
 
     start = std::chrono::steady_clock::now();
 
-    // for (int i = 0; i < NSTREAMS; i++) {
-         //int offset = i * stream_size;
-
     cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
     cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
     cudaMemcpy(d_res, new glm::ivec2(resolution), sizeof(glm::ivec2), cudaMemcpyHostToDevice);
+    //print_cuda_error("copy");
 
     if (tet_mesh_type == 0)
     {
-        ray_cast_kernel <<< rays_size / t, t >>> (*d_scene, *d_source_tet, *d_res, 0, 8, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
+        ray_cast_kernel <<< rays_size / t, t >>> (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
     }
     else if (tet_mesh_type == 1)
     {
-        ray_traversal_kernel << < rays_size / t, t >>> (d_rays, rays_size, 0, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
+        //ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
     }
     else if (tet_mesh_type == 2)
     {
-        ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
+        //ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
     }
 
-    print_cuda_error("kernel");
-    //cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[i]);
+    //print_cuda_error("kernel");
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
-    print_cuda_error("copyback");
+    //print_cuda_error("copyback");
 
 // }
  //cudaDeviceSynchronize();
