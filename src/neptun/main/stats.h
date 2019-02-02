@@ -16,7 +16,9 @@ public:
     static float best_render_time;
 
     static float ray_prep_time;
+    static float gpu_copy_time;
     static float gpu_kernel_time;
+    static float gpu_copy_back_time;
     static float draw_time;
 
 private:

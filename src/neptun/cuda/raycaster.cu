@@ -1039,13 +1039,12 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_
 
     // Launch kernel on GPU
     int t = 512;
+    start = std::chrono::steady_clock::now();
+    cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
+    end = std::chrono::steady_clock::now();
+    Stats::gpu_copy_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
 
     start = std::chrono::steady_clock::now();
-
-   // for (int i = 0; i < NSTREAMS; i++) {
-        //int offset = i * stream_size;
-        //cudaMemcpyAsync(&d_rays[offset], &rays[offset], stream_bytes, cudaMemcpyHostToDevice, streams[i]);
-    cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
     if (tet_mesh_type == 0)
     {
         //raycast_kernel <<< stream_size / t, t,  0, streams[i]>>> (d_rays, rays_size, offset, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
@@ -1064,12 +1063,11 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
     Stats::gpu_kernel_time = kernel_time;
 
-        //print_cuda_error("kernel");
-        //cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[i]);
+    start = std::chrono::steady_clock::now();
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
-		//print_cuda_error("copyback");
-   // }
-    //cudaDeviceSynchronize();
+    end = std::chrono::steady_clock::now();
+    Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
+	//print_cuda_error("copyback");
 
 }
 
@@ -1140,23 +1138,24 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
         cudaMalloc(&d_source_tet, sizeof(SourceTet));
         cudaMalloc(&d_scene, sizeof(Scene));
         old_target = scene.camTarget;
-
         cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
         cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
         cudaMemcpy(d_res, new glm::ivec2(resolution), sizeof(glm::ivec2), cudaMemcpyHostToDevice);
+
     }
 
     unsigned int stream_size = rays_size / NSTREAMS;
     int stream_bytes = stream_size * sizeof(Ray);
 
     float kernel_time = 0;
+    Stats::gpu_copy_time = 0.0f;
 
     std::chrono::steady_clock::time_point start, end;
+
     // Launch kernel on GPU
     int t = 512;
 
     start = std::chrono::steady_clock::now();
-
     if (tet_mesh_type == 0)
     {
         ray_cast_kernel <<< rays_size / t, t >>> (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
@@ -1173,7 +1172,10 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
     Stats::gpu_kernel_time = kernel_time;
 
+    start = std::chrono::steady_clock::now();
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
+    end = std::chrono::steady_clock::now();
+    Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
 
 }
 
