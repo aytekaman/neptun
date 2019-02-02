@@ -1156,8 +1156,6 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
 
     start = std::chrono::steady_clock::now();
 
-    //print_cuda_error("copy");
-
     if (tet_mesh_type == 0)
     {
         ray_cast_kernel <<< rays_size / t, t >>> (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
@@ -1171,12 +1169,7 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
         ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
     }
 
-    //print_cuda_error("kernel");
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
-    //print_cuda_error("copyback");
-
-// }
- //cudaDeviceSynchronize();
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
