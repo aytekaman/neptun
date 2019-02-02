@@ -360,6 +360,200 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
     }
 }
 
+__global__
+void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
+    glm::vec3* d_points, TetMesh16::Tet16* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
+{
+    int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx < resolution.x * resolution.y)
+    {
+        const glm::vec3 camTarget = scene.camTarget;
+        glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+
+        dir = dir * glm::cos(scene.camOrbitX);
+        dir.y = glm::sin(scene.camOrbitX);
+
+        glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+
+        const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
+        const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
+        const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
+
+        const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
+
+        const float aspect = (float)resolution.x / resolution.y;
+        const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+        const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
+        const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
+
+        const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
+        const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
+        const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
+
+        const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
+        const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
+        const int max_job_index = tile_count_x * tile_count_y;
+
+        glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
+        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+        rect_max = (glm::min)(rect_max, resolution);
+
+        int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
+
+        glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
+
+        int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
+
+        //j = rect_min.y
+        //i = rect_min.x
+        glm::vec3 ray_origin = cam_pos;
+        glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+
+        unsigned int id[4];
+        glm::vec2 p[4];
+
+        const float sign = copysignf(1.0f, ray_dir.z);
+
+        const float a = -1.0f / (sign + ray_dir.z);
+        const float b = ray_dir.x * ray_dir.y * a;
+
+        const glm::vec3 right(1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x);
+        const glm::vec3 up(b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y);
+
+        int index;
+
+        for (int j = 0; j < 4; j++)
+        {
+            id[j] = source_tet.v[j];
+            const glm::vec3 point = d_points[id[j]] - ray_origin;
+            p[j].x = glm::dot(right, point);
+            p[j].y = glm::dot(up, point);
+        }
+
+        if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
+        {
+            index = source_tet.n[0];
+            id[0] = id[3];
+            p[0] = p[3];
+        }
+        else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
+        {
+            index = source_tet.n[1];
+            id[1] = id[3];
+            p[1] = p[3];
+        }
+        else if (p[0].x * p[3].y <= p[0].y * p[3].x && p[3].x * p[1].y <= p[3].y * p[1].x && p[1].x * p[0].y <= p[1].y * p[0].x)
+        {
+            index = source_tet.n[2];
+            id[2] = id[3];
+            p[2] = p[3];
+        }
+        else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
+        {
+            swap(id[0], id[1]);
+            swapvec2(p[0], p[1]);
+
+            index = source_tet.n[3];
+        }
+        else
+        {
+            output[outputindex].hit = false;
+            return;
+        }
+
+        int nx = source_tet.idx;
+
+        while (index >= 0)
+        {
+            id[3] = d_tets[index].x ^ id[0] ^ id[1] ^ id[2];
+            const glm::vec3 newPoint = d_points[id[3]] - ray_origin;
+
+            p[3].x = glm::dot(right, newPoint);
+            p[3].y = glm::dot(up, newPoint);
+
+            const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
+
+            if (idx != 0)
+                nx ^= d_tets[index].n[idx - 1];
+
+            if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
+            {
+                if (p[3].x * p[2].y >= p[3].y * p[2].x)
+                {
+                    const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
+
+                    if (idx2 != 0)
+                        nx ^= d_tets[index].n[idx2 - 1];
+
+                    id[1] = id[3];
+                    p[1] = p[3];
+                }
+                else
+                {
+                    const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+
+                    if (idx2 != 0)
+                        nx ^= d_tets[index].n[idx2 - 1];
+
+                    id[0] = id[3];
+                    p[0] = p[3];
+                }
+            }
+            else if (p[3].x * p[1].y < p[3].y * p[1].x)
+            {
+                const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
+
+                if (idx2 != 0)
+                    nx ^= d_tets[index].n[idx2 - 1];
+
+                id[2] = id[3];
+                p[2] = p[3];
+            }
+            else
+            {
+                const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+
+                if (idx2 != 0)
+                    nx ^= d_tets[index].n[idx2 - 1];
+
+                id[0] = id[3];
+                p[0] = p[3];
+            }
+
+            swap(nx, index);
+        }
+
+        if (index != -1)
+        {
+            index = (index & 0x7FFFFFFF);
+            const Face& face = d_faces[d_cons_faces[index].face_idx];
+
+            const glm::vec3 *v = face.vertices;
+            const glm::vec3 *n = face.normals;
+            const glm::vec2 *t = face.uvs;
+
+            const glm::vec3 e1 = v[1] - v[0];
+            const glm::vec3 e2 = v[2] - v[0];
+            const glm::vec3 s = ray_origin - v[0];
+            const glm::vec3 q = glm::cross(s, e1);
+            const glm::vec3 p = glm::cross(ray_dir, e2);
+            const float f = 1.0f / glm::dot(e1, p);
+            const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray_dir, q));
+            output[outputindex].position = ray_origin + f * glm::dot(e2, q) * ray_dir;
+            output[outputindex].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+            output[outputindex].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+            output[outputindex].tet_idx = d_cons_faces[index].tet_idx;
+            output[outputindex].neighbor_tet_idx = d_cons_faces[index].other_tet_idx;
+
+            output[outputindex].hit = true;
+        }
+        else
+            output[outputindex].hit = false;
+    }
+}
+
 //------------------------------------------------o-------------------------------------------------------
 
 __global__
@@ -974,7 +1168,7 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
     }
     else if (tet_mesh_type == 2)
     {
-        //ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
+        ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
     }
 
     //print_cuda_error("kernel");
