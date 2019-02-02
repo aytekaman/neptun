@@ -10,6 +10,11 @@ TetMesh20::Tet20* d_tets20;
 TetMesh16::Tet16* d_tets16;
 ConstrainedFace* d_cons_faces;
 Face* d_faces;
+glm::ivec2* d_res;
+
+SourceTet* d_source_tet;
+Scene* d_scene;
+glm::vec3 old_target(-100, -100, -100);//To force init of d_source_tet and d_scene
 
 cudaStream_t* streams;
 
@@ -17,12 +22,12 @@ unsigned int old_size = 0;
 const int NSTREAMS = 3;
 
 __global__
-void ray_cast_kernel(Scene & scene, SourceTet source_tet, glm::ivec2 resolution, int offset, int tile_size, 
+void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
     glm::vec3* d_points, TetMesh32::Tet32* d_tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
     int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx < resolution.x*resolution.y)
+    if (idx < resolution.x * resolution.y)
     {
         const glm::vec3 camTarget = scene.camTarget;
         glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
@@ -43,37 +48,22 @@ void ray_cast_kernel(Scene & scene, SourceTet source_tet, glm::ivec2 resolution,
         const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
         const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
 
-        //Ray ray(cam_pos);
-
-        int total_test_count = 0;
-        int total_L1_hit_count = 0;
-
-
         const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
         const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
         const int max_job_index = tile_count_x * tile_count_y;
             
-        //glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
-        //glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-        //rect_max = (glm::min)(rect_max, resolution);
+        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+        rect_max = (glm::min)(rect_max, resolution);
 
-        //glm::ivec2 pixel_coords = rect_min + glm::ivec2(idx%resolution.x, idx/resolution.x);
+        glm::ivec2 pixel_coords = rect_min + glm::ivec2(idx % resolution.x, idx/ resolution.x);
 
-        //int outputindex = pixel_coords.x * resolution.y + pixel_coords.y;
+        int outputindex = pixel_coords.x * resolution.y + pixel_coords.y;
 
         //j = rect_min.y
         //i = rect_min.x
         glm::vec3 ray_origin = cam_pos;
-        //glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
-
-        glm::vec3 pos, normal;
-        //glm::vec2 uv;
-        Face face;
-
-        // int tet_index_copy = tet_index;
-
-
-        /*int ray_tet_idx = 0;
+        glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
 
         unsigned int id[4];
         glm::vec2 p[4];
@@ -83,7 +73,7 @@ void ray_cast_kernel(Scene & scene, SourceTet source_tet, glm::ivec2 resolution,
         const float a = -1.0f / (sign + ray_dir.z);
         const float b = ray_dir.x * ray_dir.y * a;
 
-        glm::vec3 right = glm::vec3(1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x);
+        const glm::vec3 right(1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x);
         const glm::vec3 up(b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y);
 
         for (int j = 0; j < 4; j++)
@@ -178,7 +168,7 @@ void ray_cast_kernel(Scene & scene, SourceTet source_tet, glm::ivec2 resolution,
             output[idx].hit = true;
         }
         else
-            output[idx].hit = false;*/
+            output[idx].hit = false;
     }
 }
 
@@ -656,13 +646,6 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_
         cudaMalloc(&d_rays, rays_size * sizeof(Ray));
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
         old_size = rays_size;
-
-		streams = new cudaStream_t[NSTREAMS];
-		for (int i = 0; i < NSTREAMS; i++)
-		{
-			cudaStreamCreate(&streams[i]);
-			print_cuda_error("Stream creation error");
-		}
     }
 
     unsigned int stream_size = rays_size / NSTREAMS;
@@ -680,7 +663,7 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_
    // for (int i = 0; i < NSTREAMS; i++) {
         //int offset = i * stream_size;
         //cudaMemcpyAsync(&d_rays[offset], &rays[offset], stream_bytes, cudaMemcpyHostToDevice, streams[i]);
-    //cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
     if (tet_mesh_type == 0)
     {
         //raycast_kernel <<< stream_size / t, t,  0, streams[i]>>> (d_rays, rays_size, offset, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
@@ -752,17 +735,28 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsig
     }
 }
 
-void cast_rays_gpu(Scene & scene, SourceTet source_tet, int res_x, int res_y, unsigned int tet_mesh_type, IntersectionData* output)
+void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, unsigned int tet_mesh_type, IntersectionData* output)
 {
-    unsigned int rays_size = res_x * res_y;
+    unsigned int rays_size = resolution.x * resolution.y;
     // Allocate space for device copy of data
     if (old_size != rays_size)
     {
         cudaFree(d_rays);
         cudaFree(d_intersectdata);
+        cudaFree(d_res);
         cudaMalloc(&d_rays, rays_size * sizeof(Ray));
         cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData));
+        cudaMalloc(&d_res, sizeof(glm::ivec2));
         old_size = rays_size;
+    }
+
+    if (scene.camTarget != old_target)
+    {
+        cudaFree(d_source_tet);
+        cudaFree(d_source_tet);
+        cudaMalloc(&d_source_tet, sizeof(SourceTet));
+        cudaMalloc(&d_scene, sizeof(Scene));
+        old_target = scene.camTarget;
     }
 
     unsigned int stream_size = rays_size / NSTREAMS;
@@ -771,7 +765,6 @@ void cast_rays_gpu(Scene & scene, SourceTet source_tet, int res_x, int res_y, un
     float kernel_time = 0;
 
     std::chrono::steady_clock::time_point start, end;
-    glm::ivec2 resolution(res_x, res_y);
     // Launch kernel on GPU
     int t = 512;
 
@@ -779,26 +772,29 @@ void cast_rays_gpu(Scene & scene, SourceTet source_tet, int res_x, int res_y, un
 
     // for (int i = 0; i < NSTREAMS; i++) {
          //int offset = i * stream_size;
-         //cudaMemcpyAsync(&d_rays[offset], &rays[offset], stream_bytes, cudaMemcpyHostToDevice, streams[i]);
-     //cudaMemcpy(d_rays, rays, rays_size * sizeof(Ray), cudaMemcpyHostToDevice);
-        if (tet_mesh_type == 0)
-        {
-            //raycast_kernel <<< stream_size / t, t,  0, streams[i]>>> (d_rays, rays_size, offset, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
-            ray_cast_kernel <<< rays_size / t, t >>> (scene, source_tet, resolution, 0, 8, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
-        }
-        else if (tet_mesh_type == 1)
-        {
-            ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
-        }
-        else if (tet_mesh_type == 2)
-        {
-            ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
-        }
+
+    cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_res, new glm::ivec2(resolution), sizeof(glm::ivec2), cudaMemcpyHostToDevice);
+
+    if (tet_mesh_type == 0)
+    {
+        ray_cast_kernel <<< rays_size / t, t >>> (*d_scene, *d_source_tet, *d_res, 0, 8, d_points, d_tets32, d_cons_faces, d_faces, d_intersectdata);
+    }
+    else if (tet_mesh_type == 1)
+    {
+        ray_traversal_kernel << < rays_size / t, t >>> (d_rays, rays_size, 0, d_points, d_tets20, d_cons_faces, d_faces, d_intersectdata);
+    }
+    else if (tet_mesh_type == 2)
+    {
+        ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tets16, d_cons_faces, d_faces, d_intersectdata);
+    }
 
     print_cuda_error("kernel");
     //cudaMemcpyAsync(&output[offset], &d_intersectdata[offset], stream_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost, streams[i]);
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
-    //print_cuda_error("copyback");
+    print_cuda_error("copyback");
+
 // }
  //cudaDeviceSynchronize();
 
