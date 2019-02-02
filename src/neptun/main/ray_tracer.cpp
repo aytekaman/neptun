@@ -594,42 +594,36 @@ void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lig
 
 void RayTracer::draw_intersectiondata_rowmajor(int thread_idx, std::vector<LightInfo> lightInfos)
 {
-    int idx = thread_idx;
-    unsigned int rays_index = 0;
+    int idx = ((m_resolution.x * m_resolution.y) / thread_count) * thread_idx;
+    int upperbound = min( ( (m_resolution.x * m_resolution.y) / thread_count ) * (thread_idx + 1), m_resolution.x * m_resolution.y);
 
-    while (idx < m_resolution.x * m_resolution.y)
+    while (idx < upperbound)
     {
         //rays_index = 0;
         glm::vec3 color;
-        if (m_intersect_data[rays_index + idx].hit)
+        if (m_intersect_data[idx].hit)
         {
             color = glm::vec3();
             //color = glm::vec3(1.0f, 1.0f, 1.0f);
-
             for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
             {
-                Ray shadow_ray(m_intersect_data[rays_index + idx].position,
-                    glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx].position));
+                Ray shadow_ray(m_intersect_data[idx].position,
+                    glm::normalize(lightInfos[light_idx].pos - m_intersect_data[idx].position));
                 {
-                    glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[rays_index + idx].position);
-                    float diffuse = glm::clamp(glm::dot(m_intersect_data[rays_index + idx].normal, to_light), 0.0f, 1.0f);
+                    glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[idx].position);
+                    float diffuse = glm::clamp(glm::dot(m_intersect_data[idx].normal, to_light), 0.0f, 1.0f);
                     color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
                 }
             }
-
         }
         else
             color = glm::vec3(0.1, 0.1, 0.1);
 
         glm::ivec2 p_idx(idx % m_resolution.x, idx / m_resolution.x);
-
         m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
-        //rays_index++;
                 
-        idx = job_index++;
+        idx++;
     }
-    /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
-    L1_hit_count[thread_idx] = total_L1_hit_count;*/
 }
 
 void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos)
