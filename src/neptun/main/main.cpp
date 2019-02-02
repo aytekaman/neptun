@@ -827,9 +827,17 @@ void gpu_tetmesh_type_comparison()
     float tet20_prep_time = std::numeric_limits<float>::infinity();
     float tet16_prep_time = std::numeric_limits<float>::infinity();
 
+    float tet32_copy_time = std::numeric_limits<float>::infinity();
+    float tet20_copy_time = std::numeric_limits<float>::infinity();
+    float tet16_copy_time = std::numeric_limits<float>::infinity();
+
     float tet32_kernel_time = std::numeric_limits<float>::infinity();
     float tet20_kernel_time = std::numeric_limits<float>::infinity();
     float tet16_kernel_time = std::numeric_limits<float>::infinity();
+
+    float tet32_copy_back_time = std::numeric_limits<float>::infinity();
+    float tet20_copy_back_time = std::numeric_limits<float>::infinity();
+    float tet16_copy_back_time = std::numeric_limits<float>::infinity();
 
     float tet32_draw_time = std::numeric_limits<float>::infinity();
     float tet20_draw_time = std::numeric_limits<float>::infinity();
@@ -866,7 +874,9 @@ void gpu_tetmesh_type_comparison()
                 tet32_fps = glm::max(1.0f / ray_tracer.last_render_time, tet32_fps);
 
                 tet32_prep_time = glm::min(Stats::ray_prep_time, tet32_prep_time);
+                tet32_copy_time = glm::min(Stats::gpu_copy_time, tet32_copy_time);
                 tet32_kernel_time = glm::min(Stats::gpu_kernel_time, tet32_kernel_time);
+                tet32_copy_back_time = glm::min(Stats::gpu_copy_back_time, tet32_copy_back_time);
                 tet32_draw_time = glm::min(Stats::draw_time, tet32_draw_time);
 
             }
@@ -875,7 +885,9 @@ void gpu_tetmesh_type_comparison()
                 tet20_fps = glm::max(1.0f / ray_tracer.last_render_time, tet20_fps);
 
                 tet20_prep_time = glm::min(Stats::ray_prep_time, tet20_prep_time);
+                tet20_copy_time = glm::min(Stats::gpu_copy_time, tet20_copy_time);
                 tet20_kernel_time = glm::min(Stats::gpu_kernel_time, tet20_kernel_time);
+                tet20_copy_back_time = glm::min(Stats::gpu_copy_back_time, tet20_copy_back_time);
                 tet20_draw_time = glm::min(Stats::draw_time, tet20_draw_time);
             }
 
@@ -884,23 +896,31 @@ void gpu_tetmesh_type_comparison()
                 tet16_fps = glm::max(1.0f / ray_tracer.last_render_time, tet16_fps);
 
                 tet16_prep_time = glm::min(Stats::ray_prep_time, tet16_prep_time);
+                tet16_copy_time = glm::min(Stats::gpu_copy_time, tet16_copy_time);
                 tet16_kernel_time = glm::min(Stats::gpu_kernel_time, tet16_kernel_time);
+                tet16_copy_back_time = glm::min(Stats::gpu_copy_back_time, tet16_copy_back_time);
                 tet16_draw_time = glm::min(Stats::draw_time, tet16_draw_time);
             }
         }
     }
 
-    std::cout << "-----Tet32 :-----" << std::endl << "FPS: " << tet32_fps << std::endl 
+    std::cout << "-------Tet32 :-------" << std::endl << "FPS: " << tet32_fps << std::endl 
         << "Ray preparation time: " << tet32_prep_time <<  "ms" << std::endl
+        << "Ray copy time: " << tet32_copy_time << "ms" << std::endl
         << "Kernel time: " << tet32_kernel_time << "ms" << std::endl
+        <<"Intersectiondata copy time: " << tet32_copy_back_time << "ms" << std::endl
         << "Draw time: " << tet32_draw_time << "ms" << std::endl << std::endl;
-    std::cout << "-----Tet20 :-----" << std::endl << "FPS: " << tet20_fps << std::endl
+    std::cout << "-------Tet20 :-------" << std::endl << "FPS: " << tet20_fps << std::endl
         << "Ray preparation time: " << tet20_prep_time << "ms" << std::endl
+        << "Ray copy time: " << tet20_copy_time << "ms" << std::endl
         << "Kernel time: " << tet20_kernel_time << "ms" << std::endl
+        << "Intersectiondata copy time: " << tet20_copy_back_time << "ms" << std::endl
         << "Draw time: " << tet20_draw_time << "ms" << std::endl << std::endl;
-    std::cout << "-----Tet16 :-----" << std::endl << "FPS: " << tet16_fps << std::endl
+    std::cout << "-------Tet16 :-------" << std::endl << "FPS: " << tet16_fps << std::endl
         << "Ray preparation time: " << tet16_prep_time << "ms" << std::endl
+        << "Ray copy time: " << tet16_copy_time << "ms" << std::endl
         << "Kernel time: " << tet16_kernel_time << "ms" << std::endl
+        << "Intersectiondata copy time: " << tet16_copy_back_time << "ms" << std::endl
         << "Draw time: " << tet16_draw_time << "ms" << std::endl;
 
     //std::cout << "difference: " << glm::abs(gpu_fps - cpu_fps) / cpu_fps;
