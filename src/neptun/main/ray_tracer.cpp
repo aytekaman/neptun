@@ -468,10 +468,6 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
                 ray.dir = glm::normalize(top_left + right_step * (float)i + down_step * (float)j - ray.origin);
                 ray.source_tet = source_tet;
 
-                glm::vec3 pos, normal;
-                glm::vec2 uv;
-                Face face;
-
                 DiagnosticData diagnostic_data;
                 diagnostic_data.total_tet_distance = 0;
                 diagnostic_data.visited_node_count = 0;
@@ -726,16 +722,16 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     std::chrono::steady_clock::time_point start_2 = std::chrono::steady_clock::now();
     //--------------------------------------------
     /*for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::Prepare_rays_gpu, this, std::ref(scene), source_tet, i, is_diagnostic);
+        threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, is_diagnostic);
 
     for (int i = 0; i < thread_count; i++)
     {
         threads[i]->join();
         delete threads[i];
-    }
+    }*/
     //--------------------------------------------
     std::chrono::steady_clock::time_point end_2 = std::chrono::steady_clock::now();
-    Stats::ray_prep_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;*/
+    Stats::ray_prep_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
     //--------------------------------------------
 
     int tetmesh_type = 0;
@@ -746,7 +742,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 
     //ray_caster_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
 
-    cast_rays_gpu(scene, source_tet, m_resolution.x, m_resolution.y, tetmesh_type, m_intersect_data);
+    cast_rays_gpu(m_rays, scene, source_tet, m_resolution, tetmesh_type, m_intersect_data);
 
 
     threads = new std::thread*[thread_count];
