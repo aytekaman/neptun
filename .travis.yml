@@ -19,6 +19,9 @@ addons:
     - nvidia-profiler
     - nvidia-cuda-dev
     - nvidia-cuda-toolkit
+    env:
+    - CC=gcc-7
+    - CXX=g++-7
 install: true
 script:
   - curl -L "http://www.cs.bilkent.edu.tr/~aytek.aman/neptun-linux-deps.tgz" > deps.tgz
