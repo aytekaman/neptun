@@ -7,7 +7,7 @@ if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
 endif()
 
-project(neptun LANGUAGES C CXX CUDA)
+project(neptun LANGUAGES C CXX)
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
@@ -29,7 +29,7 @@ include_directories(src)
 include_directories(src/thirdparty)
 
 # Ideally, We should use config dependent path here.
-SET(embree_DIR "C:/dev/neptun-deps/stage/vc15/embree-release")
+SET(embree_DIR "${NEPTUN_DEPS_STAGE_DIR}/linux/embree/lib/cmake/embree-3.4.0")
 
 FIND_PACKAGE(embree 3.4 REQUIRED)
 INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
@@ -179,28 +179,7 @@ add_executable (neptun
 #Link & include embree
 TARGET_LINK_LIBRARIES(neptun ${EMBREE_LIBRARY})
 
-        target_link_libraries (neptun
-            # Order matters here.
-            # See appleseed-deps\src\embree\readme.pdf, section 3.3 CMake Configuration for details.
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/math.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/simd.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/sys.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/tasking.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_sse42.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx.lib
-            debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx2.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/lexers.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/math.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/simd.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/sys.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/tasking.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_sse42.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx.lib
-            optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx2.lib
-        )
+#target_link_libraries (neptun ${NEPTUN_DEPS_STAGE_DIR}/linux/embree/lib/libembree3.so)
 #INCLUDE_DIRECTORIES(src/thirdparty/embree-3.2.4/include/)
 
 # Find and link to OpenGL
