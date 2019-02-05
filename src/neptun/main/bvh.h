@@ -7,7 +7,7 @@
 #include "face.h"
 #include "memory.h"
 
-#define EMBREE_STATIC_LIB
+//#define EMBREE_STATIC_LIB
 #include "embree3/rtcore.h"
 
 #include <memory>
