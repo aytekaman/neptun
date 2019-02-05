@@ -179,9 +179,9 @@ add_executable (neptun
 )
 
 #Link & include embree
-TARGET_LINK_LIBRARIES(neptun ${EMBREE_LIBRARY})
+#TARGET_LINK_LIBRARIES(neptun ${EMBREE_LIBRARY})
 
-#target_link_libraries (neptun ${NEPTUN_DEPS_STAGE_DIR}/linux/embree/lib/libembree3.so)
+target_link_libraries (neptun ${NEPTUN_DEPS_STAGE_DIR}/linux/embree/lib/libembree3.so)
 #INCLUDE_DIRECTORIES(src/thirdparty/embree-3.2.4/include/)
 
 # Find and link to OpenGL
