@@ -21,5 +21,8 @@ addons:
     - nvidia-cuda-toolkit
 install: true
 script:
+  - curl -L "http://www.cs.bilkent.edu.tr/~aytek.aman/neptun-linux-deps.tgz" > deps.tgz
+  - tar xfz deps.tgz
+  - rm deps.tgz
   - mkdir build && cd build && cmake ../ && make -r -j 2
   - ../sandbox/bin/Release/neptun -test
