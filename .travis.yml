@@ -25,6 +25,6 @@ script:
   - tar xfz deps.tgz
   - rm deps.tgz
   - THISDIR=`pwd`
-  - NEPTUN_DEPS=$THISDIR/neptun-linux-deps
-  - mkdir build && cd build && cmake ../ -DNEPTUN_DEPS_STAGE_DIR=$NEPTUN_DEPS/stage && make -r -j 2
+  - NEPTUN_DEPS=$THISDIR/stage
+  - mkdir build && cd build && cmake ../ -DNEPTUN_DEPS_STAGE_DIR=$NEPTUN_DEPS && make -r -j 2
   - ../sandbox/bin/Release/neptun -test
