@@ -16,14 +16,10 @@ addons:
     - xorg-dev
     - libgtk-3-dev
     - libglu1-mesa-dev
-    - nvidia-profiler
-    - nvidia-cuda-dev
-    - nvidia-cuda-toolkit
-    env:
-    - CC=gcc-7
-    - CXX=g++-7
 install: true
 script:
+  - export CC=gcc-7
+  - export CXX=g++-7
   - curl -L "http://www.cs.bilkent.edu.tr/~aytek.aman/neptun-linux-deps.tgz" > deps.tgz
   - tar xfz deps.tgz
   - rm deps.tgz
