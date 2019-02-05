@@ -7,7 +7,7 @@ if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
 endif()
 
-project(neptun LANGUAGES C CXX CUDA)
+project(neptun LANGUAGES C CXX)
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
