@@ -14,13 +14,14 @@ addons:
     - xorg-dev
     - libgtk-3-dev
     - libglu1-mesa-dev
+
 install: true
+
 script:
   - curl -L "http://www.cs.bilkent.edu.tr/~aytek.aman/neptun-linux-deps.tgz" > deps.tgz
   - tar xfz deps.tgz
   - rm deps.tgz
   - THISDIR=`pwd`
   - NEPTUN_DEPS=$THISDIR/stage
-  - export LD_LIBRARY_PATH=$NEPTUN_DEPS/linux/embree/lib:$LD_LIBRARY_PATH
   - mkdir build && cd build && cmake ../ -DNEPTUN_DEPS_STAGE_DIR=$NEPTUN_DEPS && make -r -j 2
   - ../sandbox/bin/Release/neptun -test
