@@ -15,6 +15,9 @@ glm::ivec2* d_res;
 SourceTet* d_source_tet;
 Scene* d_scene;
 glm::vec3 old_target(-100, -100, -100);//To force init of d_source_tet and d_scene
+float old_dist = 0.0f;
+float old_orbit_x = 0.0f;
+float old_orbit_y = 0.0f;
 
 cudaStream_t* streams;
 
@@ -1140,18 +1143,21 @@ void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& 
         cudaMemcpy(d_res, new glm::ivec2(resolution), sizeof(glm::ivec2), cudaMemcpyHostToDevice);
     }
 
-    if (scene.camTarget != old_target)
+    if (scene.camTarget != old_target || scene.camDist != old_dist || 
+        scene.camOrbitX != old_orbit_x || scene.camOrbitY != old_orbit_y)
     {
         cudaFree(d_source_tet);
         cudaFree(d_scene);
         cudaMalloc(&d_source_tet, sizeof(SourceTet));
         cudaMalloc(&d_scene, sizeof(Scene));
         old_target = scene.camTarget;
+        old_dist = scene.camDist;
+        old_orbit_x = scene.camOrbitX;
+        old_orbit_y = scene.camOrbitY;
 
     }
     cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
     cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_res, new glm::ivec2(resolution), sizeof(glm::ivec2), cudaMemcpyHostToDevice);
 
     unsigned int stream_size = rays_size / NSTREAMS;
     int stream_bytes = stream_size * sizeof(Ray);
