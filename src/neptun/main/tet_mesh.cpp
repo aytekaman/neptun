@@ -2303,6 +2303,13 @@ void TetMesh16::intersect4(TetRayHit4& tet_ray_hit)
             index[k] = tet_ray_hit.tet_ray[k].source_tet.n[3];
         }
     }
+}
 
+TetMesh80::TetMesh80(const Scene & scene, const bool preserve_triangles, const bool create_bbox, const float quality)
+{
 
+}
+
+TetMesh80::TetMesh80(const Scene & scene)
+{
 }

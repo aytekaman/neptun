@@ -383,3 +383,58 @@ public:
 
     Tet16* m_tet16s = nullptr;
 };
+
+// Tetrehedral mesh representation and traversal method by Maria et al.
+// https://hal.archives-ouvertes.fr/hal-01486575/
+class TetMesh80 
+{
+public:
+    struct Tet80
+    {
+        glm::vec3 v[4];
+        int n[4];
+    };
+
+    TetMesh80(
+        const Scene &scene,
+        const bool preserve_triangles,
+        const bool create_bbox,
+        const float quality = 1.0f);
+
+    TetMesh80(const Scene &scene);
+
+    //virtual int get_size_in_bytes();
+
+    //void init_acceleration_data() override;
+
+    //int find_tet(
+    //    const glm::vec3& point,
+    //    SourceTet& tet) override;
+
+    //// Returns the index of th tet that contains the 'point'.
+    //// int  find_tet_idx(const glm::vec3& point);
+
+    //// Casts a ray from a point inside the 'tet'.
+    //bool intersect(
+    //    const Ray& ray,
+    //    const SourceTet& tet,
+    //    IntersectionData& intersection_data) override;
+
+    //// Casts a ray from a point on the 'tet_face'
+    //bool intersect(
+    //    const Ray& ray,
+    //    const TetFace& tet_face,
+    //    IntersectionData& intersection_data) override;
+
+    //// Returns true if a ray can reach to a target_tet_idx'th tet.
+    //bool intersect(
+    //    const Ray& ray,
+    //    const TetFace& tet_face,
+    //    const int& target_tet_idx) override;
+
+    void intersect4(TetRayHit4& tet_ray_hit);
+
+    void intersect4_simd(TetRayHit4& tet_ray_hit);
+
+    Tet80* m_tet80s = nullptr;
+};
