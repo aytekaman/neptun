@@ -7,7 +7,10 @@
 #include "face.h"
 #include "memory.h"
 
+// At the moment, we built embree as a static library only on Windows
+#ifdef _WIN32
 #define EMBREE_STATIC_LIB
+#endif
 #include "embree3/rtcore.h"
 
 #include <memory>

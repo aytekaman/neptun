@@ -7,7 +7,11 @@ if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
 endif()
 
-project(neptun LANGUAGES C CXX CUDA)
+if(WIN32)
+    project(neptun LANGUAGES C CXX CUDA)
+else()
+    project(neptun LANGUAGES C CXX)
+endif()
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
@@ -28,13 +32,16 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release)
 include_directories(src)
 include_directories(src/thirdparty)
 
-#include Embree
-SET(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
-#OPTION(EMBREE_STATIC_RUNTIME "Use the static version of the C/C++ runtime library." ON)
-OPTION(EMBREE_ISPC_SUPPORT "Build Embree with support for ISPC applications." OFF)
-OPTION(EMBREE_TUTORIALS    "Enable to build Embree tutorials" OFF)
-SET(EMBREE_TASKING_SYSTEM "INTERNAL" CACHE STRING "Selects tasking system")
-add_subdirectory(src/thirdparty/embree-3.2.4)
+if(UNIX)
+    # Ideally, We should use config dependent path here.
+    SET(embree_DIR "${NEPTUN_DEPS_STAGE_DIR}/linux/embree/lib/cmake/embree-3.4.0")
+else()
+    SET(embree_DIR "${NEPTUN_DEPS_STAGE_DIR}/embree-release")
+endif()
+
+
+FIND_PACKAGE(embree 3.4 REQUIRED)
+INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
 
 #include glfw
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
@@ -179,8 +186,29 @@ add_executable (neptun
 )
 
 #Link & include embree
-TARGET_LINK_LIBRARIES(neptun embree)
-INCLUDE_DIRECTORIES(src/thirdparty/embree-3.2.4/include/)
+if(UNIX)
+    target_link_libraries(neptun ${EMBREE_LIBRARY})
+else()
+    target_link_libraries(neptun
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/math.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/simd.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/sys.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/tasking.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_sse42.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx.lib
+        debug       ${NEPTUN_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx2.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/lexers.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/math.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/simd.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/sys.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/tasking.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_sse42.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx.lib
+        optimized   ${NEPTUN_DEPS_STAGE_DIR}/embree-release/lib/embree_avx2.lib)
+endif()
 
 # Find and link to OpenGL
 include(FindOpenGL)
