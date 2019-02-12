@@ -1115,7 +1115,9 @@ int run_command_line(int argc, char const* argv[])
         {"list", "Lists all available commands"},
         {"editor", "Runs editor"},
         {"simd_benchmark", "Benchmark simd intersection"},
-        {"render", "Renders a scene"}
+        {"render", "Renders a scene"},
+        {"gpu_benchmark", "Benchmark tetmesh types for gpu"},
+        {"cpu_gpu_compare", "Compare CPU and GPU performance"}
     };
 
     auto command_it = std::find_if(commands.begin(), commands.end(), [command_name](const Command& c){ return c.name == command_name; });
@@ -1170,6 +1172,14 @@ int run_command_line(int argc, char const* argv[])
               .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d");
 
         return parser.parse(argc - 2, argv + 2);
+    }
+    else if (command.name == "gpu_benchmark")
+    {
+        gpu_tetmesh_type_comparison();
+    }
+    else if (command.name == "cpu_gpu_compare")
+    {
+        cpu_gpu_comparison();
     }
 
     return EXIT_SUCCESS;
