@@ -42,10 +42,6 @@ extern void copy_to_gpu(TetMesh32& tet_mesh);
 extern void copy_to_gpu(TetMesh20& tet_mesh);
 extern void copy_to_gpu(TetMesh16& tet_mesh);
 
-extern void copy_to_gpu(TetMesh32& tet_mesh);
-extern void copy_to_gpu(TetMesh20& tet_mesh);
-extern void copy_to_gpu(TetMesh16& tet_mesh);
-
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
     for (int i = 0; i < count; i++)
