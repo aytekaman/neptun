@@ -83,7 +83,8 @@ source_group ("thirdparty\\" FILES
 
 
 set (cuda_sources
-    src/neptun/cuda/test1.cu
+    src/neptun/cuda/raycaster.cu
+    src/neptun/cuda/raycaster.cuh
 )
 
 source_group ("cuda\\" FILES
@@ -178,7 +179,7 @@ source_group ("main\\" FILES
 )
 
 add_executable (neptun
-    #${cuda_sources}
+    ${cuda_sources}
     ${editor_sources}
     ${main_sources}
     ${math_sources}

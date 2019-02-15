@@ -4,13 +4,13 @@
 
 #include "accelerator.h"
 #include "face.h"
-#include "ray.h"
 
 #include <vector>
 #include <string>
 
 class Material;
 class Scene;
+class Ray;
 
 struct Tet
 {
@@ -49,6 +49,7 @@ struct ConstrainedFace
     unsigned int other_tet_idx;
     int n;
     Face* face;
+    int face_idx;
 };
 
 // Ray that is for tetrahedral mesh traversal

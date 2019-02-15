@@ -34,4 +34,10 @@ float Stats::last_render_time;
 
 float Stats::best_render_time = 1024.0f;
 
+float Stats::gpu_kernel_time;
+float Stats::gpu_copy_time;
+float Stats::draw_time;
+float Stats::gpu_copy_back_time;
+float Stats::ray_prep_time;
+
 std::vector<float> Stats::s_render_times;

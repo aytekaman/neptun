@@ -38,6 +38,10 @@
 #include "neptun/main/tet_mesh.h"
 #include "neptun/main/texture.h"
 
+extern void copy_to_gpu(TetMesh32& tet_mesh);
+extern void copy_to_gpu(TetMesh20& tet_mesh);
+extern void copy_to_gpu(TetMesh16& tet_mesh);
+
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
     for (int i = 0; i < count; i++)
@@ -620,16 +624,22 @@ void Editor::DrawTetGen()
         {
             scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+            Logger::Log("TetMesh32 data copied to GPU");
         }
         else if (current_tet_mesh_type == 1)
         {
             scene->tet_mesh = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh20 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            copy_to_gpu(*(TetMesh20*)scene->tet_mesh);
+            Logger::Log("TetMesh20 data copied to GPU");
         }
         else if (current_tet_mesh_type == 2)
         {
             scene->tet_mesh = new TetMesh16(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            copy_to_gpu(*(TetMesh16*)scene->tet_mesh);
+            Logger::Log("TetMesh16 data copied to GPU");
         }
 
         //scene->tet_mesh20 = new TetMesh20(*scene->tet_mesh);
@@ -664,16 +674,22 @@ void Editor::DrawTetGen()
         {
             scene->tet_mesh = new TetMesh32(*scene);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+            Logger::Log("TetMesh32 data copied to GPU");
         }
         else if (current_tet_mesh_type == 1)
         {
             scene->tet_mesh = new TetMesh20(*scene);
             Logger::Log("TetMesh20 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            copy_to_gpu(*(TetMesh20*)scene->tet_mesh);
+            Logger::Log("TetMesh20 data copied to GPU");
         }
         else if (current_tet_mesh_type == 2)
         {
             scene->tet_mesh = new TetMesh16(*scene);
             Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            copy_to_gpu(*(TetMesh16*)scene->tet_mesh);
+            Logger::Log("TetMesh16 data copied to GPU");
         }
 
         //Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
@@ -712,7 +728,24 @@ void Editor::DrawTetGen()
         ImGui::Checkbox("Swap", &swap);
 
         if (ImGui::Button("Sort (Hilbert)"))
+        {
             scene->tet_mesh->sort(SortingMethod::Hilbert, bit_count, use_regions, swap);
+            if (current_tet_mesh_type == 0)
+            {
+                copy_to_gpu(*(TetMesh32*)scene->tet_mesh);
+                Logger::Log("TetMesh32 data copied to GPU");
+            }
+            else if(current_tet_mesh_type == 1)
+            {
+                copy_to_gpu(*(TetMesh20*)scene->tet_mesh);
+                Logger::Log("TetMesh20 data copied to GPU");
+            }
+            else if (current_tet_mesh_type == 2)
+            {
+                copy_to_gpu(*(TetMesh16*)scene->tet_mesh);
+                Logger::Log("TetMesh16 data copied to GPU");
+            }
+        }
 
         ImGui::SameLine();
 
@@ -1212,6 +1245,7 @@ void Editor::DrawRenderedFrame()
 
     //ImGui::Text("Triangle count: %d", scene->tet_mesh->face_count);
     ImGui::InputInt("Thread count", &ray_tracer->thread_count);
+    ImGui::InputInt("GPU Stream count", &ray_tracer->m_stream_count);
 
     //ImGui::Checkbox("Multi-threading", &ray_tracer->multi_threading);
 
@@ -1246,6 +1280,14 @@ void Editor::DrawRenderedFrame()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+    
+    static int render_hw = 0;
+    ImGui::BeginGroup();
+
+    ImGui::RadioButton("Render on CPU", &render_hw, 0); 
+    ImGui::RadioButton("Render on GPU", &render_hw, 1);
+
+    ImGui::EndGroup();
 
     static bool render = false;
     static bool diagnostics = false;
@@ -1275,7 +1317,10 @@ void Editor::DrawRenderedFrame()
 
     if (render && scene->has_accelerator())
     {
-        ray_tracer->Render(*scene, diagnostics);
+        if(render_hw == 0)
+            ray_tracer->Render(*scene, diagnostics);
+        else
+            ray_tracer->render_gpu(*scene, diagnostics);
         glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
 

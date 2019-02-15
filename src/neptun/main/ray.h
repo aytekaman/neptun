@@ -2,11 +2,13 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include "tet_mesh.h"
 
 struct Ray
 {
     glm::vec3 origin;
     glm::vec3 dir;
+    SourceTet source_tet;
 
     union
     {

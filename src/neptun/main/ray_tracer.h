@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "glm/glm.hpp"
+#include "ray.h"
+#include "tet_mesh.h"
 
 class Bvh;
 class Image;
@@ -74,6 +76,10 @@ enum ImageType
     Locality
 };
 
+extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
+extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
+extern void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, IntersectionData* output);
+
 class RayTracer
 {
 public:
@@ -88,6 +94,25 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
+    void raytrace_worker_gpu(
+        Scene & scene,
+        SourceTet source_tet,
+        int thread_idx,
+        std::vector<LightInfo> lightInfos,
+        bool is_diagnostic);
+
+    void prepare_rays_gpu(Scene & scene,
+        SourceTet source_tet,
+        int thread_idx,
+        bool is_diagnostic);
+
+    void draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
+    void draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos);
+    void draw_intersectiondata_rowmajor(int thread_idx, std::vector<LightInfo> lightInfos);
+
+    void render_gpu(Scene & scene, const bool is_diagnostic = false);
+
+    void ray_caster(Scene & scene, std::vector<Ray> rays, std::vector<IntersectionData>& output);
 
     void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
     void set_resoultion(const glm::ivec2& resolution);
@@ -109,11 +134,16 @@ public:
 
     Matrix<int> stats;
 
-    std::atomic<int> job_index{0};
+    std::atomic<int> job_index{ 0 };
     glm::ivec2 m_resolution = glm::ivec2(640, 480);
-    int tile_size = 16;
+    glm::ivec2 m_old_res = glm::ivec2();
+    IntersectionData* m_intersect_data;
+    Ray* m_rays;
+    int tile_size = 8;
     //glm::u8vec3 *pixels;
     int thread_count;
+    int m_stream_count;
+    bool gpu_init_rays = true;
 
     //KdTree *kd_tree = nullptr;
     //Bvh *bvh = nullptr;
