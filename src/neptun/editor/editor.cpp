@@ -1285,7 +1285,7 @@ void Editor::DrawRenderedFrame()
     ImGui::BeginGroup();
 
     ImGui::RadioButton("Render on CPU", &render_hw, 0); 
-    ImGui::RadioButton("Render on GPU", &render_hw, 1); ImGui::SameLine();
+    ImGui::RadioButton("Render on GPU", &render_hw, 1);
 
     ImGui::EndGroup();
 
