@@ -386,13 +386,14 @@ public:
 
 // Tetrehedral mesh representation and traversal method by Maria et al.
 // https://hal.archives-ouvertes.fr/hal-01486575/
-class TetMesh80 
+class TetMesh80 : public TetMesh
 {
 public:
     struct Tet80
     {
         glm::vec3 v[4];
         int n[4];
+        int temp[4];
     };
 
     TetMesh80(
@@ -403,34 +404,34 @@ public:
 
     TetMesh80(const Scene &scene);
 
-    //virtual int get_size_in_bytes();
+    virtual int get_size_in_bytes();
 
-    //void init_acceleration_data() override;
+    void init_acceleration_data() override;
 
-    //int find_tet(
-    //    const glm::vec3& point,
-    //    SourceTet& tet) override;
+    int find_tet(
+        const glm::vec3& point,
+        SourceTet& tet) override;
 
     //// Returns the index of th tet that contains the 'point'.
     //// int  find_tet_idx(const glm::vec3& point);
 
-    //// Casts a ray from a point inside the 'tet'.
-    //bool intersect(
-    //    const Ray& ray,
-    //    const SourceTet& tet,
-    //    IntersectionData& intersection_data) override;
+    // Casts a ray from a point inside the 'tet'.
+    bool intersect(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data) override;
 
-    //// Casts a ray from a point on the 'tet_face'
-    //bool intersect(
-    //    const Ray& ray,
-    //    const TetFace& tet_face,
-    //    IntersectionData& intersection_data) override;
+    // Casts a ray from a point on the 'tet_face'
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        IntersectionData& intersection_data) override;
 
-    //// Returns true if a ray can reach to a target_tet_idx'th tet.
-    //bool intersect(
-    //    const Ray& ray,
-    //    const TetFace& tet_face,
-    //    const int& target_tet_idx) override;
+    // Returns true if a ray can reach to a target_tet_idx'th tet.
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        const int& target_tet_idx) override;
 
     void intersect4(TetRayHit4& tet_ray_hit);
 
