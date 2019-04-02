@@ -18,8 +18,15 @@ enum class ArgumentType
 template <typename T>
 inline bool parse_string(const std::string& value, T& t)
 {
-    std::istringstream ss(value);
-    return (ss >> t >> std::ws).fail() == false && (ss.get() == EOF);
+    std::stringstream ss(value);
+    ss >> t;
+    if (ss.fail())
+        return false;
+        
+    if (ss.peek() == EOF)
+        return true;
+    
+    return ((ss >> std::ws).fail() == false) && (ss.peek() == EOF);
 }
 
 // Special parsing for boolean values 
