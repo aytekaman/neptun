@@ -827,7 +827,7 @@ bool parse_resolution(const std::string& res, std::size_t& width, std::size_t& h
 
     if (ss.peek() != EOF)
     {
-        return (ss >> std::ws).fail() || (ss.peek() != EOF);
+        return ((ss >> std::ws).fail() == false) && (ss.peek() == EOF);
     }
 
     return true;
