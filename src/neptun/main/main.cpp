@@ -820,12 +820,17 @@ bool parse_resolution(const std::string& res, std::size_t& width, std::size_t& h
 {
     std::stringstream ss(res);
     char c;
-    bool success = (ss >> width >> c >> height >> std::ws).fail() == false && (ss.get() == EOF);
+    ss >> width >> c >> height;
 
-    std::cout << width << " " << height << std::endl;
-    std::cout << success << std::endl;
+    if (ss.fail() || width == 0 || height == 0 || (c != 'x' && c != ','))
+        return false;
 
-    return width != 0 && height != 0 && success && (c == 'x' || c == ',');
+    if (ss.peek() != EOF)
+    {
+        return (ss >> std::ws).fail() || (ss.peek() != EOF);
+    }
+
+    return true;
 } 
 
 // Commands
