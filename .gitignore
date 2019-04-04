@@ -1,5 +1,5 @@
 
 build/
-sandbox/
+sandbox/*
 !sandbox/scenes/*
 *.tetmesh
