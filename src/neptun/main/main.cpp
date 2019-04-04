@@ -914,7 +914,15 @@ int command_render_scene(const argparse::ArgumentData& args)
     }
 
     ray_tracer.set_resoultion(glm::ivec2(image_width, image_height));
-    ray_tracer.Render(scene, diagnostic);
+
+    const int N = args["repetition"]->cast<int>();
+
+    for(int i = 0; i < N; ++i)
+        ray_tracer.Render(scene, diagnostic);
+
+    std::cout << "build_time=" << Stats::last_build_time << std::endl;
+    std::cout << "render_time=" << Stats::get_avg_render_time(N) << std::endl;
+
     ray_tracer.m_rendered_image->save_to_disk(output_file.c_str());
     std::cout << "Rendered image saved at : " << output_file << std::endl;
 
@@ -1013,7 +1021,8 @@ int run_command_line(int argc, char const* argv[])
               .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
               .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "640x480")
               .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
-              .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d");
+              .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
+              .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100");
 
         return parser.parse(argc - 2, argv + 2);
     }
