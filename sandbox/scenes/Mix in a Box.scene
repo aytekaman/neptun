@@ -1,0 +1,104 @@
+MyScene
+0.545089 1.3108 43.0762
+-0.0519931 -1.4091 0.763316
+11
+Light
+16.1953 19.6971 26.3399
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+neptune
+0 2 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+12 2 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+armadillo
+12 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+-12 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+0 0 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+0 0 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+neptune
+-12 2 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+-12 2 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+12 2 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+box
+0 0 0
+0 0 0
+-4.6 -2.7 -4.6
+#
+#Material
+1 1 1
+#Mesh
+box.obj
