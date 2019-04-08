@@ -920,6 +920,7 @@ int command_render_scene(const argparse::ArgumentData& args)
     for(int i = 0; i < N; ++i)
         ray_tracer.Render(scene, diagnostic);
 
+    std::cout << "triangle_count=" << scene.get_triangle_count() << std::endl;
     std::cout << "build_time=" << Stats::last_build_time << std::endl;
     std::cout << "render_time=" << Stats::get_avg_render_time(N) << std::endl;
 
