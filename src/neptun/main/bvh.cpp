@@ -206,10 +206,10 @@ Bvh::Bvh(Scene &scene,
     flattenBVHTree(root, &offset);
     //CHECK_EQ(totalNodes, offset);
 
-    printf("Node count: %d", totalNodes);
-    printf("Node size:  %zu", sizeof(LinearBVHNode));
+    //printf("Node count: %d", totalNodes);
+    //printf("Node size:  %zu", sizeof(LinearBVHNode));
 
-    printf("BVH size:  %zu MB", (totalNodes * sizeof(LinearBVHNode)) / (1024 * 1024));
+    //printf("BVH size:  %zu MB", (totalNodes * sizeof(LinearBVHNode)) / (1024 * 1024));
 
     clock_t elapsed = clock() - start_time;
 
