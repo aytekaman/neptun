@@ -294,11 +294,6 @@ void build_and_render_times(const std::string folder_name, int N = 100)
         file << "\\multicolumn{6}{}{}\\\\";
     }
 
-
-    //file << "\\hline" << std::endl;
-    //file << "\\multicolumn{6}{}{}\\\\";
-    //file << "\\hline" << std::endl;
-
     file << "\\end{tabular}" << std::endl;
     file << "\\caption{Construction times for different acceleration structures and render times for different traversal methods.}" << std::endl;
     file << "\\label{tab:build_and_render_times}" << std::endl;
