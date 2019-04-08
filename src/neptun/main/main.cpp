@@ -202,7 +202,7 @@ void build_and_render_times(const std::string folder_name, int N = 100)
     for (int row_index = 0; row_index < row_count; row_index++)
     {
         file << "\\hline" << std::endl;
-        file << "\\multicolumn{6}{|c|}{Scenes} \\\\" << std::endl;
+        file << "\\multicolumn{6}{|c|}{Scenes}\\\\" << std::endl;
         file << "\\hline" << std::endl;
 
         for (int i = row_index * 5; i < row_index * 5 + 5; i++)
