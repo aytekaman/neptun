@@ -871,7 +871,19 @@ int command_render_scene(const argparse::ArgumentData& args)
     if (rendering_method == "tet_mesh")
     {
         scene.build_tet_mesh(true, true);
-        scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+
+        const std::string sorting_method = args["sorting"]->value();
+
+        if(sorting_method == "hilbert")
+            scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+        else if (sorting_method == "hilbert-regions")
+            scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, true);
+        else if (sorting_method == "none");
+        else
+        {
+            std::cerr << "Unrecognized sorting method " << sorting_method << std::endl;
+            return EXIT_FAILURE;
+        }
     } 
     else if (rendering_method == "bvh")
     {
@@ -1004,7 +1016,8 @@ int run_command_line(int argc, char const* argv[])
               .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "640x480")
               .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
               .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
-              .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100");
+              .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
+              .add_keyword_argument("sorting", "Sorting method for tet-mesh. (hilbert, none)", ArgumentType::STRING, "s", "hilbert");
 
         return parser.parse(argc - 2, argv + 2);
     }
