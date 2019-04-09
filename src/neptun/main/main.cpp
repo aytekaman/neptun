@@ -103,20 +103,6 @@ void build_and_render_times(const std::string folder_name, int N = 100)
         SceneInfo("mix in a box close", "mix 2 close", true),
     };
 
-    //std::vector<SceneInfo> scene_infos =
-    //{
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false),
-    //	SceneInfo("Torus Knot", "TK. 1", false)
-    //};
-
     std::string test_dir = "./Assets/Test Scenes/";
 
     std::vector<std::string> accelerators =
