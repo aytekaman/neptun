@@ -1017,7 +1017,7 @@ int run_command_line(int argc, char const* argv[])
               .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
               .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
               .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
-              .add_keyword_argument("sorting", "Sorting method for tet-mesh. (hilbert, none)", ArgumentType::STRING, "s", "hilbert");
+              .add_keyword_argument("sorting", "Sorting method for tet-mesh. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert");
 
         return parser.parse(argc - 2, argv + 2);
     }
