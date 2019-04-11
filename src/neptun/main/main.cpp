@@ -916,6 +916,7 @@ int command_render_scene(const argparse::ArgumentData& args)
     std::cout << "triangle_count=" << scene.get_triangle_count() << std::endl;
     std::cout << "build_time=" << Stats::last_build_time << std::endl;
     std::cout << "render_time=" << Stats::get_avg_render_time(N) << std::endl;
+    std::cout << "visited_node_count=" << ray_tracer.avg_test_count << std::endl; // avg
 
     ray_tracer.m_rendered_image->save_to_disk(output_file.c_str());
     std::cout << "Rendered image saved at : " << output_file << std::endl;
