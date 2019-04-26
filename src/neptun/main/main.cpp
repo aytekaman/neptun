@@ -366,7 +366,7 @@ int command_render_scene(const argparse::ArgumentData& args)
     RayTracer ray_tracer;
     scene.load_from_file(scene_file);
 
-    if (rendering_method == "tet_mesh")
+    if (rendering_method == "tet-mesh")
     {
         scene.build_tet_mesh(true, true);
 
@@ -510,7 +510,7 @@ int run_command_line(int argc, char const* argv[])
                                         command_render_scene);
         
         parser.add_positional_argument("scene", "Scene file to be rendered")
-              .add_keyword_argument("method", "Rendering method. (tet_mesh, bvh, kd, embree)", ArgumentType::STRING, "m", "tet_mesh")
+              .add_keyword_argument("method", "Rendering method. (tet-mesh, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh")
               .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
               .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "640x480")
               .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
