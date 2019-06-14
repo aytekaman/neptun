@@ -27,7 +27,8 @@ struct LinearBVHNode;
 
 enum class SplitMethod { SAH, HLBVH, Middle, EqualCounts };
 // Bvh Declarations
-class Bvh{
+class Bvh : public Accelerator
+{
 public:
     // Bvh Public Types
     
@@ -62,6 +63,8 @@ public:
         std::vector<BVHBuildNode *> &treeletRoots,
         int start, int end, int *totalNodes) const;
     int flattenBVHTree(BVHBuildNode *node, int *offset);
+
+    int get_size_in_bytes();
 
     std::vector<Bounds3> primBounds, leafBounds;
     Scene* scene_ptr;

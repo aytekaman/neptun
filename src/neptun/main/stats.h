@@ -13,6 +13,8 @@ public:
     static float last_render_time;
     static float last_build_time;
 
+    static int last_accelerator_size_in_bytes;
+
     static float best_render_time;
 
 private:

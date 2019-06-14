@@ -317,6 +317,10 @@ retrySplit:
     buildTree(aboveChild, bounds1, allPrimBounds, prims1, n1, depth - 1, edges,
         prims0, prims1 + nPrimitives, badRefines);
 }
+int KdTree::get_size_in_bytes()
+{
+    return 0;
+}
 //}
 //
 bool KdTree::Intersect(const Ray &ray, IntersectionData& intersection_data) const {

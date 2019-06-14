@@ -214,6 +214,7 @@ Bvh::Bvh(Scene &scene,
     clock_t elapsed = clock() - start_time;
 
     Stats::add_build_time(elapsed / (float)CLOCKS_PER_SEC);
+    //Stats::last_accelerator_size_in_bytes = (totalNodes * sizeof(LinearBVHNode)) / (1024 * 1024);
 }
 
 Bounds3 Bvh::WorldBound() const {
@@ -652,6 +653,11 @@ int Bvh::flattenBVHTree(BVHBuildNode *node, int *offset) {
             flattenBVHTree(node->children[1], offset);
     }
     return myOffset;
+}
+
+int Bvh::get_size_in_bytes()
+{
+    return 0;
 }
 
 Bvh::~Bvh()

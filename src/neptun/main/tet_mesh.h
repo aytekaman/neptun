@@ -87,7 +87,7 @@ enum class SortingMethod
     Morton
 };
 
-class TetMesh
+class TetMesh : public Accelerator
 {
 public:
     TetMesh(const Scene &scene);
