@@ -133,6 +133,8 @@ public:
         const unsigned int bit_count = 16U,
         const bool use_regions = false);
 
+    void perform_half_space_optimization();
+
     void init_faces(const Scene& scene);
 
     virtual void init_acceleration_data() = 0;
@@ -206,7 +208,7 @@ public:
 
     // this is used to perturb input points slightly to avoid bug in TetGen.
     const bool m_perturb_points = true;
-    const bool m_empty_volume_optimization = false;
+    const bool m_half_space_optimization = false;
 };
 
 class TetMesh32 : public TetMesh

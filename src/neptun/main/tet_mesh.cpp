@@ -36,6 +36,8 @@ TetMesh::TetMesh(
 
     build_from_scene(scene, preserve_triangles, create_bbox, quality);
 
+    perform_half_space_optimization();
+
     //init_acceleration_data();
 
     clock_t elapsed = clock() - start_time;
@@ -436,6 +438,18 @@ void TetMesh::sort_points(const SortingMethod sorting_method, const unsigned int
     delete[] is_reachable;
 
     init_acceleration_data();
+}
+
+void TetMesh::perform_half_space_optimization()
+{
+    for (size_t i = 0; i < m_tets.size(); ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            if (rand() % 100 == 1)
+                m_tets[i].n[j] = -1;
+        }
+    }
 }
 
 void TetMesh::init_faces(const Scene& scene)
