@@ -305,7 +305,6 @@ option(ENABLE_CODE_ANALYSIS "Perform code analysis when building" OFF)
 if (ENABLE_CODE_ANALYSIS)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     add_library(analysis-target OBJECT
-        ${editor_sources}
         ${main_sources}
         ${math_sources}
     )
@@ -324,6 +323,7 @@ if (ENABLE_CODE_ANALYSIS)
         set(RUN_CLANG_TIDY
             "${CLANG_TIDY_EXE}"
             "-checks=performance-*,bugprone-*,clang-analyzer-*"
+            "-p=${CMAKE_BINARY_DIR}"
         )
         set_target_properties(
             analysis-target PROPERTIES
@@ -346,10 +346,11 @@ if (ENABLE_CODE_ANALYSIS)
             "${CPPCHECK_EXE}"
             "--project=compile_commands.json"
             "--enable=all"
-            "--output-file=${CMAKE_CURRENT_BINARY_DIR}/cppcheck.txt"
+            "--output-file=${CMAKE_CURRENT_BINARY_DIR}/cppcheck.txt" 
+            "--quiet"
         )
 
-        add_custom_command(TARGET neptun POST_BUILD
+        add_custom_target(run-cppcheck ALL
             COMMAND ${RUN_CPPCHECK} 
             COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Cppcheck result is in ${CMAKE_CURRENT_BINARY_DIR}/cppcheck.txt" 
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}

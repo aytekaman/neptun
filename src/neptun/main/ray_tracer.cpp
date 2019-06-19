@@ -1,8 +1,5 @@
 #include "ray_tracer.h"
 
-#include "gl3w/include/GL/gl3w.h"
-#include "GLFW/glfw3.h"
-
 #include <chrono>
 #include <ctime>
 #include <iostream>
