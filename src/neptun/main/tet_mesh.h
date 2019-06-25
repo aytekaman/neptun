@@ -95,7 +95,8 @@ public:
         const Scene &scene,
         const bool preserve_triangles,
         const bool create_bbox,
-        const float quality = 1.0f);
+        const float quality = 1.0f,
+        const bool half_space_optimization = false);
 
     TetMesh(const TetMesh& tet_mesh)
     {
@@ -209,6 +210,8 @@ public:
     // this is used to perturb input points slightly to avoid bug in TetGen.
     const bool m_perturb_points = true;
     const bool m_half_space_optimization = false;
+
+    std::vector<glm::vec3> m_optimized_faces;
 };
 
 class TetMesh32 : public TetMesh
@@ -226,7 +229,8 @@ public:
         const Scene &scene,
         const bool preserve_triangles,
         const bool create_bbox,
-        const float quality = 1.0f);
+        const float quality = 1.0f,
+        const bool half_space_optimization = false);
 
     TetMesh32(const Scene &scene);
 
@@ -323,6 +327,8 @@ public:
     std::vector<Tet20> m_tet20s;
 
     glm::vec4* m_padded_points = nullptr;
+
+    
 };
 
 class TetMesh16 : public TetMesh

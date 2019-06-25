@@ -3,6 +3,7 @@
 #include <pmmintrin.h>
 
 #include <algorithm>
+#include <chrono>
 #include <ctime>
 #include <fstream>
 #include <iostream>
@@ -30,13 +31,15 @@ TetMesh::TetMesh(
     const Scene& scene,
     const bool preserve_triangles,
     const bool create_bbox,
-    const float quality)
+    const float quality,
+    const bool half_space_optimization)
 {
     clock_t start_time = clock();
 
     build_from_scene(scene, preserve_triangles, create_bbox, quality);
 
-    perform_half_space_optimization();
+    if(half_space_optimization)
+        perform_half_space_optimization();
 
     //init_acceleration_data();
 
@@ -442,14 +445,83 @@ void TetMesh::sort_points(const SortingMethod sorting_method, const unsigned int
 
 void TetMesh::perform_half_space_optimization()
 {
+    auto start = std::chrono::steady_clock::now();
+
+    int optimized_face_count = 0;
+
     for (size_t i = 0; i < m_tets.size(); ++i)
     {
+        glm::vec3 p[4] =
+        {
+            m_points[m_tets[i].v[0]],
+            m_points[m_tets[i].v[1]],
+            m_points[m_tets[i].v[2]],
+            m_points[m_tets[i].v[3]]
+        };
+
+        glm::vec3 n[4] =
+        {
+            -glm::normalize(glm::cross(p[1] - p[2], p[1] - p[3])),
+            glm::normalize(glm::cross(p[2] - p[3], p[2] - p[0])),
+            -glm::normalize(glm::cross(p[3] - p[0], p[3] - p[1])),
+            glm::normalize(glm::cross(p[0] - p[1], p[0] - p[2])),
+        }; 
+
+        if (glm::dot(p[0] - p[1], n[0]) < 0)
+            Logger::LogError("Geometry error 0.");
+        if (glm::dot(p[1] - p[2], n[1]) < 0)
+            Logger::LogError("Geometry error 1.");
+        if (glm::dot(p[2] - p[3], n[2]) < 0)
+            Logger::LogError("Geometry error 2.");
+        if (glm::dot(p[3] - p[0], n[3]) < 0)
+            Logger::LogError("Geometry error 3.");
+
         for (int j = 0; j < 4; ++j)
         {
-            if (rand() % 100 == 1)
+            if (m_tets[i].n[j] == -1)
+                continue;
+            
+            bool half_space_empty = true;
+
+            for (size_t k = 0; k < faces.size(); ++k)
+            {
+                if (glm::dot(faces[k].vertices[0] - p[(j + 1) % 4], n[j]) < 0.001)
+                {
+                    half_space_empty = false;
+                    break;
+                }
+
+                if (glm::dot(faces[k].vertices[1] - p[(j + 1) % 4], n[j]) < 0.001)
+                {
+                    half_space_empty = false;
+                    break;
+                }
+
+                if (glm::dot(faces[k].vertices[2] - p[(j + 1) % 4], n[j]) < 0.001)
+                {
+                    half_space_empty = false;
+                    break;
+                }
+            }
+
+            if (half_space_empty)
+            {
                 m_tets[i].n[j] = -1;
+                ++optimized_face_count;
+
+                m_optimized_faces.push_back(p[0]);
+                m_optimized_faces.push_back(p[1]);
+                m_optimized_faces.push_back(p[2]);
+            }
         }
     }
+
+    auto end = std::chrono::steady_clock::now();
+
+    float duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
+
+    Logger::Log("half space optimization is performed in %.2f seconds.", duration);
+    Logger::Log("%d faces are optimized.", optimized_face_count);
 }
 
 void TetMesh::init_faces(const Scene& scene)
@@ -621,8 +693,9 @@ TetMesh32::TetMesh32(
     const Scene & scene,
     const bool preserve_triangles,
     const bool create_bbox,
-    const float quality) :
-    TetMesh(scene, preserve_triangles, create_bbox, quality)
+    const float quality,
+    const bool half_space_optimization) :
+    TetMesh(scene, preserve_triangles, create_bbox, quality, half_space_optimization)
 {
     init_acceleration_data();
     compute_weight();

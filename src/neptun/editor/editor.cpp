@@ -588,14 +588,16 @@ void Editor::DrawTetGen()
     ImGui::Begin("TetGen", 0, flags);
 
     static bool preserveTriangles = true;
+    static bool half_space_optimization = true;
     static bool process_light_sources = false;
     static bool create_bounding_box = true;
     static float quality = 5.0f;
 
     ImGui::Checkbox("Preserve Triangles", &preserveTriangles);
-    //ImGui::Checkbox("Preserve Triangles", &preserveTriangles);
+    ImGui::Checkbox("Half-space Optimization", &half_space_optimization);
     ImGui::Checkbox("Create Bounding Box", &create_bounding_box);
     ImGui::SliderFloat("Quality", &quality, 1.0, 10.0, "%.2f");
+
 
     static int current_tet_mesh_type = 0;
     const char* reps[] = { "TetMesh32", "TetMesh20", "TetMesh16" };
@@ -618,7 +620,7 @@ void Editor::DrawTetGen()
 
         if (current_tet_mesh_type == 0)
         {
-            scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
+            scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality, half_space_optimization);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
         else if (current_tet_mesh_type == 1)
@@ -1047,6 +1049,15 @@ void Editor::DrawScene()
 
         lastMousePos[2] = mousePos;
     }
+
+    //if(scene->tet_mesh)
+    //    for (size_t i = 0; i < scene->tet_mesh->m_optimized_faces.size(); i += 3)
+    //    {
+    //        graphics->DrawLine(scene->tet_mesh->m_optimized_faces[i + 0], scene->tet_mesh->m_optimized_faces[i + 1]);
+    //        graphics->DrawLine(scene->tet_mesh->m_optimized_faces[i + 1], scene->tet_mesh->m_optimized_faces[i + 2]);
+    //        graphics->DrawLine(scene->tet_mesh->m_optimized_faces[i + 2], scene->tet_mesh->m_optimized_faces[i + 0]);
+    //    }
+
 
     //if (show_grid)
     //	DrawLights(graphics);
