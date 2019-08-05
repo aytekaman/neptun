@@ -1237,7 +1237,7 @@ void Editor::DrawRenderedFrame()
 
     if (res != ray_tracer->m_resolution)
     {
-        ray_tracer->set_resoultion(res);
+        ray_tracer->set_resolution(res);
 
         //glGenTextures(1, &rendered_frame_texture_id);
         glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);

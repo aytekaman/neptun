@@ -265,7 +265,7 @@ int command_render_scene(const argparse::ArgumentData& args)
         return EXIT_FAILURE;
     }
 
-    ray_tracer.set_resoultion(glm::ivec2(image_width, image_height));
+    ray_tracer.set_resolution(glm::ivec2(image_width, image_height));
 
     const int N = args["repetition"]->cast<int>();
 

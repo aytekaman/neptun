@@ -310,7 +310,7 @@ void RayTracer::save_to_disk(const char * file_name, ImageType image_type)
         m_rendered_image->save_to_disk(file_name);
 }
 
-void RayTracer::set_resoultion(const glm::ivec2& resolution)
+void RayTracer::set_resolution(const glm::ivec2& resolution)
 {
     if (m_resolution == resolution)
         return;
