@@ -21,7 +21,9 @@ enum Method
 {
     Default,
     DefaultSimd,
+    Default_gpu,
     ScTP,
+    ScTP_gpu,
     Fast_basis,
     Kd_tree,
     BVH_pbrt,
