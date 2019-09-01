@@ -1245,7 +1245,9 @@ void Editor::DrawRenderedFrame()
 
     //ImGui::Text("Triangle count: %d", scene->tet_mesh->face_count);
     ImGui::InputInt("Thread count", &ray_tracer->thread_count);
-    ImGui::InputInt("GPU Stream count", &ray_tracer->m_stream_count);
+
+    if(ray_tracer->method == Method::Default_gpu)
+        ImGui::InputInt("GPU Stream count", &ray_tracer->m_stream_count);
 
     //ImGui::Checkbox("Multi-threading", &ray_tracer->multi_threading);
 
@@ -1255,8 +1257,8 @@ void Editor::DrawRenderedFrame()
     //ImGui::InputInt("Size", &ray_tracer->tile_size);
     ImGui::Checkbox("Shadows", &ray_tracer->shadows);
 
-    const char* reps[] = { "Default", "Default (SIMD)", "ScTP", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
-    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 7);
+    const char* reps[] = { "Default", "Default (SIMD)", "Default(GPU)", "ScTP", "ScTP(GPU)", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
+    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, Method::Method_count); //9 yerine Method_count kullanýldý problem yaratýr mý ?
 
     if (res != ray_tracer->m_resolution)
     {
@@ -1281,13 +1283,13 @@ void Editor::DrawRenderedFrame()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
     
-    static int render_hw = 0;
+    /*static int render_hw = 0;
     ImGui::BeginGroup();
 
     ImGui::RadioButton("Render on CPU", &render_hw, 0); 
     ImGui::RadioButton("Render on GPU", &render_hw, 1);
 
-    ImGui::EndGroup();
+    ImGui::EndGroup();*/
 
     static bool render = false;
     static bool diagnostics = false;
@@ -1317,7 +1319,7 @@ void Editor::DrawRenderedFrame()
 
     if (render && scene->has_accelerator())
     {
-        if(render_hw == 0)
+        if(ray_tracer->method != Method::Default_gpu)
             ray_tracer->Render(*scene, diagnostics);
         else
             ray_tracer->render_gpu(*scene, diagnostics);
