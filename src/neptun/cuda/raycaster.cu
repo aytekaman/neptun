@@ -1120,7 +1120,7 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsig
     }
 }
 
-void cast_rays_gpu(Ray* rays, Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, IntersectionData* output)
+void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, IntersectionData* output)
 {
     unsigned int rays_size = resolution.x * resolution.y;
     // Allocate space for device copy of data

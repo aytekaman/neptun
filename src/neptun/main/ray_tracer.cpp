@@ -762,7 +762,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
         else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
             tetmesh_type = 2;
 
-        cast_rays_gpu(m_rays, scene, source_tet, m_resolution, tile_size, tetmesh_type, m_intersect_data);
+        cast_rays_gpu(scene, source_tet, m_resolution, tile_size, tetmesh_type, m_intersect_data);
 
 
         threads = new std::thread*[thread_count];
