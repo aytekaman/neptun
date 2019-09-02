@@ -8,6 +8,7 @@ glm::vec3* d_points;
 TetMesh32::Tet32* d_tets32;
 TetMesh20::Tet20* d_tets20;
 TetMesh16::Tet16* d_tets16;
+TetMeshSctp::TetSctp* d_tetsSctp;
 ConstrainedFace* d_cons_faces;
 Face* d_faces;
 glm::ivec2* d_res;
@@ -1021,6 +1022,17 @@ void copy_to_gpu(TetMesh16& tet_mesh)
     print_cuda_error("CUDA copy error16");
 }
 
+void copy_to_gpu(TetMeshSctp& tet_mesh)
+{
+    copy_to_gpu_helper(tet_mesh);
+
+    cudaFree(d_tetsSctp);
+    cudaMalloc(&d_tetsSctp, tet_mesh.m_tets.size() * sizeof(TetMeshSctp::TetSctp));
+    cudaMemcpy(d_tetsSctp, tet_mesh.m_tet_sctps, tet_mesh.m_tets.size() * sizeof(TetMeshSctp::TetSctp), cudaMemcpyHostToDevice);
+
+    print_cuda_error("CUDA copy error Sctp");
+}
+
 void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output)
 {
     // Allocate space for device copy of data
@@ -1193,6 +1205,7 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
     end = std::chrono::steady_clock::now();
     Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
-
 }
+
+
 
