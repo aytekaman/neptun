@@ -605,6 +605,124 @@ void TetMesh::clear()
     m_points.clear();
 }
 
+TetMeshSctp::TetMeshSctp(const Scene & scene, 
+    const bool preserve_triangles, 
+    const bool create_bbox, 
+    const float quality)
+    :TetMesh(scene, preserve_triangles, create_bbox, quality)
+{
+    init_acceleration_data();
+    compute_weight();
+}
+
+TetMeshSctp::TetMeshSctp(const Scene & scene)
+    : TetMesh(scene)
+{
+    init_acceleration_data();
+    compute_weight();
+}
+
+int TetMeshSctp::get_size_in_bytes()
+{
+    int size_in_bytes = 0;
+
+    size_in_bytes += m_tets.size() * sizeof(TetSctp);
+    size_in_bytes += m_points.size() * sizeof(glm::vec3);
+    //size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
+    return size_in_bytes;
+}
+
+void TetMeshSctp::init_acceleration_data()
+{
+    if (m_tets.size() == 0)
+        return;
+
+    clock_t start = clock();
+
+    FreeAligned(m_tet_sctps);
+    m_tet_sctps = (TetSctp*)AllocAligned(m_tets.size() * sizeof(TetSctp));
+    //m_tet32s = new Tet32[m_tets.size()];
+
+    for (int i = 0; i < m_tets.size(); i++)
+    {
+        const unsigned* v = m_tets[i].v;
+
+        for (int j = 0; j < 4; ++j)
+            m_tet_sctps[i].v[j] = v[j];
+
+        for (int j = 0; j < 4; ++j)
+        {
+            const int n = m_tets[i].n[j];
+
+            if (m_tets[i].face_idx[j] > 0)
+            {
+                /*ConstrainedFace cf;
+                cf.face = &faces[m_tets[i].face_idx[j] - 1];
+                cf.face_idx = m_tets[i].face_idx[j] - 1;
+                cf.tet_idx = i;
+                cf.other_tet_idx = n;
+                m_constrained_faces.push_back(cf);
+
+                m_tet_sctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);*/
+                m_tet_sctps[i].n[j] = -1;
+                m_tet_sctps[i].face_cons[j] = true;
+
+            }
+            else
+            {
+                m_tet_sctps[i].n[j] = n;
+                m_tet_sctps[i].face_cons[j] = false;
+            }
+        }
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        m_source_tet.v[i] = m_tets[0].v[i];
+        m_source_tet.n[i] = m_tet_sctps[0].n[i];
+    }
+
+    clock_t end = clock();
+
+    Logger::Log("Acceleration data is initialized in %.2f seconds.", float(end - start) / CLOCKS_PER_SEC);
+
+    //for (int i = 0; i < m_tet32s.size(); i++)
+    //{
+    //    int a = rand() % 3;
+    //    int b = rand() % 3;
+
+    //    std::swap(m_tet32s[i].v[a], m_tet32s[i].v[b]);
+    //    std::swap(m_tet32s[i].n[a], m_tet32s[i].n[b]);
+    //}
+
+    Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
+}
+
+int TetMeshSctp::find_tet(const glm::vec3 & point, SourceTet & tet)
+{
+    return 0;
+}
+
+bool TetMeshSctp::intersect(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data)
+{
+    return false;
+}
+
+bool TetMeshSctp::intersect_stats(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data, DiagnosticData & diagnostic_data)
+{
+    return false;
+}
+
+bool TetMeshSctp::intersect(const Ray & ray, const TetFace & tet_face, IntersectionData & intersection_data)
+{
+    return false;
+}
+
+bool TetMeshSctp::intersect(const Ray & ray, const TetFace & tet_face, const int & target_tet_idx)
+{
+    return false;
+}
+
 TetMesh32::TetMesh32(
     const Scene & scene,
     const bool preserve_triangles,

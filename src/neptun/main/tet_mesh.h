@@ -210,12 +210,67 @@ public:
     const bool m_empty_volume_optimization = false;
 };
 
+class TetMeshSctp : public TetMesh
+{
+public:
+    struct TetSctp
+    {
+        unsigned int v[4];
+        bool face_cons[4];
+        int n[4];
+    };
+
+    TetMeshSctp(const Scene &scene,
+        const bool preserve_triangles,
+        const bool create_bbox,
+        const float quality = 1.0f);
+
+    TetMeshSctp(const Scene &scene);
+
+    virtual int get_size_in_bytes();
+
+    void init_acceleration_data() override;
+
+    int find_tet(const glm::vec3& point, SourceTet& tet) override;
+
+    // Casts a ray from a point inside the 'tet'.
+    bool intersect(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data) override;
+
+    //bool intersect_simd_b(
+    //    const Ray& ray,
+    //    const SourceTet& tet,
+    //    IntersectionData& intersection_data);
+
+    // Casts a ray from a point inside the 'tet'.
+    virtual bool intersect_stats(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data,
+        DiagnosticData& diagnostic_data) override;
+
+    // Casts a ray from a point on the 'tet_face'
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        IntersectionData& intersection_data) override;
+
+    // Returns true if a ray can reach to a target_tet_idx'th tet.
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        const int& target_tet_idx = 0) override;
+
+    TetSctp* m_tet_sctps = nullptr;
+};
+
 class TetMesh32 : public TetMesh
 {
 public:
     struct Tet32
-    {
-        
+    {   
         unsigned int v[3];
         unsigned int x;
         int n[4];
