@@ -656,17 +656,16 @@ void TetMeshSctp::init_acceleration_data()
 
             if (m_tets[i].face_idx[j] > 0)
             {
-                /*ConstrainedFace cf;
+                ConstrainedFace cf;
                 cf.face = &faces[m_tets[i].face_idx[j] - 1];
                 cf.face_idx = m_tets[i].face_idx[j] - 1;
                 cf.tet_idx = i;
                 cf.other_tet_idx = n;
                 m_constrained_faces.push_back(cf);
 
-                m_tet_sctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);*/
-                //m_tet_sctps[i].n[j] = -1;
-                m_tet_sctps[i].face_cons[j] = true;
+                m_tet_sctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);
 
+                m_tet_sctps[i].face_cons[j] = true;
             }
             else
             {
@@ -771,9 +770,6 @@ bool TetMeshSctp::intersect(const Ray & ray, const SourceTet& source_tet, Inters
     int index = source_tet.n[outIdx];
     bool cons_face = false;
     int counter = 0;
-    int j = -1;
-    /*printf("index: %d, outidx: %d\n", index, outIdx);
-    printf("komsu: %d %d %d %d \n", source_tet.n[0], source_tet.n[1], source_tet.n[2], source_tet.n[3]);*/
 
     while (!cons_face && index > -1 && counter < 1000)
     {
@@ -829,7 +825,7 @@ bool TetMeshSctp::intersect(const Ray & ray, const SourceTet& source_tet, Inters
 
     if (cons_face)
     {
-        /*index = (index & 0x7FFFFFFF);
+        index = (index & 0x7FFFFFFF);
         const Face& face = *m_constrained_faces[index].face;
 
         const glm::vec3 *v = face.vertices;
@@ -848,7 +844,7 @@ bool TetMeshSctp::intersect(const Ray & ray, const SourceTet& source_tet, Inters
         intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
-        intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;*/
+        intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
         return true;
     }
     else
@@ -1200,6 +1196,7 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
             index = m_tet32s[index].n[2];
         else
             index = m_tet32s[index].n[3];
+        
     }
 
     if (index != -1)
