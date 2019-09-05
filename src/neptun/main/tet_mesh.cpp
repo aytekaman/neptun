@@ -978,19 +978,9 @@ void TetMesh32::init_acceleration_data()
 
 inline float cross(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; };
 
-int TetMesh32::find_tet(const glm::vec3& point, SourceTet& s_tet)
+int TetMesh32::find_tet(const glm::vec3& point, SourceTet& tet)
 {
-    int index = find_tet_brute_force(point);
-    Tet tet = m_tets[index];
-
-    for (int i = 0; i < 4; i++)
-    {
-        s_tet.n[i] = tet.n[i];
-        s_tet.v[i] = tet.v[i];
-    }
-    s_tet.idx = index;
-    return index;
-    /*int index = 0;
+    int index = 0;
     Ray ray;
 
     glm::vec3 v[4];
