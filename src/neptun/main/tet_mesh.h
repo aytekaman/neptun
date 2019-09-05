@@ -239,10 +239,7 @@ public:
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
 
-    //bool intersect_simd_b(
-    //    const Ray& ray,
-    //    const SourceTet& tet,
-    //    IntersectionData& intersection_data);
+    //bool intersect_sctp(const Ray & ray, IntersectionData & intersection_data);
 
     // Casts a ray from a point inside the 'tet'.
     virtual bool intersect_stats(
@@ -262,6 +259,11 @@ public:
         const Ray& ray,
         const TetFace& tet_face,
         const int& target_tet_idx = 0) override;
+
+    inline float scalar_triple(glm::vec3 p, glm::vec3 q, glm::vec3 r)
+    {
+        return glm::dot(p, glm::cross(q, r));
+    }
 
     TetSctp* m_tet_sctps = nullptr;
 };
