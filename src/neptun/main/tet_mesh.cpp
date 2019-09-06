@@ -722,15 +722,13 @@ bool TetMeshSctp::intersect(const Ray & ray, const SourceTet& source_tet, Inters
         p[i] = m_points[id[i]] - ray.origin;
     }
 
-    glm::vec3 p_ray = ray.dir;
-
     //p[0] = A, p[1] = B, p[2] = C, p[3] = D
-    float QAB = scalar_triple(p_ray, p[0], p[1]); // A B
-    float QBC = scalar_triple(p_ray, p[1], p[2]); // B C
-    float QAC = scalar_triple(p_ray, p[0], p[2]); // A C
-    float QAD = scalar_triple(p_ray, p[0], p[3]); // A D
-    float QBD = scalar_triple(p_ray, p[1], p[3]); // B D
-    float QCD = scalar_triple(p_ray, p[2], p[3]); // C D
+    float QAB = scalar_triple(ray.dir, p[0], p[1]); // A B
+    float QBC = scalar_triple(ray.dir, p[1], p[2]); // B C
+    float QAC = scalar_triple(ray.dir, p[0], p[2]); // A C
+    float QAD = scalar_triple(ray.dir, p[0], p[3]); // A D
+    float QBD = scalar_triple(ray.dir, p[1], p[3]); // B D
+    float QCD = scalar_triple(ray.dir, p[2], p[3]); // C D
 
     float sQAB = copysignf(1.0f, QAB); // A B
     float sQBC = copysignf(1.0f, QBC); // B C
@@ -779,12 +777,12 @@ bool TetMeshSctp::intersect(const Ray & ray, const SourceTet& source_tet, Inters
             p[i] = m_points[id[i]] - ray.origin;
         }
 
-        QAB = scalar_triple(p_ray, p[0], p[1]); // A B
-        QBC = scalar_triple(p_ray, p[1], p[2]); // B C
-        QAC = scalar_triple(p_ray, p[0], p[2]); // A C
-        QAD = scalar_triple(p_ray, p[0], p[3]); // A D
-        QBD = scalar_triple(p_ray, p[1], p[3]); // B D
-        QCD = scalar_triple(p_ray, p[2], p[3]); // C D
+        QAB = scalar_triple(ray.dir, p[0], p[1]); // A B
+        QBC = scalar_triple(ray.dir, p[1], p[2]); // B C
+        QAC = scalar_triple(ray.dir, p[0], p[2]); // A C
+        QAD = scalar_triple(ray.dir, p[0], p[3]); // A D
+        QBD = scalar_triple(ray.dir, p[1], p[3]); // B D
+        QCD = scalar_triple(ray.dir, p[2], p[3]); // C D
 
         sQAB = copysignf(1.0f, QAB); // A B
         sQBC = copysignf(1.0f, QBC); // B C
@@ -864,15 +862,13 @@ bool TetMeshSctp::intersect_stats(const Ray & ray, const SourceTet & source_tet,
         p[i] = m_points[id[i]] - ray.origin;
     }
 
-    glm::vec3 p_ray = ray.dir;
-
     //p[0] = A, p[1] = B, p[2] = C, p[3] = D
-    float QAB = scalar_triple(p_ray, p[0], p[1]); // A B
-    float QBC = scalar_triple(p_ray, p[1], p[2]); // B C
-    float QAC = scalar_triple(p_ray, p[0], p[2]); // A C
-    float QAD = scalar_triple(p_ray, p[0], p[3]); // A D
-    float QBD = scalar_triple(p_ray, p[1], p[3]); // B D
-    float QCD = scalar_triple(p_ray, p[2], p[3]); // C D
+    float QAB = scalar_triple(ray.dir, p[0], p[1]); // A B
+    float QBC = scalar_triple(ray.dir, p[1], p[2]); // B C
+    float QAC = scalar_triple(ray.dir, p[0], p[2]); // A C
+    float QAD = scalar_triple(ray.dir, p[0], p[3]); // A D
+    float QBD = scalar_triple(ray.dir, p[1], p[3]); // B D
+    float QCD = scalar_triple(ray.dir, p[2], p[3]); // C D
 
     float sQAB = copysignf(1.0f, QAB); // A B
     float sQBC = copysignf(1.0f, QBC); // B C
@@ -922,12 +918,12 @@ bool TetMeshSctp::intersect_stats(const Ray & ray, const SourceTet & source_tet,
             p[i] = m_points[id[i]] - ray.origin;
         }
 
-        QAB = scalar_triple(p_ray, p[0], p[1]); // A B
-        QBC = scalar_triple(p_ray, p[1], p[2]); // B C
-        QAC = scalar_triple(p_ray, p[0], p[2]); // A C
-        QAD = scalar_triple(p_ray, p[0], p[3]); // A D
-        QBD = scalar_triple(p_ray, p[1], p[3]); // B D
-        QCD = scalar_triple(p_ray, p[2], p[3]); // C D
+        QAB = scalar_triple(ray.dir, p[0], p[1]); // A B
+        QBC = scalar_triple(ray.dir, p[1], p[2]); // B C
+        QAC = scalar_triple(ray.dir, p[0], p[2]); // A C
+        QAD = scalar_triple(ray.dir, p[0], p[3]); // A D
+        QBD = scalar_triple(ray.dir, p[1], p[3]); // B D
+        QCD = scalar_triple(ray.dir, p[2], p[3]); // C D
 
         sQAB = copysignf(1.0f, QAB); // A B
         sQBC = copysignf(1.0f, QBC); // B C
