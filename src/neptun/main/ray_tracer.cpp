@@ -209,8 +209,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                         hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
                     else if (method == Method::DefaultSimd)
                         hit = scene.tet_mesh->intersect_simd(ray, source_tet, intersection_data);
-                    //else if (method == Method::ScTP)
-                    //    hit = scene.tet_mesh->intersect_sctp(ray, intersection_data);
+                    else if (method == Method::ScTP)
+                        hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
                     //else if (method == Method::Fast_basis)
                     //    hit = scene.tet_mesh->intersect_optimized_basis(ray, intersection_data);
                     else if (method == Method::Kd_tree)
@@ -238,7 +238,6 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                             color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
                         }
                     }
-
                     //color = glm::clamp(color, 0.0f, 1.0f);
 
                     //float u = (glm::atan(pos.x, pos.z) / glm::pi<float>()) * 0.5f + 0.5f;
@@ -255,6 +254,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 }
                 else
                     color = glm::vec3(0.1, 0.1, 0.1);
+                    //color = { 1.0, 0.0, 1.0 };
 
                 glm::ivec2 p_idx(i, j);
 
@@ -738,118 +738,117 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
         m_old_res = m_resolution;
     }
     //--------------------------------------------
-    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point end;
-
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now(), end, start_2, end_2;
     //--------------------------------------------
     std::thread **threads = new std::thread*[thread_count];
 
     job_index = thread_count;
     
-    if (gpu_init_rays)
+    if (method == Method::Default_gpu)
     {
-        //--------------------------------------------
-        std::chrono::steady_clock::time_point start_2, end_2;
-        //--------------------------------------------
-
-        //--------------------------------------------
-        Stats::ray_prep_time = 0;
-        //--------------------------------------------
-
-        int tetmesh_type = 0;
-        if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
-            tetmesh_type = 1;
-        else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
-            tetmesh_type = 2;
-
-        cast_rays_gpu(scene, source_tet, m_resolution, tile_size, tetmesh_type, m_intersect_data);
-
-
-        threads = new std::thread*[thread_count];
-        job_index = thread_count;
-
-        //--------------------------------------------
-        start_2 = std::chrono::steady_clock::now();
-        //--------------------------------------------
-        for (int i = 0; i < thread_count; i++)
+        if (gpu_init_rays)
         {
-            void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
-            threads[i] = new std::thread(mem_funct, this, i, lightInfos);
-        }
+            //--------------------------------------------
+            Stats::ray_prep_time = 0;
+            //--------------------------------------------
 
-        for (int i = 0; i < thread_count; i++)
+            int tetmesh_type = 0;
+            if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
+                tetmesh_type = 1;
+            else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
+                tetmesh_type = 2;
+
+            cast_rays_gpu(scene, source_tet, m_resolution, tile_size, tetmesh_type, m_intersect_data);
+
+
+            threads = new std::thread*[thread_count];
+            job_index = thread_count;
+
+            //--------------------------------------------
+            start_2 = std::chrono::steady_clock::now();
+            //--------------------------------------------
+            for (int i = 0; i < thread_count; i++)
+            {
+                void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
+                threads[i] = new std::thread(mem_funct, this, i, lightInfos);
+            }
+
+            for (int i = 0; i < thread_count; i++)
+            {
+                threads[i]->join();
+                delete threads[i];
+            }
+            //--------------------------------------------
+            end_2 = std::chrono::steady_clock::now();
+            Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+            //--------------------------------------------
+        }
+        else
         {
-            threads[i]->join();
-            delete threads[i];
-        }
-        //--------------------------------------------
-        end_2 = std::chrono::steady_clock::now();
-        Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
-        //--------------------------------------------
+            /*for (int i = 0; i < thread_count; i++)
+            threads[i] = new std::thread(&RayTracer::raytrace_worker_gpu, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
 
-        //--------------------------------------------
-        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        //--------------------------------------------
+            for (int i = 0; i < thread_count; i++)
+            {
+                threads[i]->join();
+                delete threads[i];
+            }*/
+
+            //--------------------------------------------
+            std::chrono::steady_clock::time_point start_2 = std::chrono::steady_clock::now();
+            //--------------------------------------------
+            for (int i = 0; i < thread_count; i++)
+                threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, is_diagnostic);
+
+            for (int i = 0; i < thread_count; i++)
+            {
+                threads[i]->join();
+                delete threads[i];
+            }
+            //--------------------------------------------
+            std::chrono::steady_clock::time_point end_2 = std::chrono::steady_clock::now();
+            Stats::ray_prep_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+            //--------------------------------------------
+
+            int tetmesh_type = 0;
+            if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
+                tetmesh_type = 1;
+            else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
+                tetmesh_type = 2;
+
+            traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, m_intersect_data);
+
+            threads = new std::thread*[thread_count];
+            job_index = thread_count;
+
+            //--------------------------------------------
+            start_2 = std::chrono::steady_clock::now();
+            //--------------------------------------------
+            for (int i = 0; i < thread_count; i++)
+            {
+                void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata;
+                threads[i] = new std::thread(mem_funct, this, i, lightInfos);
+            }
+
+            for (int i = 0; i < thread_count; i++)
+            {
+                threads[i]->join();
+                delete threads[i];
+            }
+            //--------------------------------------------
+            end_2 = std::chrono::steady_clock::now();
+            Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+            //--------------------------------------------
+
+        }
     }
-    else
+    else if(method == Method::ScTP_gpu)
     {
-        /*for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::raytrace_worker_gpu, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
-
-        for (int i = 0; i < thread_count; i++)
-        {
-            threads[i]->join();
-            delete threads[i];
-        }*/
-        //--------------------------------------------
-        std::chrono::steady_clock::time_point start_2 = std::chrono::steady_clock::now();
-        //--------------------------------------------
-        for (int i = 0; i < thread_count; i++)
-            threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, is_diagnostic);
-
-        for (int i = 0; i < thread_count; i++)
-        {
-            threads[i]->join();
-            delete threads[i];
-        }
-        //--------------------------------------------
-        std::chrono::steady_clock::time_point end_2 = std::chrono::steady_clock::now();
-        Stats::ray_prep_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
-        //--------------------------------------------
-
-        int tetmesh_type = 0;
-        if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
-            tetmesh_type = 1;
-        else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
-            tetmesh_type = 2;
-
-        traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type,m_intersect_data);
-
-        threads = new std::thread*[thread_count];
-        job_index = thread_count;
-
-        //--------------------------------------------
-        start_2 = std::chrono::steady_clock::now();
-        //--------------------------------------------
-        for (int i = 0; i < thread_count; i++)
-        {
-            void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata;
-            threads[i] = new std::thread(mem_funct, this, i, lightInfos);
-        }
-
-        for (int i = 0; i < thread_count; i++)
-        {
-            threads[i]->join();
-            delete threads[i];
-        }
-        //--------------------------------------------
-        end_2 = std::chrono::steady_clock::now();
-        Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
-        //--------------------------------------------
-
+        
     }
-    
+
     delete[] threads;
+    
     //--------------------------------------------
     end = std::chrono::steady_clock::now();
     last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
@@ -860,6 +859,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     L1_count = 0;
 }
 
+//Unused!!!
 void RayTracer::ray_caster(Scene& scene, std::vector<Ray> rays, std::vector<IntersectionData>& output)
 {
     for (int i = 0; i < rays.size(); i++)
