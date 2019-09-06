@@ -1334,10 +1334,11 @@ void Editor::DrawRenderedFrame()
 
     if (render && scene->has_accelerator())
     {
-        if(ray_tracer->method != Method::Default_gpu)
-            ray_tracer->Render(*scene, diagnostics);
-        else
+        if(ray_tracer->method == Method::Default_gpu ||
+            ray_tracer->method == Method::ScTP_gpu)
             ray_tracer->render_gpu(*scene, diagnostics);
+        else
+            ray_tracer->Render(*scene, diagnostics);
         glBindTexture(GL_TEXTURE_2D, rendered_frame_texture_id);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, GL_BGR, GL_UNSIGNED_BYTE, ray_tracer->m_rendered_image->get_pixels());
 
