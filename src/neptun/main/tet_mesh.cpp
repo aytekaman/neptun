@@ -851,9 +851,147 @@ bool TetMeshSctp::intersect(const Ray & ray, const SourceTet& source_tet, Inters
         return false;
 }
 
-bool TetMeshSctp::intersect_stats(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data, DiagnosticData & diagnostic_data)
+bool TetMeshSctp::intersect_stats(const Ray & ray, const SourceTet & source_tet, IntersectionData & intersection_data, DiagnosticData & diagnostic_data)
 {
-    return false;
+    unsigned int id[4];
+    glm::vec3 p[4];
+
+    ++diagnostic_data.visited_node_count;
+
+    for (int i = 0; i < 4; i++)
+    {
+        id[i] = source_tet.v[i];
+        p[i] = m_points[id[i]] - ray.origin;
+    }
+
+    glm::vec3 p_ray = ray.dir;
+
+    //p[0] = A, p[1] = B, p[2] = C, p[3] = D
+    float QAB = scalar_triple(p_ray, p[0], p[1]); // A B
+    float QBC = scalar_triple(p_ray, p[1], p[2]); // B C
+    float QAC = scalar_triple(p_ray, p[0], p[2]); // A C
+    float QAD = scalar_triple(p_ray, p[0], p[3]); // A D
+    float QBD = scalar_triple(p_ray, p[1], p[3]); // B D
+    float QCD = scalar_triple(p_ray, p[2], p[3]); // C D
+
+    float sQAB = copysignf(1.0f, QAB); // A B
+    float sQBC = copysignf(1.0f, QBC); // B C
+    float sQAC = copysignf(1.0f, QAC); // A C
+    float sQAD = copysignf(1.0f, QAD); // A D
+    float sQBD = copysignf(1.0f, QBD); // B D
+    float sQCD = copysignf(1.0f, QCD); // C D
+
+    int outIdx = -1;
+    // ABC
+    if ((sQAB != 0 && sQAC != 0 && sQBC != 0) &&
+        (sQAB < 0 && sQAC > 0 && sQBC < 0))
+    {
+        outIdx = 3;
+    }
+    // BAD
+    if ((sQAB != 0 && sQAD != 0 && sQBD != 0) &&
+        (sQAB > 0 && sQAD < 0 && sQBD > 0))
+    {
+        outIdx = 2;
+    }
+    // CDA
+    if ((sQAD != 0 && sQAC != 0 && sQCD != 0) &&
+        (sQAD > 0 && sQAC < 0 && sQCD < 0))
+    {
+        outIdx = 1;
+    }
+    // DCB
+    if ((sQBC != 0 && sQBD != 0 && sQCD != 0) &&
+        (sQBC > 0 && sQBD < 0 && sQCD > 0))
+    {
+        outIdx = 0;
+    }
+    if (outIdx == -1)
+        return false;
+
+    int index = source_tet.n[outIdx];
+    bool cons_face = false;
+    int counter = 0;
+
+    while (!cons_face && index > -1 && counter < 1000)
+    {
+        ++diagnostic_data.visited_node_count;
+        for (int i = 0; i < 4; i++)
+        {
+            id[i] = m_tet_sctps[index].v[i];
+            p[i] = m_points[id[i]] - ray.origin;
+        }
+
+        QAB = scalar_triple(p_ray, p[0], p[1]); // A B
+        QBC = scalar_triple(p_ray, p[1], p[2]); // B C
+        QAC = scalar_triple(p_ray, p[0], p[2]); // A C
+        QAD = scalar_triple(p_ray, p[0], p[3]); // A D
+        QBD = scalar_triple(p_ray, p[1], p[3]); // B D
+        QCD = scalar_triple(p_ray, p[2], p[3]); // C D
+
+        sQAB = copysignf(1.0f, QAB); // A B
+        sQBC = copysignf(1.0f, QBC); // B C
+        sQAC = copysignf(1.0f, QAC); // A C
+        sQAD = copysignf(1.0f, QAD); // A D
+        sQBD = copysignf(1.0f, QBD); // B D
+        sQCD = copysignf(1.0f, QCD); // C D
+
+        // ABC
+        if ((sQAB != 0 && sQAC != 0 && sQBC != 0) &&
+            (sQAB < 0 && sQAC > 0 && sQBC < 0))
+        {
+            outIdx = 3;
+        }
+        // BAD
+        if ((sQAB != 0 && sQAD != 0 && sQBD != 0) &&
+            (sQAB > 0 && sQAD < 0 && sQBD > 0))
+        {
+            outIdx = 2;
+        }
+        // CDA
+        if ((sQAD != 0 && sQAC != 0 && sQCD != 0) &&
+            (sQAD > 0 && sQAC < 0 && sQCD < 0))
+        {
+            outIdx = 1;
+        }
+        // DCB
+        if ((sQBC != 0 && sQBD != 0 && sQCD != 0) &&
+            (sQBC > 0 && sQBD < 0 && sQCD > 0))
+        {
+            outIdx = 0;
+        }
+        cons_face = m_tet_sctps[index].face_cons[outIdx];
+        index = m_tet_sctps[index].n[outIdx];
+
+        counter++;
+    }
+
+    if (cons_face)
+    {
+        index = (index & 0x7FFFFFFF);
+        const Face& face = *m_constrained_faces[index].face;
+
+        const glm::vec3 *v = face.vertices;
+        const glm::vec3 *n = face.normals;
+        const glm::vec2 *t = face.uvs;
+
+        const glm::vec3 e1 = v[1] - v[0];
+        const glm::vec3 e2 = v[2] - v[0];
+        const glm::vec3 s = ray.origin - v[0];
+        const glm::vec3 q = glm::cross(s, e1);
+        const glm::vec3 p = glm::cross(ray.dir, e2);
+        const float f = 1.0f / glm::dot(e1, p);
+        const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
+
+        intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
+        intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+        intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+        intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
+        intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        return true;
+    }
+    else
+        return false;
 }
 
 bool TetMeshSctp::intersect(const Ray & ray, const TetFace & tet_face, IntersectionData & intersection_data)
