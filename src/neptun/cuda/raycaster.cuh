@@ -42,6 +42,12 @@ inline void swap(int &a, int &b)
 }
 
 __device__
+inline float scalar_triple(glm::vec3 p, glm::vec3 q, glm::vec3 r)
+{
+    return glm::dot(p, glm::cross(q, r));
+}
+
+__device__
 inline float crossv(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; }
 
 __device__
