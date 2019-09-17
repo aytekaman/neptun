@@ -192,7 +192,7 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     const std::string scene_file = args["scene"]->value();
     const std::string output_file = args["output"]->value();
-    const std::string rendering_method = args["method"]->value();
+    const std::string rendering_method = args["accelerator"]->value();
     const bool diagnostic = args["diagnostic"]->cast<bool>();
     const std::string output_base = output_file.substr(0, output_file.find_last_of('.'));
 
@@ -265,7 +265,7 @@ int command_render_scene(const argparse::ArgumentData& args)
         return EXIT_FAILURE;
     }
 
-    ray_tracer.set_resoultion(glm::ivec2(image_width, image_height));
+    ray_tracer.set_resolution(glm::ivec2(image_width, image_height));
 
     const int N = args["repetition"]->cast<int>();
 
@@ -371,7 +371,7 @@ int run_command_line(int argc, char const* argv[])
                                         command_render_scene);
         
         parser.add_positional_argument("scene", "Scene file to be rendered")
-              .add_keyword_argument("method", "Rendering method. (tet-mesh-32, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh-32")
+              .add_keyword_argument("accelerator", "Accelerator type used for intersections. (tet-mesh-32, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh-32")
               .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
               .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "640x480")
               .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")

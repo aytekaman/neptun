@@ -32,6 +32,8 @@ void Stats::add_build_time(float build_time)
 float Stats::last_build_time;
 float Stats::last_render_time;
 
+int Stats::last_accelerator_size_in_bytes;
+
 float Stats::best_render_time = 1024.0f;
 
 std::vector<float> Stats::s_render_times;

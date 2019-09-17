@@ -52,7 +52,7 @@ struct KdToDo {
     float tMin, tMax;
 };
 
-class KdTree
+class KdTree : public Accelerator
 {
 public:
     KdTree(Scene& scene,
@@ -76,6 +76,8 @@ public:
         int nprims, int depth,
         BoundEdge* edges[3], int *prims0,
         int *prims1, int badRefines = 0);
+
+    int get_size_in_bytes();
 
     // KdTree Private Data
     const int isectCost, traversalCost, maxPrims;

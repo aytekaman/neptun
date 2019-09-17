@@ -30,8 +30,8 @@ public:
     Accelerator();
     ~Accelerator();
 
-    virtual bool intersect(const Ray& ray, IntersectionData& intersection_data) = 0;
-    virtual bool intersect(const Ray& ray) = 0;
+    // virtual bool intersect(const Ray& ray, IntersectionData& intersection_data) = 0;
+    // virtual bool intersect(const Ray& ray) = 0;
 
     //virtual bool intersect_stats(const Ray& ray, IntersectionData& intersection_data, DiagnosticData& diagnostic_data);
 

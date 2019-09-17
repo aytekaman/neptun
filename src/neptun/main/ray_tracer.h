@@ -90,7 +90,7 @@ public:
 
 
     void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
-    void set_resoultion(const glm::ivec2& resolution);
+    void set_resolution(const glm::ivec2& resolution);
 
 
     bool multi_threading = false;
