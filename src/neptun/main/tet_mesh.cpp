@@ -2303,6 +2303,97 @@ void TetMesh16::intersect4(TetRayHit4& tet_ray_hit)
             index[k] = tet_ray_hit.tet_ray[k].source_tet.n[3];
         }
     }
+}
 
+TetMesh80::TetMesh80(
+    const Scene& scene, 
+    const bool preserve_triangles, 
+    const bool create_bbox, 
+    const float quality) : 
+    TetMesh(scene, preserve_triangles, create_bbox, quality)
+{
+    init_acceleration_data();
+    compute_weight();
+}
+<<<<<<< HEAD
 
+TetMesh80::TetMesh80(const Scene& scene) : TetMesh(scene)
+{
+    init_acceleration_data();
+    compute_weight();
+}
+
+int TetMesh80::get_size_in_bytes()
+{
+    int size_in_bytes = 0;
+
+    size_in_bytes += m_tets.size() * sizeof(Tet80);
+    size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
+
+    return size_in_bytes;
+
+    return 0;
+}
+
+void TetMesh80::init_acceleration_data()
+{
+    delete[] m_tet80s;
+    m_tet80s = new Tet80[m_tets.size()];
+}
+
+int TetMesh80::find_tet(const glm::vec3& point, SourceTet& tet)
+{
+    return 0;
+}
+
+bool TetMesh80::intersect(const Ray& ray, const SourceTet& tet, IntersectionData& intersection_data)
+{
+    return false;
+}
+
+=======
+
+TetMesh80::TetMesh80(const Scene& scene) : TetMesh(scene)
+{
+    init_acceleration_data();
+    compute_weight();
+}
+
+int TetMesh80::get_size_in_bytes()
+{
+    int size_in_bytes = 0;
+
+    size_in_bytes += m_tets.size() * sizeof(Tet80);
+    size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
+
+    return size_in_bytes;
+
+    return 0;
+}
+
+void TetMesh80::init_acceleration_data()
+{
+    delete[] m_tet80s;
+    m_tet80s = new Tet80[m_tets.size()];
+}
+
+int TetMesh80::find_tet(const glm::vec3& point, SourceTet& tet)
+{
+    return 0;
+}
+
+bool TetMesh80::intersect(const Ray& ray, const SourceTet& tet, IntersectionData& intersection_data)
+{
+    return false;
+}
+
+>>>>>>> other-traversal-methods
+bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
+{
+    return false;
+}
+
+bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
+{
+    return false;
 }
