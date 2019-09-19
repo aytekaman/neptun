@@ -1,0 +1,32 @@
+lagae_neptune.tetmesh
+0 1.5707 35
+0 0 0
+3
+Light
+-1 5 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+neptune
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+cube
+0 -0.850 -9.350
+0 0 0
+59 1.520 1
+#
+#Material
+1 1 1
+#Mesh
+box_tesselated.obj
