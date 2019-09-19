@@ -81,6 +81,7 @@ enum ImageType
 extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
 extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
 extern void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, IntersectionData* output);
+extern void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, int num_streams, int id_s, unsigned int tet_mesh_type, IntersectionData* output);
 
 class RayTracer
 {
@@ -96,12 +97,19 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
-    void raytrace_worker_gpu(
-        Scene & scene,
+    void asynch_ray_traverse_worker_gpu(
+        Scene& scene,
         SourceTet source_tet,
         int thread_idx,
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
+
+	void asynch_ray_cast_worker_gpu(
+		Scene& scene,
+		SourceTet source_tet,
+		int thread_idx,
+		std::vector<LightInfo> lightInfos,
+		bool is_diagnostic);
 
     void prepare_rays_gpu(Scene & scene,
         SourceTet source_tet,
@@ -111,6 +119,7 @@ public:
     void draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
     void draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos);
     void draw_intersectiondata_rowmajor(int thread_idx, std::vector<LightInfo> lightInfos);
+	void draw_intersectiondata_rowmajor(int set_start, int set_end, std::vector<LightInfo> lightInfos);
 
     void render_gpu(Scene & scene, const bool is_diagnostic = false);
 
