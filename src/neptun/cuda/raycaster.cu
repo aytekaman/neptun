@@ -1412,7 +1412,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 
 	unsigned int rays_size = resolution.x * resolution.y;
 	// Allocate space for device copy of data
-	if (old_size != rays_size && id_s == 0 && flag)
+	if (old_size != rays_size && id_s == 0)
 	{
 		//cudaFree(d_rays);
 		//cudaFree(d_intersectdata);
@@ -1429,12 +1429,11 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 		cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
 		cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
 		cudaMemcpy(d_res, new glm::ivec2(resolution), sizeof(glm::ivec2), cudaMemcpyHostToDevice);
-		flag = false;
 	}
 
 	if ((scene.camTarget != old_target || scene.camDist != old_dist ||
 		scene.camOrbitX != old_orbit_x || scene.camOrbitY != old_orbit_y) &&
-		(id_s == 0) && flag2)
+		(id_s == 0))
 	{
 		//cudaFree(d_source_tet);
 		//cudaFree(d_scene);
@@ -1444,8 +1443,6 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 		old_dist = scene.camDist;
 		old_orbit_x = scene.camOrbitX;
 		old_orbit_y = scene.camOrbitY;
-
-		flag2 = false;
 	}
 	cudaStreamCreate(&streams[id_s]);
 	unsigned int stream_size = rays_size / num_streams;
