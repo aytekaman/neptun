@@ -5,15 +5,15 @@
 #include <iostream>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "memory.h"
-
 #include "mesh.h"
+#include "neptun/util/timer.h"
 #include "stats.h"
 
 void KdNode::InitLeaf(int *primNums, int np,
@@ -39,7 +39,7 @@ KdTree::KdTree(Scene& scene,
     maxPrims(maxPrims_),
     emptyBonus(emptyBonus_)
     {
-        clock_t start_time = clock();
+        Timer timer;
 
         scene_ptr = &scene;
 
@@ -96,16 +96,16 @@ KdTree::KdTree(Scene& scene,
     buildTree(0, bounds, primBounds, primNums, faces.size(),
         maxDepth, edges, prims0, prims1);
 
-    clock_t elapsed = clock() - start_time;
+    timer.stop();
 
-	for (int i = 0; i < 3; ++i)
-		delete[] edges[i];// = new BoundEdge[2 * faces.size()];
+    for (int i = 0; i < 3; ++i)
+	    delete[] edges[i];// = new BoundEdge[2 * faces.size()];
 
 	delete[] prims0;
 	delete[] prims1;
 	delete[] primNums;
 
-    Stats::add_build_time(elapsed / (float)CLOCKS_PER_SEC);
+    Stats::add_build_time(timer.seconds());
 }
 
 KdTree::~KdTree()

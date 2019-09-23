@@ -3,8 +3,6 @@
 #include <pmmintrin.h>
 
 #include <algorithm>
-#include <chrono>
-#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -23,6 +21,7 @@
 #include "memory.h"
 #include "mesh.h"
 #include "neptun/tet_mesh/tet_mesh_builder_factory.h"
+#include "neptun/util/timer.h"
 #include "scene.h"
 #include "sfc_utils.h"
 #include "stats.h"
@@ -34,7 +33,8 @@ TetMesh::TetMesh(
     const float quality,
     const bool half_space_optimization)
 {
-    clock_t start_time = clock();
+    Timer timer;
+    timer.start();
 
     build_from_scene(scene, preserve_triangles, create_bbox, quality);
 
@@ -43,9 +43,7 @@ TetMesh::TetMesh(
 
     //init_acceleration_data();
 
-    clock_t elapsed = clock() - start_time;
-
-    Stats::add_build_time(elapsed / (float)CLOCKS_PER_SEC);
+    Stats::add_build_time(timer.seconds());
 }
 
 TetMesh::TetMesh(const Scene& scene)
@@ -132,7 +130,8 @@ void TetMesh::build_from_scene(
 
     std::vector<VertexId> *vertexIds = new std::vector<VertexId>[cell_count * cell_count * cell_count];
 
-    clock_t start = clock();
+    Timer timer;
+    timer.start();
 
     int last_given_id = -1;
 
@@ -174,9 +173,7 @@ void TetMesh::build_from_scene(
 
     delete[] vertexIds;
 
-    clock_t end = clock();
-
-    Logger::Log("Duplicate vertices are merged in %.2f seconds.", (float)(end - start) / CLOCKS_PER_SEC);
+    Logger::Log("Duplicate vertices are merged in %.2f seconds.", timer.seconds());
 
     //Logger::LogError("This is an error message");
 
@@ -277,9 +274,7 @@ void TetMesh::build_from_scene(
     m_air_region_id = out_data.air_region_id;
     m_constrained_face_count = out_data.constrained_face_count;
 
-    end = clock();
-
-    Logger::Log("Tet Mesh is generated in %f seconds.", float(end - start) / CLOCKS_PER_SEC);
+    Logger::Log("Tet Mesh is generated in %f seconds.", timer.seconds());
     Logger::Log("Air region ID: %d", m_air_region_id);
     Logger::Log("Constrained face count: %d", m_constrained_face_count);
 }
@@ -445,7 +440,8 @@ void TetMesh::sort_points(const SortingMethod sorting_method, const unsigned int
 
 void TetMesh::perform_half_space_optimization()
 {
-    auto start = std::chrono::steady_clock::now();
+    Timer timer;
+    timer.start();
 
     int optimized_face_count = 0;
 
@@ -516,9 +512,8 @@ void TetMesh::perform_half_space_optimization()
         }
     }
 
-    auto end = std::chrono::steady_clock::now();
-
-    float duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
+    timer.stop();
+    float duration = timer.seconds();
 
     Logger::Log("half space optimization is performed in %.2f seconds.", duration);
     Logger::Log("%d faces are optimized.", optimized_face_count);
@@ -723,7 +718,8 @@ void TetMesh32::init_acceleration_data()
     if (m_tets.size() == 0)
         return;
 
-    clock_t start = clock();
+    Timer timer;
+    timer.start();
 
     FreeAligned(m_tet32s);
     m_tet32s = (Tet32*)AllocAligned(m_tets.size() * 32);
@@ -763,9 +759,7 @@ void TetMesh32::init_acceleration_data()
         m_source_tet.n[i] = m_tet32s[0].n[i];
     }
 
-    clock_t end = clock();
-
-    Logger::Log("Acceleration data is initialized in %.2f seconds.", float(end - start) / CLOCKS_PER_SEC);
+    Logger::Log("Acceleration data is initialized in %.2f seconds.", timer.seconds());
 
     Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
 
@@ -779,7 +773,6 @@ void TetMesh32::init_acceleration_data()
         m_padded_points[i].z = m_points[i].y;
         m_padded_points[i].w = m_points[i].x;
     }
-         
 }
 
 inline float cross(const glm::vec2& a, const glm::vec2& b) { return a.x * b.y - a.y * b.x; };

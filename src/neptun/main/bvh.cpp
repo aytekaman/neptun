@@ -4,17 +4,15 @@
 #include <ctime>
 #include <iostream>
 
-
-
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 
 #include "mesh.h"
+#include "neptun/util/timer.h"
 #include "scene.h"
 #include "stats.h"
 
@@ -152,7 +150,8 @@ Bvh::Bvh(Scene &scene,
     : maxPrimsInNode(std::min(255, maxPrimsInNode)),
     splitMethod(splitMethod) {
 
-    clock_t start_time = clock();
+    Timer timer;
+    timer.start();
     //ProfilePhase _(Prof::AccelConstruction);
 
     // Build BVH from _primitives_
@@ -211,9 +210,7 @@ Bvh::Bvh(Scene &scene,
 
     //printf("BVH size:  %zu MB", (totalNodes * sizeof(LinearBVHNode)) / (1024 * 1024));
 
-    clock_t elapsed = clock() - start_time;
-
-    Stats::add_build_time(elapsed / (float)CLOCKS_PER_SEC);
+    Stats::add_build_time(timer.seconds());
     //Stats::last_accelerator_size_in_bytes = (totalNodes * sizeof(LinearBVHNode)) / (1024 * 1024);
 }
 
@@ -1012,7 +1009,8 @@ bool BvhEmbree::Intersect(const Ray& ray, IntersectionData& intersection_data) c
 
     if (rtc_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
     {
-        intersection_data.position = ray.origin + rtc_hit.ray.tfar * ray.dir;
+        intersection_data.position = ray.origin + rtc_hit.ray.tfar * ray.dir;
+
         intersection_data.normal =
             faces[rtc_hit.hit.primID].normals[1] * rtc_hit.hit.u +
             faces[rtc_hit.hit.primID].normals[2] * rtc_hit.hit.v +
