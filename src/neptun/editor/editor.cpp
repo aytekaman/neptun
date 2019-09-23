@@ -638,23 +638,7 @@ void Editor::DrawTetGen()
             scene->tet_mesh = new TetMesh80(*scene, preserveTriangles, create_bounding_box, quality);
             Logger::Log("TetMesh80 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
-
-        //scene->tet_mesh20 = new TetMesh20(*scene->tet_mesh);
-
-        //scene->tet_mesh20 = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
-        //scene->tet_mesh32 = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality);
     }
-
-
-
-    //if (t && t->joinable)
-    //{
-    //	Logger::LogError("!!!");
-    //	t->join();
-    //}
-    //else
-    //
-
 
     ImGui::SameLine();
 
