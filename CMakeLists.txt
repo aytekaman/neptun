@@ -16,7 +16,7 @@ endif()
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 if(COMPILER_SUPPORTS_MARCH_NATIVE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -O3")
 endif()
 
 if(${CMAKE_VERSION} VERSION_LESS "3.1.0")
@@ -168,6 +168,8 @@ set (main_sources
     src/neptun/main/texture.h
     src/neptun/main/utils.cpp
     src/neptun/main/utils.h
+    src/neptun/math/transform.cpp
+    src/neptun/math/transform.h
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
     src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h

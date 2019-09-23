@@ -12,6 +12,7 @@
 #include <glm/gtx/norm.hpp>
 
 #include "mesh.h"
+#include "neptun/math/transform.h"
 #include "neptun/util/timer.h"
 #include "scene.h"
 #include "stats.h"
@@ -842,30 +843,23 @@ void Bvh::initFaces()
         if (mesh == nullptr)
             continue;
 
-        glm::mat4 t = glm::translate(glm::mat4(1.0f), scene_objects[i]->pos);
-        glm::vec3 rot = glm::radians(scene_objects[i]->rot);
-        glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
-        glm::mat4 s = glm::scale(glm::mat4(1.0), scene_objects[i]->scale);
-        
-        s[3][3] = 1;
-
-        glm::mat4 m = t * r * s;
+        Transform tr = Transform::translate(scene_objects[i]->pos) * 
+            Transform::rotate(glm::radians(scene_objects[i]->rot)) *
+            Transform::scale(scene_objects[i]->scale);
 
         for (int j = 0; j < mesh->m_vertex_count; j += 3)
         {
-            glm::vec3 vertex = glm::vec3(m * glm::vec4(mesh->m_vertices[j], 1));
-
             Face face;;
 
             //face.material = scene.sceneObjects[i]->material;
 
-            face.vertices[0] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 0], 1));
-            face.vertices[1] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 1], 1));
-            face.vertices[2] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 2], 1));
-                
-            face.normals[0] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 0], 1));
-            face.normals[1] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 1], 1));
-            face.normals[2] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 2], 1));
+            face.vertices[0] = tr.transform_point(mesh->m_vertices[j + 0]);
+            face.vertices[1] = tr.transform_point(mesh->m_vertices[j + 1]);
+            face.vertices[2] = tr.transform_point(mesh->m_vertices[j + 2]);
+
+            face.normals[0] = tr.transform_normal(mesh->m_normals[j + 0]);
+            face.normals[1] = tr.transform_normal(mesh->m_normals[j + 1]);
+            face.normals[2] = tr.transform_normal(mesh->m_normals[j + 2]);
 
             //if (mesh->uvs.size() > 0)
             //{
