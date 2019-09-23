@@ -588,7 +588,7 @@ void Editor::DrawTetGen()
     ImGui::Begin("TetGen", 0, flags);
 
     static bool preserveTriangles = true;
-    static bool half_space_optimization = true;
+    static bool half_space_optimization = false;
     static bool process_light_sources = false;
     static bool create_bounding_box = true;
     static float quality = 5.0f;
