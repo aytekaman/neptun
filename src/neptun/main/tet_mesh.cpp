@@ -2330,8 +2330,6 @@ int TetMesh80::get_size_in_bytes()
     size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
 
     return size_in_bytes;
-
-    return 0;
 }
 
 void TetMesh80::init_acceleration_data()

@@ -389,6 +389,11 @@ public:
 class TetMesh80 : public TetMesh
 {
 public:
+    struct Tet80Face
+    {
+        
+    };
+
     struct Tet80
     {
         glm::vec3 v[4];
