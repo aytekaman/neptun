@@ -1,0 +1,40 @@
+lagae_forest.tetmesh
+0.32 1.5208 9.09454
+-1.36415 0.466406 0.88776
+4
+Light
+0 1.5 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+clean_forest_base
+0 0 0
+0 0 0
+3 3 3
+#
+#Material
+1 1 1
+#Mesh
+clean_forest_base.obj
+clean_forest_trunk
+0.75 -0.65 1.1
+0 0 0
+3 3 3
+#
+#Material
+1 1 1
+#Mesh
+clean_forest_trunk.obj
+Dummy
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#
