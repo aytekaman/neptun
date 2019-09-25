@@ -1,0 +1,40 @@
+lagae_armadillo_not_p.tetmesh
+0 1.5707 35
+0 0 0
+4
+Light
+-1 5 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+Cube
+0 -2.3 -15
+0 0 0
+7 1.9 0.3
+#
+#Material
+1 1 1
+#Mesh
+box_tesselated.obj
+Dummy
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#
+armadillo
+0 -1.65 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
