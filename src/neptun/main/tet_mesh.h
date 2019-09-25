@@ -442,5 +442,8 @@ public:
 
     void intersect4_simd(TetRayHit4& tet_ray_hit);
 
+    int get_face(int entry_face_index, int id);
+
+
     Tet80* m_tet80s = nullptr;
 };

@@ -2356,7 +2356,15 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
 
         int entry_face_idx = 0; 
 
-        int side = 0;
+        int side = glm::dot(v_new_ray, v_new_ray);
+
+        int id = side >= 0;
+
+        side = glm::dot(v_new_ray, v_new_ray);
+
+        id += side < 0;
+
+        int exit_face_index = get_face(entry_face_idx, id);
     }
 
     return false;
@@ -2370,4 +2378,14 @@ bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, IntersectionD
 bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
+}
+
+int TetMesh80::get_face(int entry_face_index, int id)
+{
+    const int table[3][4] = {
+        {1, 0, 0, 0},
+        {2, 3, 1, 2},
+        {3, 2, 3, 1} };
+
+    return table[id][entry_face_index];
 }
