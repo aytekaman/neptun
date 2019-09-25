@@ -227,9 +227,12 @@ int command_render_scene(const argparse::ArgumentData& args)
     RayTracer ray_tracer;
     scene.load_from_file(scene_file);
 
+    size_t accelerator_size_in_bytes = 0;
+
     if (rendering_method == "tet-mesh-32")
     {
         scene.build_tet_mesh(true, true);
+        accelerator_size_in_bytes = scene.tet_mesh->get_size_in_bytes();
 
         const std::string sorting_method = args["sorting"]->value();
 
@@ -247,16 +250,19 @@ int command_render_scene(const argparse::ArgumentData& args)
     else if (rendering_method == "bvh")
     {
         scene.build_bvh();
+        accelerator_size_in_bytes = scene.bvh->get_size_in_bytes();
         ray_tracer.method = Method::BVH_pbrt;
     }
     else if (rendering_method == "kd")
     {
         scene.build_kd_tree();
+        accelerator_size_in_bytes = scene.kd_tree->get_size_in_bytes();
         ray_tracer.method = Method::Kd_tree;
     }
     else if (rendering_method == "embree") 
     {
         scene.build_bvh_embree();
+        accelerator_size_in_bytes = 0; // Not supported yet.
         ray_tracer.method = Method::BVH_embree;
     }
     else 
@@ -276,6 +282,7 @@ int command_render_scene(const argparse::ArgumentData& args)
     std::cout << "build_time=" << Stats::last_build_time << std::endl;
     std::cout << "render_time=" << Stats::get_avg_render_time(N) << std::endl;
     std::cout << "visited_node_count=" << ray_tracer.avg_test_count << std::endl; // avg
+    std::cout << "size_in_bytes=" << accelerator_size_in_bytes << std::endl;
 
     ray_tracer.m_rendered_image->save_to_disk(output_file.c_str());
     std::cout << "Rendered image saved at : " << output_file << std::endl;
