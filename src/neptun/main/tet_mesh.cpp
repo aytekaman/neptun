@@ -2343,8 +2343,30 @@ int TetMesh80::find_tet(const glm::vec3& point, SourceTet& tet)
     return 0;
 }
 
-bool TetMesh80::intersect(const Ray& ray, const SourceTet& tet, IntersectionData& intersection_data)
+bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
+    glm::vec3 u_ray = ray.dir;
+    glm::vec3 v_ray = glm::cross(ray.origin, ray.origin + ray.dir);
+
+    while (true)
+    {
+        glm::vec3 vf;
+
+        glm::vec3 v_new_ray = v_ray - glm::cross(vf, u_ray);
+
+        int entry_face_idx = 0; 
+
+        int side = glm::dot(v_new_ray, v_new_ray);
+
+        int id = side >= 0;
+
+        side = glm::dot(v_new_ray, v_new_ray);
+
+        id += side < 0;
+
+        int exit_face_index = get_face(entry_face_idx, id);
+    }
+
     return false;
 }
 
@@ -2356,4 +2378,14 @@ bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, IntersectionD
 bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
 {
     return false;
+}
+
+int TetMesh80::get_face(int entry_face_index, int id)
+{
+    const int table[3][4] = {
+        {1, 0, 0, 0},
+        {2, 3, 1, 2},
+        {3, 2, 3, 1} };
+
+    return table[id][entry_face_index];
 }
