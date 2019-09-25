@@ -704,7 +704,7 @@ void Editor::DrawTetGen()
             scene->tet_mesh = new TetMeshSctp(*scene);
             Logger::Log("TetMesh ScTP size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
             copy_to_gpu(*(TetMeshSctp*)scene->tet_mesh);
-            Logger::Log("TetMesh16 data copied to GPU");
+            Logger::Log("TetMeshScTP data copied to GPU");
         }
 
         //Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));

@@ -1225,6 +1225,8 @@ void copy_to_gpu(TetMeshSctp& tet_mesh)
     print_cuda_error("CUDA copy error Sctp");
 }
 
+//------------------------------------------------o-------------------------------------------------------
+
 void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output)
 {
     // Allocate space for device copy of data
@@ -1324,6 +1326,8 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsig
     }
 }
 
+//------------------------------------------------o-------------------------------------------------------
+
 void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, IntersectionData* output)
 {
     unsigned int rays_size = resolution.x * resolution.y;
@@ -1362,6 +1366,7 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
     }
     cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
     cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
+	print_cuda_error("CUDA copy error:");
 
     unsigned int stream_size = rays_size / NSTREAMS;
     int stream_bytes = stream_size * sizeof(Ray);
@@ -1392,6 +1397,7 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
         ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tetsSctp, d_cons_faces, d_faces, d_intersectdata);
     }
     cudaDeviceSynchronize();
+	print_cuda_error("CUDA kernel error:");
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
@@ -1399,6 +1405,7 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
 
     start = std::chrono::steady_clock::now();
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
+	print_cuda_error("CUDA copy-back error:");
     end = std::chrono::steady_clock::now();
     Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
 }
