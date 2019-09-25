@@ -229,9 +229,24 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     size_t accelerator_size_in_bytes = 0;
 
-    if (rendering_method == "tet-mesh-32")
+    if (rendering_method.find("tet-mesh") != std::string::npos)
     {
-        scene.build_tet_mesh(true, true);
+        if(rendering_method == "tet-mesh-16")
+            scene.tet_mesh = new TetMesh16(scene, true, true);
+        else if (rendering_method == "tet-mesh-20")
+            scene.tet_mesh = new TetMesh20(scene, true, true);
+        else if (rendering_method == "tet-mesh-32")
+            scene.tet_mesh = new TetMesh32(scene, true, true);
+        else if (rendering_method == "tet-mesh-80")
+            scene.tet_mesh = new TetMesh80(scene, true, true);
+        else
+        {
+            std::cerr << "Unrecognized rendering method " << rendering_method << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        ray_tracer.method = Method::Default;
+
         accelerator_size_in_bytes = scene.tet_mesh->get_size_in_bytes();
 
         const std::string sorting_method = args["sorting"]->value();
