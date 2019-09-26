@@ -64,7 +64,7 @@ void create_and_render_test_scene()
 {
     Scene scene;
     RayTracer ray_tracer;
-
+	
     SceneObject* icosphere = new SceneObject("Icosphere");
 
     icosphere->mesh = ProceduralMeshGenerator::create_icosphere();
@@ -807,7 +807,7 @@ void cpu_gpu_comparison()
     std::cout << "difference: " << glm::abs(gpu_fps - cpu_fps) / cpu_fps;
 }
 
-void gpu_tetmesh_type_comparison(bool sort_tet = 1)
+void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name = "mix")
 {
     RayTracer ray_tracer;
     Scene scene;
@@ -815,7 +815,8 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1)
     TetMesh20* tet20;
     TetMesh16* tet16;
 	TetMeshSctp* tetSctp;
-    scene.load_from_file(builtin_scenes_folder_path + "mix.scene");
+    scene.load_from_file(builtin_scenes_folder_path + scene_name + ".scene");
+
     ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
     tet32 = new TetMesh32(scene);
     tet20 = new TetMesh20(scene);
@@ -931,7 +932,7 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1)
 			}
         }
     }
-
+	std::cout << "---------------------" << scene_name << "---------------------" << std::endl;
     std::cout << "-------Tet32 :-------" << std::endl << "FPS: " << tet32_fps << std::endl 
         << "Ray preparation time: " << tet32_prep_time <<  "ms" << std::endl
         << "Ray copy time: " << tet32_copy_time << "ms" << std::endl
@@ -956,6 +957,19 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1)
 		<< "Kernel time: " << tetSctp_kernel_time << "ms" << std::endl
 		<< "Intersectiondata copy time: " << tetSctp_copy_back_time << "ms" << std::endl
 		<< "Draw time: " << tetSctp_draw_time << "ms" << std::endl;
+
+	delete tet32;
+	delete tet20;
+	delete tet16;
+	delete tetSctp;
+}
+
+void lagae_scenes_gpu_tetmesh_comparison()
+{
+	std::string scenes[] = { "mix", "lagae_armadillo", "lagae_chair", "lagae_forest",
+		"lagae_forest_large_chair", "lagae_forest_small_chair", "lagae_neptune", "lagae_neptune_not_p", "lagae_armadillo_not_p" };
+	for (const std::string &scene : scenes)
+		gpu_tetmesh_type_comparison(true, scene);
 }
 
 void simd_comparison()
@@ -1147,7 +1161,8 @@ int run_command_line(int argc, char const* argv[])
         {"simd_benchmark", "Benchmark simd intersection"},
         {"render", "Renders a scene"},
         {"gpu_benchmark", "Benchmark tetmesh types for gpu"},
-        {"cpu_gpu_compare", "Compare CPU and GPU performance"}
+        {"cpu_gpu_compare", "Compare CPU and GPU performance"},
+		{"lagae_gpu_benchmark", "Benchmark tetmesh types for gpu with Lagae's scenes"}
     };
 
     auto command_it = std::find_if(commands.begin(), commands.end(), [command_name](const Command& c){ return c.name == command_name; });
@@ -1207,6 +1222,10 @@ int run_command_line(int argc, char const* argv[])
     {
         gpu_tetmesh_type_comparison();
     }
+	else if (command.name == "lagae_gpu_benchmark")
+	{
+		lagae_scenes_gpu_tetmesh_comparison();
+	}
     else if (command.name == "cpu_gpu_compare")
     {
         cpu_gpu_comparison();
