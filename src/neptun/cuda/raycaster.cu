@@ -1189,7 +1189,7 @@ void copy_to_gpu(TetMesh32& tet_mesh)
     cudaMalloc(&d_tets32, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32));
     cudaMemcpy(d_tets32, tet_mesh.m_tet32s, tet_mesh.m_tets.size() * sizeof(TetMesh32::Tet32), cudaMemcpyHostToDevice);
     
-    print_cuda_error("CUDA copy error32");
+    print_cuda_error("CUDA copy Tet32 to GPU");
 }
 
 void copy_to_gpu(TetMesh20& tet_mesh)
@@ -1200,7 +1200,7 @@ void copy_to_gpu(TetMesh20& tet_mesh)
     cudaMalloc(&d_tets20, tet_mesh.m_tets.size() * sizeof(TetMesh20::Tet20));
     cudaMemcpy(d_tets20, tet_mesh.m_tet20s.data(), tet_mesh.m_tets.size() * sizeof(TetMesh20::Tet20), cudaMemcpyHostToDevice);
 
-    print_cuda_error("CUDA copy error20");
+    print_cuda_error("CUDA copy Tet20 to GPU");
 }
 
 void copy_to_gpu(TetMesh16& tet_mesh)
@@ -1211,7 +1211,7 @@ void copy_to_gpu(TetMesh16& tet_mesh)
     cudaMalloc(&d_tets16, tet_mesh.m_tets.size() * sizeof(TetMesh16::Tet16));
     cudaMemcpy(d_tets16, tet_mesh.m_tet16s, tet_mesh.m_tets.size() * sizeof(TetMesh16::Tet16), cudaMemcpyHostToDevice);
 
-    print_cuda_error("CUDA copy error16");
+    print_cuda_error("CUDA copy Tet16 to GPU");
 }
 
 void copy_to_gpu(TetMeshSctp& tet_mesh)
@@ -1222,7 +1222,7 @@ void copy_to_gpu(TetMeshSctp& tet_mesh)
     cudaMalloc(&d_tetsSctp, tet_mesh.m_tets.size() * sizeof(TetMeshSctp::TetSctp));
     cudaMemcpy(d_tetsSctp, tet_mesh.m_tet_sctps, tet_mesh.m_tets.size() * sizeof(TetMeshSctp::TetSctp), cudaMemcpyHostToDevice);
 
-    print_cuda_error("CUDA copy error Sctp");
+    print_cuda_error("CUDA copy TetScTP to GPU");
 }
 
 //------------------------------------------------o-------------------------------------------------------
@@ -1366,7 +1366,6 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
     }
     cudaMemcpy(d_source_tet, new SourceTet(source_tet), sizeof(SourceTet), cudaMemcpyHostToDevice);
     cudaMemcpy(d_scene, new Scene(scene), sizeof(Scene), cudaMemcpyHostToDevice);
-	print_cuda_error("CUDA copy error:");
 
     unsigned int stream_size = rays_size / NSTREAMS;
     int stream_bytes = stream_size * sizeof(Ray);
@@ -1397,7 +1396,6 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
         ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tetsSctp, d_cons_faces, d_faces, d_intersectdata);
     }
     cudaDeviceSynchronize();
-	print_cuda_error("CUDA kernel error:");
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
@@ -1405,7 +1403,6 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
 
     start = std::chrono::steady_clock::now();
     cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost);
-	print_cuda_error("CUDA copy-back error:");
     end = std::chrono::steady_clock::now();
     Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
 }
