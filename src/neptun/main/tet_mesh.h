@@ -312,6 +312,13 @@ public:
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
 
+    // Casts a ray from a point inside the 'tet'.
+    virtual bool intersect_stats(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data,
+        DiagnosticData& diagnostic_data) override;
+
     // Casts a ray from a point on the 'tet_face'
     bool intersect(
         const Ray& ray,
@@ -364,6 +371,13 @@ public:
         const Ray& ray,
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
+
+    // Casts a ray from a point inside the 'tet'.
+    virtual bool intersect_stats(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data,
+        DiagnosticData& diagnostic_data) override;
 
     // Casts a ray from a point on the 'tet_face'
     bool intersect(
