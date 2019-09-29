@@ -199,7 +199,7 @@ int command_render_scene(const argparse::ArgumentData& args)
     // Parse resolution pair
     const std::string output_resolution = args["resolution"]->value();
 
-    std::cout << output_resolution << std::endl;
+    // std::cout << output_resolution << std::endl;
 
     size_t image_width, image_height;
 
@@ -395,7 +395,7 @@ int run_command_line(int argc, char const* argv[])
         parser.add_positional_argument("scene", "Scene file to be rendered")
               .add_keyword_argument("accelerator", "Accelerator type used for intersections. (tet-mesh-32, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh-32")
               .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
-              .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "640x480")
+              .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "1920x1440")
               .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
               .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
               .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
