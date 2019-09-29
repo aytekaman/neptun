@@ -95,7 +95,7 @@ public:
         const Scene &scene,
         const bool preserve_triangles,
         const bool create_bbox,
-        const float quality = 1.0f,
+        const float quality = 5.0f,
         const bool half_space_optimization = false);
 
     TetMesh(const TetMesh& tet_mesh)
@@ -115,7 +115,7 @@ public:
         const Scene &scene,
         bool preserve_triangles,
         bool create_bbox,
-        float quality = 1.0f);
+        float quality = 5.0f);
 
     void sort(
         const SortingMethod sorting_method,
@@ -229,7 +229,7 @@ public:
         const Scene &scene,
         const bool preserve_triangles,
         const bool create_bbox,
-        const float quality = 1.0f,
+        const float quality = 5.0f,
         const bool half_space_optimization = false);
 
     TetMesh32(const Scene &scene);
@@ -296,7 +296,7 @@ public:
         const Scene &scene,
         const bool preserve_triangles,
         const bool create_bbox,
-        const float quality = 1.0f);
+        const float quality = 5.0f);
 
     TetMesh20(const Scene &scene);
 
@@ -351,7 +351,7 @@ public:
         const Scene &scene,
         const bool preserve_triangles,
         const bool create_bbox,
-        const float quality = 1.0f);
+        const float quality = 5.0f);
 
     TetMesh16(const Scene &scene);
 
@@ -419,7 +419,7 @@ public:
         const Scene &scene,
         const bool preserve_triangles,
         const bool create_bbox,
-        const float quality = 1.0f);
+        const float quality = 5.0f);
 
     TetMesh80(const Scene &scene);
 
