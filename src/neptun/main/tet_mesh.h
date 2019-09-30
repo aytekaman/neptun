@@ -458,6 +458,63 @@ public:
 
     int get_face(int entry_face_index, int id);
 
-
     Tet80* m_tet80s = nullptr;
 };
+
+// Tetrehedral mesh representation and traversal method by Lagae and Dutre.
+// https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=4634647
+class TetMeshSctp : public TetMesh
+{
+public:
+    struct TetSctp
+    {
+        int v[4];
+        int n[4];
+        //bool temp[4];
+    };
+
+    TetMeshSctp(
+        const Scene &scene,
+        const bool preserve_triangles,
+        const bool create_bbox,
+        const float quality = 5.0f);
+
+    TetMeshSctp(const Scene &scene);
+
+    virtual int get_size_in_bytes();
+
+    void init_acceleration_data() override;
+
+    int find_tet(
+        const glm::vec3& point,
+        SourceTet& tet) override;
+
+    //// Returns the index of th tet that contains the 'point'.
+    //// int  find_tet_idx(const glm::vec3& point);
+
+    // Casts a ray from a point inside the 'tet'.
+    bool intersect(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data) override;
+
+    // Casts a ray from a point on the 'tet_face'
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        IntersectionData& intersection_data) override;
+
+    // Returns true if a ray can reach to a target_tet_idx'th tet.
+    bool intersect(
+        const Ray& ray,
+        const TetFace& tet_face,
+        const int& target_tet_idx) override;
+
+    void intersect4(TetRayHit4& tet_ray_hit);
+
+    void intersect4_simd(TetRayHit4& tet_ray_hit);
+
+    TetSctp* m_tetSctps = nullptr;
+};
+
+
