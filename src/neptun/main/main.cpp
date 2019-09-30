@@ -231,14 +231,16 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     if (rendering_method.find("tet-mesh") != std::string::npos)
     {
+        const bool use_cache = args["usecache"]->cast<bool>();
+
         if(rendering_method == "tet-mesh-16")
-            scene.tet_mesh = new TetMesh16(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh16(scene) : new TetMesh16(scene, true, true);
         else if (rendering_method == "tet-mesh-20")
-            scene.tet_mesh = new TetMesh20(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh20(scene) : new TetMesh20(scene, true, true);
         else if (rendering_method == "tet-mesh-32")
-            scene.tet_mesh = new TetMesh32(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh32(scene) : new TetMesh32(scene, true, true);
         else if (rendering_method == "tet-mesh-80")
-            scene.tet_mesh = new TetMesh80(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh80(scene) : new TetMesh80(scene, true, true);
         else
         {
             std::cerr << "Unrecognized rendering method " << rendering_method << std::endl;
@@ -399,7 +401,8 @@ int run_command_line(int argc, char const* argv[])
               .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
               .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
               .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
-              .add_keyword_argument("sorting", "Sorting method for tet-mesh-32. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert");
+              .add_keyword_argument("sorting", "Sorting method for tet-mesh-32. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert")
+              .add_keyword_argument("usecache", "Use .tetmesh cache file", ArgumentType::BOOL, "c", "false");
 
         return parser.parse(argc - 2, argv + 2);
     }
