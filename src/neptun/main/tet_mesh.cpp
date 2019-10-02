@@ -2661,3 +2661,72 @@ int TetMesh80::get_face(int entry_face_index, int id)
 
     return table[id][entry_face_index];
 }
+
+TetMeshSctp::TetMeshSctp(
+    const Scene& scene,
+    const bool preserve_triangles,
+    const bool create_bbox,
+    const float quality) :
+    TetMesh(scene, preserve_triangles, create_bbox, quality)
+{
+    init_acceleration_data();
+    compute_weight();
+}
+
+TetMeshSctp::TetMeshSctp(const Scene & scene) : TetMesh(scene)
+{
+    init_acceleration_data();
+    compute_weight();
+}
+
+int TetMeshSctp::get_size_in_bytes()
+{
+    const int size_in_bytes = 
+        m_tets.size() * sizeof(TetSctp) +
+        m_points.size() * sizeof(glm::vec3);
+
+    return size_in_bytes;
+}
+
+void TetMeshSctp::init_acceleration_data()
+{
+    FreeAligned(m_tetSctps);
+    m_tetSctps = (TetSctp*)AllocAligned(m_tets.size() * sizeof(TetSctp));
+
+    for (int i = 0; i < m_tets.size(); i++)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            m_tetSctps[i].v[j] = m_tets[i].v[j];
+            m_tetSctps[i].n[j] = m_tets[i].n[j];
+        }
+    }
+}
+
+int TetMeshSctp::find_tet(const glm::vec3 & point, SourceTet & tet)
+{
+    return 0;
+}
+
+bool TetMeshSctp::intersect(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data)
+{
+    return false;
+}
+
+bool TetMeshSctp::intersect(const Ray & ray, const TetFace & tet_face, IntersectionData & intersection_data)
+{
+    return false;
+}
+
+bool TetMeshSctp::intersect(const Ray & ray, const TetFace & tet_face, const int & target_tet_idx)
+{
+    return false;
+}
+
+void TetMeshSctp::intersect4(TetRayHit4 & tet_ray_hit)
+{
+}
+
+void TetMeshSctp::intersect4_simd(TetRayHit4 & tet_ray_hit)
+{
+}
