@@ -89,7 +89,7 @@ void TetMesh::read_from_file(std::string file_name)
 
 void TetMesh::write_to_file()
 {
-    const char* FILENAME = "./Assets/tet_mesh.tetmesh";
+    const char* FILENAME = "./tet_mesh.tetmesh";
     std::ofstream o(FILENAME, std::ios::binary);
 
     // write points
@@ -766,15 +766,6 @@ void TetMesh32::init_acceleration_data()
     clock_t end = clock();
 
     Logger::Log("Acceleration data is initialized in %.2f seconds.", float(end - start) / CLOCKS_PER_SEC);
-
-    //for (int i = 0; i < m_tet32s.size(); i++)
-    //{
-    //    int a = rand() % 3;
-    //    int b = rand() % 3;
-
-    //    std::swap(m_tet32s[i].v[a], m_tet32s[i].v[b]);
-    //    std::swap(m_tet32s[i].n[a], m_tet32s[i].n[b]);
-    //}
 
     Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
 
@@ -2620,7 +2611,7 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     glm::vec3 u_ray = ray.dir;
     glm::vec3 v_ray = glm::cross(ray.origin, ray.origin + ray.dir);
 
-    while (true)
+    while (false)
     {
         glm::vec3 vf;
 
@@ -2690,27 +2681,125 @@ int TetMeshSctp::get_size_in_bytes()
 
 void TetMeshSctp::init_acceleration_data()
 {
+    if (m_tets.size() == 0)
+        return;
+
+    clock_t start = clock();
+
     FreeAligned(m_tetSctps);
     m_tetSctps = (TetSctp*)AllocAligned(m_tets.size() * sizeof(TetSctp));
 
     for (int i = 0; i < m_tets.size(); i++)
     {
+        const unsigned* v = m_tets[i].v;
+
+        for (int j = 0; j < 4; ++j)
+            m_tetSctps[i].v[j] = v[j];
+
         for (int j = 0; j < 4; ++j)
         {
-            m_tetSctps[i].v[j] = m_tets[i].v[j];
-            m_tetSctps[i].n[j] = m_tets[i].n[j];
+            const int n = m_tets[i].n[j];
+
+            if (m_tets[i].face_idx[j] > 0)
+            {
+                ConstrainedFace cf;
+                cf.face = &faces[m_tets[i].face_idx[j] - 1];
+                cf.tet_idx = i;
+                cf.other_tet_idx = n;
+                m_constrained_faces.push_back(cf);
+
+                m_tetSctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);
+            }
+            else
+                m_tetSctps[i].n[j] = n;
         }
     }
+
+    //for (int i = 0; i < 4; ++i)
+    //{
+    //    m_source_tet.v[i] = m_tets[0].v[i];
+    //    m_source_tet.n[i] = m_tet32s[0].n[i];
+    //}
+
+    clock_t end = clock();
+
+    Logger::Log("Acceleration data is initialized in %.2f seconds.", float(end - start) / CLOCKS_PER_SEC);
+
+    Logger::LogWarning("constrained face count: %d", m_constrained_face_count);
 }
 
-int TetMeshSctp::find_tet(const glm::vec3 & point, SourceTet & tet)
+int TetMeshSctp::find_tet(const glm::vec3& point, SourceTet& tet)
 {
-    return 0;
+    int index = find_tet_brute_force(point);
+
+    tet.idx = index;
+
+    return index;
 }
 
-bool TetMeshSctp::intersect(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data)
+bool TetMeshSctp::intersect(const Ray& ray, const SourceTet& tet, IntersectionData& intersection_data)
 {
-    return false;
+    int index = ray.tet_idx;
+
+    const glm::vec3 q = ray.dir;
+
+    while (index >= 0)
+    {
+        const glm::vec3 p0 = m_points[m_tetSctps[index].v[0]] - ray.origin;
+        const glm::vec3 p1 = m_points[m_tetSctps[index].v[1]] - ray.origin;
+        const glm::vec3 p2 = m_points[m_tetSctps[index].v[2]] - ray.origin;
+        const glm::vec3 p3 = m_points[m_tetSctps[index].v[3]] - ray.origin;
+
+        const float QAB = glm::dot(q, glm::cross(p0, p1)); // A B
+        const float QBC = glm::dot(q, glm::cross(p1, p2)); // B C
+        const float QAC = glm::dot(q, glm::cross(p0, p2)); // A C
+        const float QAD = glm::dot(q, glm::cross(p0, p3)); // A D
+        const float QBD = glm::dot(q, glm::cross(p1, p3)); // B D
+        const float QCD = glm::dot(q, glm::cross(p2, p3)); // C D
+
+        int face_idx = 0;
+
+        if (QAB <= 0.0f && QAC >= 0.0f && QBC <= 0.0f)
+            face_idx = 3;
+        else if (QAB >= 0.0f && QAD <= 0.0f && QBD >= 0.0f)
+            face_idx = 2;
+        else if (QAD >= 0.0f && QAC <= 0.0f && QCD <= 0.0f)
+            face_idx = 1;
+        else if (QBC >= 0.0f && QBD <= 0.0f && QCD >= 0.0f)
+            face_idx = 0;
+        else
+            return false;
+
+        index = m_tetSctps[index].n[face_idx];
+    }
+
+    if (index != -1)
+    {
+        index = (index & 0x7FFFFFFF);
+        const Face& face = *m_constrained_faces[index].face;
+
+        const glm::vec3 *v = face.vertices;
+        const glm::vec3 *n = face.normals;
+        const glm::vec2 *t = face.uvs;
+
+        const glm::vec3 e1 = v[1] - v[0];
+        const glm::vec3 e2 = v[2] - v[0];
+        const glm::vec3 s = ray.origin - v[0];
+        const glm::vec3 q = glm::cross(s, e1);
+        const glm::vec3 p = glm::cross(ray.dir, e2);
+        const float f = 1.0f / glm::dot(e1, p);
+        const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
+
+        intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
+        intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+        intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+        intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
+        intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+
+        return true;
+    }
+    else
+        return false;
 }
 
 bool TetMeshSctp::intersect(const Ray & ray, const TetFace & tet_face, IntersectionData & intersection_data)

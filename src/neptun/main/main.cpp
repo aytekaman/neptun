@@ -241,6 +241,8 @@ int command_render_scene(const argparse::ArgumentData& args)
             scene.tet_mesh = use_cache ? new TetMesh32(scene) : new TetMesh32(scene, true, true);
         else if (rendering_method == "tet-mesh-80")
             scene.tet_mesh = use_cache ? new TetMesh80(scene) : new TetMesh80(scene, true, true);
+        else if (rendering_method == "tet-mesh-sctp")
+            scene.tet_mesh = use_cache ? new TetMeshSctp(scene) : new TetMeshSctp(scene, true, true);
         else
         {
             std::cerr << "Unrecognized rendering method " << rendering_method << std::endl;

@@ -470,7 +470,7 @@ public:
     {
         int v[4];
         int n[4];
-        //bool temp[4];
+        bool is_constrained[4];
     };
 
     TetMeshSctp(

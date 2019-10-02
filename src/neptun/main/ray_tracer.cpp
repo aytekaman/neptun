@@ -149,6 +149,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
 
     Ray ray(cam_pos);
+    ray.tet_idx = source_tet.idx;
 
     int total_test_count = 0;
     int total_L1_hit_count = 0;
@@ -190,8 +191,8 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
                 if (method == Method::Default ||
                     method == Method::Fast_basis ||
-                    method == Method::ScTP)
-                    ray.tet_idx = 0;
+                    method == Method::ScTP);
+                    //ray.tet_idx = 0;
                 else
                     ray.tMax = 100000000;
 
