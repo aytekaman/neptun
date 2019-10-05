@@ -775,36 +775,149 @@ void region_sort(int N = 5000)
 void cpu_gpu_comparison()
 {
     RayTracer ray_tracer;
-    Scene scene;
-    scene.load_from_file(builtin_scenes_folder_path + "mix.scene");
-    ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
-    scene.tet_mesh = new TetMesh32(scene);
-    scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
-    copy_to_gpu(*(TetMesh32*)scene.tet_mesh);
+    Scene scene; TetMesh32* tet32;
+	TetMesh20* tet20;
+	TetMesh16* tet16;
+	TetMeshSctp* tetSctp;
+	scene.load_from_file(builtin_scenes_folder_path +  "Torus Knots.scene");
 
-    int N = 100;
+	ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
+	tet32 = new TetMesh32(scene);
+	tet20 = new TetMesh20(scene);
+	tet16 = new TetMesh16(scene);
+	tetSctp = new TetMeshSctp(scene);
 
-    float cpu_fps = 0.0f;
-    float gpu_fps = 0.0f;
+	int N = 100;
 
-    for (int k = 0; k < N; ++k)
-    {
-        ray_tracer.method = Method::Default;
-        ray_tracer.Render(scene);
-        cpu_fps = glm::max(1.0f / ray_tracer.last_render_time, cpu_fps);
+	float tet32_cpu_render_t = std::numeric_limits<float>::infinity();
+	float tet20_cpu_render_t = std::numeric_limits<float>::infinity();
+	float tet16_cpu_render_t = std::numeric_limits<float>::infinity();
+	float tetsctp_cpu_render_t = std::numeric_limits<float>::infinity();
 
-        ray_tracer.method = Method::Default;
-        ray_tracer.render_gpu(scene);
-        gpu_fps = glm::max(1.0f / ray_tracer.last_render_time, gpu_fps);
-    }
+	float tet32_gpu_render_t = std::numeric_limits<float>::infinity();
+	float tet20_gpu_render_t = std::numeric_limits<float>::infinity();
+	float tet16_gpu_render_t = std::numeric_limits<float>::infinity();
+	float tetsctp_gpu_render_t = std::numeric_limits<float>::infinity();
+
+	for (int j = 0; j < 8; j++)
+	{
+		switch (j)
+		{
+		case 4:
+		case 0:
+			scene.tet_mesh = tet32;
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+			copy_to_gpu(*(TetMesh32*)scene.tet_mesh);
+			break;
+		case 5:
+		case 1:
+			scene.tet_mesh = tet20;
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+			copy_to_gpu(*(TetMesh20*)scene.tet_mesh);
+			break;
+		case 6:
+		case 2:
+			scene.tet_mesh = tet16;
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+			copy_to_gpu(*(TetMesh16*)scene.tet_mesh);
+			break;
+		case 7:
+		case 3:
+			scene.tet_mesh = tetSctp;
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+			copy_to_gpu(*(TetMeshSctp*)scene.tet_mesh);
+			break;
+
+		}
+
+		for (int k = 0; k < N; ++k)
+		{
+			switch (j)
+			{
+			case 0:
+				ray_tracer.method = Method::Default_gpu;
+				ray_tracer.render_gpu(scene);
+				tet32_gpu_render_t = glm::min(ray_tracer.last_render_time, tet32_gpu_render_t);
+
+				/*tet32_prep_time = glm::min(Stats::ray_prep_time, tet32_prep_time);
+				tet32_copy_time = glm::min(Stats::gpu_copy_time, tet32_copy_time);
+				tet32_kernel_time = glm::min(Stats::gpu_kernel_time, tet32_kernel_time);
+				tet32_copy_back_time = glm::min(Stats::gpu_copy_back_time, tet32_copy_back_time);
+				tet32_draw_time = glm::min(Stats::draw_time, tet32_draw_time);*/
+				break;
+			case 1:
+				ray_tracer.method = Method::Default_gpu;
+				ray_tracer.render_gpu(scene);
+				tet20_gpu_render_t = glm::min(ray_tracer.last_render_time, tet20_gpu_render_t);
+
+				/*tet20_prep_time = glm::min(Stats::ray_prep_time, tet20_prep_time);
+				tet20_copy_time = glm::min(Stats::gpu_copy_time, tet20_copy_time);
+				tet20_kernel_time = glm::min(Stats::gpu_kernel_time, tet20_kernel_time);
+				tet20_copy_back_time = glm::min(Stats::gpu_copy_back_time, tet20_copy_back_time);
+				tet20_draw_time = glm::min(Stats::draw_time, tet20_draw_time);*/
+				break;
+
+			case 2:
+				ray_tracer.method = Method::Default_gpu;
+				ray_tracer.render_gpu(scene);
+				tet16_gpu_render_t = glm::min(ray_tracer.last_render_time, tet16_gpu_render_t);
+
+				/*tet16_prep_time = glm::min(Stats::ray_prep_time, tet16_prep_time);
+				tet16_copy_time = glm::min(Stats::gpu_copy_time, tet16_copy_time);
+				tet16_kernel_time = glm::min(Stats::gpu_kernel_time, tet16_kernel_time);
+				tet16_copy_back_time = glm::min(Stats::gpu_copy_back_time, tet16_copy_back_time);
+				tet16_draw_time = glm::min(Stats::draw_time, tet16_draw_time);*/
+				break;
+			case 3:
+				ray_tracer.method = Method::ScTP_gpu;
+				ray_tracer.render_gpu(scene);
+				tetsctp_gpu_render_t = glm::min(ray_tracer.last_render_time, tetsctp_gpu_render_t);
+
+				/*tetSctp_prep_time = glm::min(Stats::ray_prep_time, tetSctp_prep_time);
+				tetSctp_copy_time = glm::min(Stats::gpu_copy_time, tetSctp_copy_time);
+				tetSctp_kernel_time = glm::min(Stats::gpu_kernel_time, tetSctp_kernel_time);
+				tetSctp_copy_back_time = glm::min(Stats::gpu_copy_back_time, tetSctp_copy_back_time);
+				tetSctp_draw_time = glm::min(Stats::draw_time, tetSctp_draw_time);*/
+				break;
+			case 4:
+				ray_tracer.method = Method::Default;
+				ray_tracer.Render(scene);
+				tet32_cpu_render_t = glm::min(ray_tracer.last_render_time, tet32_cpu_render_t);
+			case 5:
+				ray_tracer.method = Method::Default;
+				ray_tracer.Render(scene);
+				tet20_cpu_render_t = glm::min(ray_tracer.last_render_time, tet20_cpu_render_t);
+			case 6:
+				ray_tracer.method = Method::Default;
+				ray_tracer.Render(scene);
+				tet16_cpu_render_t = glm::min(ray_tracer.last_render_time, tet16_cpu_render_t);
+			case 7:
+				ray_tracer.method = Method::ScTP;
+				ray_tracer.Render(scene);
+				tetsctp_cpu_render_t = glm::min(ray_tracer.last_render_time, tetsctp_cpu_render_t);
+			}
+		}
+	}
 
     //non_simd_fps /= N;
     //simd_fps /= N;
 
-    std::cout << "CPU: " << cpu_fps << std::endl;
-    std::cout << "GPU: " << gpu_fps << std::endl;
+	std::cout << "---------------------" << "mix" << "---------------------" << std::endl;
+	std::cout << "-------Tet32 :-------" << std::endl << "GPU Render Time: " << tet32_gpu_render_t << std::endl;
+	std::cout << "CPU Render Time: " << tet32_cpu_render_t << std::endl;
+	std::cout << "Difference: " << glm::abs(tet32_gpu_render_t - tet32_cpu_render_t) / tet32_cpu_render_t << std::endl;
 
-    std::cout << "difference: " << glm::abs(gpu_fps - cpu_fps) / cpu_fps;
+	std::cout << "-------Tet20 :-------" << std::endl << "GPU Render Time: " << tet20_gpu_render_t << std::endl;
+	std::cout << "CPU Render Time: " << tet20_cpu_render_t << std::endl;
+	std::cout << "Difference: " << glm::abs(tet20_gpu_render_t - tet20_cpu_render_t) / tet20_cpu_render_t << std::endl;
+
+	std::cout << "-------Tet16 :-------" << std::endl << "GPU Render Time: " << tet16_gpu_render_t << std::endl;
+	std::cout << "CPU Render Time: " << tet16_cpu_render_t << std::endl;
+	std::cout << "Difference: " << glm::abs(tet16_gpu_render_t - tet16_cpu_render_t) / tet16_cpu_render_t << std::endl;
+
+	std::cout << "-------Tet w/ ScTP :-------" << std::endl << "GPU Render Time: " << tetsctp_gpu_render_t << std::endl;
+	std::cout << "CPU Render Time: " << tetsctp_cpu_render_t << std::endl;
+	std::cout << "Difference: " << glm::abs(tetsctp_gpu_render_t - tetsctp_cpu_render_t) / tetsctp_cpu_render_t << std::endl;
 }
 
 void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name = "mix")
@@ -967,9 +1080,9 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
 void lagae_scenes_gpu_tetmesh_comparison()
 {
 	std::string scenes[] = { "mix", "lagae_armadillo", "lagae_chair", "lagae_forest",
-		"lagae_forest_large_chair", "lagae_forest_small_chair", "lagae_neptune", "lagae_neptune_not_p", "lagae_armadillo_not_p" };
+		"lagae_forest_large_chair", "lagae_forest_small_chair", "lagae_neptune", "Torus Knots", "lagae_neptune_not_p", "lagae_armadillo_not_p" };
 	for (const std::string &scene : scenes)
-		gpu_tetmesh_type_comparison(true, scene);
+		gpu_tetmesh_type_comparison(false, scene);
 }
 
 void simd_comparison()
@@ -1220,7 +1333,7 @@ int run_command_line(int argc, char const* argv[])
     }
     else if (command.name == "gpu_benchmark")
     {
-        gpu_tetmesh_type_comparison();
+        gpu_tetmesh_type_comparison(true, "lagae_forest");
     }
 	else if (command.name == "lagae_gpu_benchmark")
 	{
