@@ -403,6 +403,11 @@ public:
 class TetMesh80 : public TetMesh
 {
 public:
+    struct Plucker
+    {
+        float m_Pi[6];
+    };
+
     struct Tet80Face
     {
         
@@ -410,9 +415,9 @@ public:
 
     struct Tet80
     {
-        glm::vec3 v[4];
-        int n[4];
-        int temp[4];
+        int m_semantics[4];
+        // Neighboring tetra and face [0..3] on two bits
+        int m_nextTetraFace[4];
     };
 
     TetMesh80(
@@ -456,9 +461,10 @@ public:
 
     void intersect4_simd(TetRayHit4& tet_ray_hit);
 
-    int get_face(int entry_face_index, int id);
+    int get_exit_face(const Plucker& pl_ray, const int id_vertex, const int id_entry_face);
 
     Tet80* m_tet80s = nullptr;
+    glm::vec4* m_vertices = nullptr;
 };
 
 // Tetrehedral mesh representation and traversal method by Lagae and Dutre.
