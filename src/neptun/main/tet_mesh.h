@@ -457,6 +457,13 @@ public:
         const TetFace& tet_face,
         const int& target_tet_idx) override;
 
+    // Casts a ray from a point inside the 'tet'.
+    virtual bool intersect_stats(
+        const Ray& ray,
+        const SourceTet& tet,
+        IntersectionData& intersection_data,
+        DiagnosticData& diagnostic_data) override;
+
     void intersect4(TetRayHit4& tet_ray_hit);
 
     void intersect4_simd(TetRayHit4& tet_ray_hit);

@@ -2638,16 +2638,53 @@ void TetMesh80::init_acceleration_data()
 
     for (int i = 0; i < m_tets.size(); i++)
     {
+        std::swap(m_tets[i].v[0], m_tets[i].v[3]);
+        std::swap(m_tets[i].v[2], m_tets[i].v[3]);
+        std::swap(m_tets[i].v[1], m_tets[i].v[3]);
+
+        std::swap(m_tets[i].n[0], m_tets[i].n[3]);
+        std::swap(m_tets[i].n[2], m_tets[i].n[3]);
+        std::swap(m_tets[i].n[1], m_tets[i].n[3]);
+
+        std::swap(m_tets[i].face_idx[0], m_tets[i].face_idx[3]);
+        std::swap(m_tets[i].face_idx[2], m_tets[i].face_idx[3]);
+        std::swap(m_tets[i].face_idx[1], m_tets[i].face_idx[3]);
+    }
+
+
+    for (int i = 0; i < m_tets.size(); i++)
+    {
         const unsigned* v = m_tets[i].v;
 
-        m_vertices[i + 0] = glm::vec4(m_points[v[3]], 0.0f);
-        m_vertices[i + 1] = glm::vec4(m_points[v[2]], 0.0f);
-        m_vertices[i + 2] = glm::vec4(m_points[v[0]], 0.0f);
-        m_vertices[i + 3] = glm::vec4(m_points[v[1]], 0.0f);
+        m_vertices[4 * i + 0] = glm::vec4(m_points[v[0]], 0.0f);
+        m_vertices[4 * i + 1] = glm::vec4(m_points[v[1]], 0.0f);
+        m_vertices[4 * i + 2] = glm::vec4(m_points[v[2]], 0.0f);
+        m_vertices[4 * i + 3] = glm::vec4(m_points[v[3]], 0.0f);
+
+
 
         for (int j = 0; j < 4; ++j)
         {
             const int n = m_tets[i].n[j];
+
+            int next_face = 0;
+
+            if (n >= 0)
+            {
+                const Tet& next_tet = m_tets[n];
+
+                for (int k = 0; k < 4; ++k)
+                {
+                    if (next_tet.n[k] == i)
+                    {
+                        //std::cout << "!" << std::endl;
+                        next_face = k;
+                        break;
+                    }
+                }
+            }
+            
+            m_tet80s[i].m_nextTetraFace[j] = (next_face << 30) | n;
 
             if (m_tets[i].face_idx[j] > 0)
             {
@@ -2658,10 +2695,19 @@ void TetMesh80::init_acceleration_data()
                 m_constrained_faces.push_back(cf);
 
                 //m_tetSctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);
+
+                m_tet80s[i].m_semantics[j] = 1;
             }
             else
             {
+                if (n == -1)
+                    m_tet80s[i].m_semantics[j] = 0;
+                else
+                    m_tet80s[i].m_semantics[j] = -1;
             }//m_tetSctps[i].n[j] = n;
+
+
+            
         }
     }
 
@@ -2678,7 +2724,11 @@ void TetMesh80::init_acceleration_data()
 
 int TetMesh80::find_tet(const glm::vec3& point, SourceTet& tet)
 {
-    return 0;
+    int index = find_tet_brute_force(point);
+
+    tet.idx = index;
+
+    return index;
 }
 
 bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
@@ -2722,6 +2772,94 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
                    m_vertices[idVertex + 2][2] * plRay.m_Pi[5] +
                    m_vertices[idVertex + 3][0] * plRay.m_Pi[0] +
                    m_vertices[idVertex + 3][1] * plRay.m_Pi[1] +
+                   m_vertices[idVertex + 3][2] * plRay.m_Pi[2]  ) < 0.0f;
+
+
+    //==============================================================
+    // Now begin traversal
+    //==============================================================
+    int cpt = 0;
+    do {
+        if (cpt++ == 5000) { // In case of numeric error
+            semantic = TCDT_MAGIC_ERROR;
+            break;
+        }
+
+        idExit = get_exit_face(plRay, idVertex, idEntryFace);
+
+        if ((semantic = tetra.m_semantics[idExit]) >= 0)
+            break;
+
+        // Update data for next tetra
+        idTetra = GET_NEXT_TETRA(tetra.m_nextTetraFace[idExit]);
+        idEntryFace = GET_NEXT_FACE(tetra.m_nextTetraFace[idExit]);
+        idVertex = idTetra * 4;
+        tetra = m_tet80s[idTetra];
+
+    } while (true);
+
+    // Store result
+    //out.m_idFace = idVertex + idExit;
+    //out.m_idMtl = semantic;
+    //out.m_idVol = idTetra;
+
+    if (semantic >= 1)
+        return true;
+    else
+        return false;
+}
+
+bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
+{
+    return false;
+}
+
+bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
+{
+    return false;
+}
+
+bool TetMesh80::intersect_stats(const Ray & ray, const SourceTet & tet, IntersectionData & intersection_data, DiagnosticData & diagnostic_data)
+{
+    // Compute ray Plucker 
+        //Plucker plRay = Plucker::makeFromPosAndDir(in.m_from, in.m_dir);
+    const glm::vec3 v = glm::cross(ray.origin, ray.origin + ray.dir);
+    Plucker plRay;
+    plRay.m_Pi[0] = ray.dir[0];
+    plRay.m_Pi[1] = ray.dir[1];
+    plRay.m_Pi[2] = ray.dir[2];
+    plRay.m_Pi[3] = v[0];
+    plRay.m_Pi[4] = v[1];
+    plRay.m_Pi[5] = v[2];
+
+    Tet80 tetra;
+    int idTetra, idVertex, idEntryFace;
+    int idExit;
+    int semantic;
+
+    // Get first tetra
+
+
+    //idTetra = in.m_vol;
+    idTetra = ray.tet_idx;
+
+    idVertex = idTetra * 4;
+    tetra = m_tet80s[idTetra];
+
+    // Exit face within a tetra [0..3]
+    //==============================================================
+    // Specific process for first tetra... entry face does not exist...
+    // - First test S2 -> S3 and discard F0 or F1 and take it as entry face
+    //==============================================================
+    //idEntryFace = (Plucker::make(
+    //    m_vertices[idVertex + 2],
+    //    m_vertices[idVertex + 3]).side(plRay)) < 0.f;
+
+    idEntryFace = (m_vertices[idVertex + 2][0] * plRay.m_Pi[3] +
+                   m_vertices[idVertex + 2][1] * plRay.m_Pi[4] +
+                   m_vertices[idVertex + 2][2] * plRay.m_Pi[5] +
+                   m_vertices[idVertex + 3][0] * plRay.m_Pi[0] +
+                   m_vertices[idVertex + 3][1] * plRay.m_Pi[1] +
                    m_vertices[idVertex + 3][2] * plRay.m_Pi[2]) < 0.0f;
 
 
@@ -2737,14 +2875,16 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
 
         idExit = get_exit_face(plRay, idVertex, idEntryFace);
 
-        //if ((semantic = tetra.m_semantics[idExit]) >= 0)
-        //    break;
+        if ((semantic = tetra.m_semantics[idExit]) >= 0)
+            break;
 
         // Update data for next tetra
         idTetra = GET_NEXT_TETRA(tetra.m_nextTetraFace[idExit]);
         idEntryFace = GET_NEXT_FACE(tetra.m_nextTetraFace[idExit]);
         idVertex = idTetra * 4;
         tetra = m_tet80s[idTetra];
+
+        ++diagnostic_data.visited_node_count;
 
     } while (true);
 
@@ -2753,17 +2893,10 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     //out.m_idMtl = semantic;
     //out.m_idVol = idTetra;
 
-    return true;
-}
-
-bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
-{
-    return false;
-}
-
-bool TetMesh80::intersect(const Ray& ray, const TetFace& tet_face, const int& target_tet_idx)
-{
-    return false;
+    if (semantic >= 1)
+        return true;
+    else
+        return false;
 }
 
 int TetMesh80::get_exit_face(const Plucker& plRay, const int idVertex, const int idEntryFace)
