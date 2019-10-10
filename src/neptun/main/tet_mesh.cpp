@@ -2767,12 +2767,17 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     //    m_vertices[idVertex + 2],
     //    m_vertices[idVertex + 3]).side(plRay)) < 0.f;
 
-    idEntryFace = (m_vertices[idVertex + 2][0] * plRay.m_Pi[3] +
-                   m_vertices[idVertex + 2][1] * plRay.m_Pi[4] +
-                   m_vertices[idVertex + 2][2] * plRay.m_Pi[5] +
-                   m_vertices[idVertex + 3][0] * plRay.m_Pi[0] +
-                   m_vertices[idVertex + 3][1] * plRay.m_Pi[1] +
-                   m_vertices[idVertex + 3][2] * plRay.m_Pi[2]  ) < 0.0f;
+    glm::vec3 a(m_vertices[idVertex + 2].x, m_vertices[idVertex + 2].y, m_vertices[idVertex + 2].z);
+    glm::vec3 b(m_vertices[idVertex + 3].x, m_vertices[idVertex + 3].y, m_vertices[idVertex + 3].z);
+    glm::vec3 dir = glm::normalize(b - a);
+    glm::vec3 vv = glm::cross(a, b);
+
+    idEntryFace = (dir[0] * plRay.m_Pi[3] +
+                   dir[1] * plRay.m_Pi[4] +
+                   dir[2] * plRay.m_Pi[5] +
+                   vv[0] * plRay.m_Pi[0] +
+                   vv[1] * plRay.m_Pi[1] +
+                   vv[2] * plRay.m_Pi[2]  ) < 0.0f;
 
 
     //==============================================================
@@ -2780,6 +2785,9 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     //==============================================================
     int cpt = 0;
     do {
+
+
+
         if (cpt++ == 5000) { // In case of numeric error
             semantic = TCDT_MAGIC_ERROR;
             break;
@@ -2787,8 +2795,13 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
 
         idExit = get_exit_face(plRay, idVertex, idEntryFace);
 
+        //printf("%d ", idTetra);
+        //printf("%d ", tetra.m_semantics[idExit]);
+
         if ((semantic = tetra.m_semantics[idExit]) >= 0)
             break;
+
+
 
         // Update data for next tetra
         idTetra = GET_NEXT_TETRA(tetra.m_nextTetraFace[idExit]);
@@ -2797,7 +2810,6 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         tetra = m_tet80s[idTetra];
 
     } while (true);
-
     // Store result
     //out.m_idFace = idVertex + idExit;
     //out.m_idMtl = semantic;
