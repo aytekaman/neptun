@@ -10,6 +10,17 @@ TetMesh32::Tet32* d_tet32s;
 TetMesh20::Tet20* d_tet20s;
 TetMesh16::Tet16* d_tet16s;
 TetMeshSctp::TetSctp* d_tetSctps;
+
+//--------- Tet96 data------------
+// 4 int2 per tetra (1 per face):
+// 1 int 2 = m_semantics, m_nextTetraFace
+int2* d_tet96s;
+float4* d_vertices;// 1 float4 per vertex
+cudaTextureObject_t t_tet96s;
+cudaTextureObject_t t_vertices;
+int num_int2_d_tets;
+int num_float4_d_vertices;
+
 ConstrainedFace* d_cons_faces;
 Face* d_faces;
 glm::ivec2* d_res;
@@ -1235,6 +1246,74 @@ void copy_to_gpu(TetMeshSctp& tet_mesh)
 	cudaMemcpy(d_tetSctps, tet_mesh.m_tet_sctps, tet_mesh.m_tets.size() * sizeof(TetMeshSctp::TetSctp), cudaMemcpyHostToDevice);
 
 	print_cuda_error("CUDA copy TetScTP to GPU");
+}
+
+void copy_to_gpu(TetMesh80& tet_mesh)
+{
+	num_int2_d_tets = 4 * tet_mesh.m_tets.size();
+	num_float4_d_vertices = tet_mesh.m_points.size();
+
+	int2* h_tets = new int2[num_int2_d_tets];
+	float4* h_vertices = new float4[num_float4_d_vertices];
+
+	for (int i = 0; i < tet_mesh.m_tets.size(); ++i) {
+		const TetMesh80::Tet80& tetra = tet_mesh.m_tet80s[i];
+		const int idTetra = i * 4;
+
+		for (int j = 0; j < 4; ++j) {
+			h_tets[idTetra + j] = make_int2(tetra.m_nextTetraFace[j],
+				tetra.m_semantics[j]
+			);
+		}
+	}
+	for (int i = 0; i < tet_mesh.m_points.size(); ++i) {
+		const glm::vec3& v = tet_mesh.m_points[i];
+		h_vertices[i] = make_float4(v.x, v.y, v.z, NAN);
+	}
+
+	const size_t size_tets = num_int2_d_tets * sizeof(int2);
+	const size_t size_vertices = num_float4_d_vertices * sizeof(float4);
+
+	check_cuda(cudaMalloc(&d_tet96s, size_tets));
+	check_cuda(cudaMemcpy(d_tet96s, h_tets, size_tets, cudaMemcpyHostToDevice));
+	check_cuda(cudaMalloc(&d_vertices, size_vertices));
+	check_cuda(cudaMemcpy(d_vertices, h_vertices, size_vertices, cudaMemcpyHostToDevice));
+
+#ifdef TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
+	{
+		// Create texture object
+		cudaResourceDesc resDesc;
+		memset(&resDesc, 0, sizeof(resDesc));
+		resDesc.resType = cudaResourceTypeLinear;
+		resDesc.res.linear.devPtr = d_tet96s;
+		resDesc.res.linear.desc = cudaCreateChannelDesc<int2>();
+		resDesc.res.linear.sizeInBytes = size_tets;
+
+		cudaTextureDesc texDesc;
+		memset(&texDesc, 0, sizeof(texDesc));
+		texDesc.readMode = cudaReadModeElementType;
+
+		check_cuda(cudaCreateTextureObject(&t_tet96s, &resDesc,
+			&texDesc, NULL));
+	}
+	{
+		// Create texture object
+		cudaResourceDesc resDesc;
+		memset(&resDesc, 0, sizeof(resDesc));
+		resDesc.resType = cudaResourceTypeLinear;
+		resDesc.res.linear.devPtr = d_vertices;
+		resDesc.res.linear.desc = cudaCreateChannelDesc<float4>();
+		resDesc.res.linear.sizeInBytes = size_vertices;
+
+		cudaTextureDesc texDesc;
+		memset(&texDesc, 0, sizeof(texDesc));
+		texDesc.readMode = cudaReadModeElementType;
+
+		check_cuda(cudaCreateTextureObject(&t_vertices, &resDesc,
+			&texDesc, NULL));
+	}
+#endif
+	print_cuda_error("CUDA copy Tet80 as Tet96 to GPU");
 }
 
 //================================= Traversal of rays initialized at CPU =================================
