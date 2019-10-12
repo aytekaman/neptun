@@ -24,6 +24,7 @@ enum Method
     Default_gpu,
     ScTP,
     ScTP_gpu,
+	Tet96_gpu,
     Fast_basis,
     Kd_tree,
     BVH_pbrt,

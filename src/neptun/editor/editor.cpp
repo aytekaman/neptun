@@ -42,6 +42,7 @@ extern void copy_to_gpu(TetMesh32& tet_mesh);
 extern void copy_to_gpu(TetMesh20& tet_mesh);
 extern void copy_to_gpu(TetMesh16& tet_mesh);
 extern void copy_to_gpu(TetMeshSctp& tet_mesh);
+extern void copy_to_gpu(TetMesh80& tetm_mesh);
 
 void Editor::DropCallback(GLFWwindow* window, int count, const char** paths)
 {
@@ -603,8 +604,8 @@ void Editor::DrawTetGen()
     ImGui::SliderFloat("Quality", &quality, 1.0, 10.0, "%.2f");
 
     static int current_tet_mesh_type = 0;
-    const char* reps[] = { "TetMesh32", "TetMesh20", "TetMesh16", "TetMesh ScTP" };
-    ImGui::Combo("Type", &current_tet_mesh_type, reps, 4);
+    const char* reps[] = { "TetMesh32", "TetMesh20", "TetMesh16", "TetMesh ScTP", "TetMesh80/96" };
+    ImGui::Combo("Type", &current_tet_mesh_type, reps, 5);
 
     static bool show_points = false;
     //static
@@ -649,6 +650,13 @@ void Editor::DrawTetGen()
             copy_to_gpu(*(TetMeshSctp*)scene->tet_mesh);
             Logger::Log("TetMesh16 data copied to GPU");
         }
+		else if (current_tet_mesh_type == 4)
+		{
+			scene->tet_mesh = new TetMesh80(*scene, preserveTriangles, create_bounding_box, quality);
+			Logger::Log("TetMesh80 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+			copy_to_gpu(*(TetMesh80*)scene->tet_mesh);
+			Logger::Log("TetMesh80 data copied to GPU");
+		}
 
         //scene->tet_mesh20 = new TetMesh20(*scene->tet_mesh);
 
@@ -706,6 +714,13 @@ void Editor::DrawTetGen()
             copy_to_gpu(*(TetMeshSctp*)scene->tet_mesh);
             Logger::Log("TetMeshScTP data copied to GPU");
         }
+		else if (current_tet_mesh_type == 4)
+		{
+			scene->tet_mesh = new TetMesh80(*scene);
+			Logger::Log("TetMesh80 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+			copy_to_gpu(*(TetMesh80*)scene->tet_mesh);
+			Logger::Log("TetMesh80 data copied to GPU");
+		}
 
         //Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
     }
@@ -764,6 +779,11 @@ void Editor::DrawTetGen()
 			{
 				copy_to_gpu(*(TetMeshSctp*)scene->tet_mesh);
 				Logger::Log("TetMesh w/ ScTP data copied to GPU");
+			}
+			else if (current_tet_mesh_type == 4)
+			{
+				copy_to_gpu(*(TetMesh80*)scene->tet_mesh);
+				Logger::Log("TetMesh80 data copied to GPU");
 			}
         }
 
@@ -1277,8 +1297,8 @@ void Editor::DrawRenderedFrame()
     //ImGui::InputInt("Size", &ray_tracer->tile_size);
     ImGui::Checkbox("Shadows", &ray_tracer->shadows);
 
-    const char* reps[] = { "Default", "Default (SIMD)", "Default(GPU)", "ScTP", "ScTP(GPU)", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
-    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, Method::Method_count); //9 yerine Method_count kullan�ld� problem yarat�r m� ?
+    const char* reps[] = { "Default", "Default (SIMD)", "Default(GPU)", "ScTP", "ScTP(GPU)", "Tet96(GPU)", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
+    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, Method::Method_count);
 
     if (res != ray_tracer->m_resolution)
     {
