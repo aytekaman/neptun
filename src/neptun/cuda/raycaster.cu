@@ -9,14 +9,16 @@ glm::vec3* d_points;
 TetMesh32::Tet32* d_tets32;
 TetMesh20::Tet20* d_tets20;
 TetMesh16::Tet16* d_tets16;
-int4* d_tet16s;
 TetMeshSctp::TetSctp* d_tetsSctp;
 ConstrainedFace* d_cons_faces;
 Face* d_faces;
 glm::ivec2* d_res;
 
 //====================
+int* d_tet16s;
 cudaTextureObject_t t_tets16;
+float4* d_points2;
+cudaTextureObject_t t_points;
 //#define LOAD_TET_IND( id, ind)	switch( ind ) {case 0: tex1Dfetch<int4>( t_tets16, id ).x break; }
 //====================
 
@@ -565,7 +567,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-    glm::vec3* d_points, /*TetMesh16::Tet16* tets*/ cudaTextureObject_t tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
+    /*glm::vec3* points, TetMesh16::Tet16* tets*/ cudaTextureObject_t points, cudaTextureObject_t tets, ConstrainedFace* d_cons_faces, Face* d_faces, IntersectionData *output)
 {
     int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -630,7 +632,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
         for (int j = 0; j < 4; j++)
         {
             id[j] = source_tet.v[j];
-            const glm::vec3 point = d_points[id[j]] - ray_origin;
+			float4 temp = tex1Dfetch<float4>(points, id[j]);
+            const glm::vec3 point = glm::vec3(temp.x, temp.y, temp.z) - ray_origin;
             p[j].x = glm::dot(right, point);
             p[j].y = glm::dot(up, point);
         }
@@ -670,8 +673,9 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
         while (index >= 0)
         {
-            id[3] = ((unsigned int)((int4)tex1Dfetch<int4>(tets, index)).w) ^ id[0] ^ id[1] ^ id[2];
-            const glm::vec3 newPoint = d_points[id[3]] - ray_origin;
+            id[3] = ((unsigned int)((int)tex1Dfetch<int>(tets, index*4+3))) ^ id[0] ^ id[1] ^ id[2];
+			float4 point = tex1Dfetch<float4>(points, id[3]);
+            const glm::vec3 newPoint = glm::vec3(point.x, point.y, point.z)- ray_origin;
 
             p[3].x = glm::dot(right, newPoint);
             p[3].y = glm::dot(up, newPoint);
@@ -680,7 +684,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 			if (idx != 0)
 			{
-				switch (idx - 1) {
+				nx ^= tex1Dfetch<int>(tets, index * 4 + idx - 1);
+				/*switch (idx - 1) {
 				case 0:
 					nx ^= ((int4)tex1Dfetch<int4>(tets, index)).x;
 					break;
@@ -690,7 +695,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 				case 2:
 					nx ^= ((int4)tex1Dfetch<int4>(tets, index)).z;
 					break;
-				}
+				}*/
 			}
 
             if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
@@ -701,7 +706,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
                     if (idx2 != 0)
 					{
-						switch (idx2 - 1) {
+						nx ^= tex1Dfetch<int>(tets, index * 4 + idx2 - 1);
+						/*switch (idx2 - 1) {
 						case 0:
 							nx ^= ((int4)tex1Dfetch<int4>(tets, index)).x;
 							break;
@@ -711,7 +717,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 						case 2:
 							nx ^= ((int4)tex1Dfetch<int4>(tets, index)).z;
 							break;
-						}
+						}*/
 					}
 
                     id[1] = id[3];
@@ -723,7 +729,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
                     if (idx2 != 0)
 					{
-						switch (idx2 - 1) {
+						nx ^= tex1Dfetch<int>(tets, index * 4 + idx2 - 1);
+						/*switch (idx2 - 1) {
 						case 0:
 							nx ^= ((int4)tex1Dfetch<int4>(tets, index)).x;
 							break;
@@ -733,7 +740,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 						case 2:
 							nx ^= ((int4)tex1Dfetch<int4>(tets, index)).z;
 							break;
-						}
+						}*/
 					}
 
                     id[0] = id[3];
@@ -746,7 +753,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 				if (idx2 != 0)
 				{
-					switch (idx2 - 1) {
+					nx ^= tex1Dfetch<int>(tets, index * 4 + idx2 - 1);
+					/*switch (idx2 - 1) {
 					case 0:
 						nx ^= ((int4)tex1Dfetch<int4>(tets, index)).x;
 						break;
@@ -756,7 +764,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 					case 2:
 						nx ^= ((int4)tex1Dfetch<int4>(tets, index)).z;
 						break;
-					}
+					}*/
 				}
 
                 id[2] = id[3];
@@ -768,7 +776,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 				if (idx2 != 0)
 				{
-					switch (idx2 - 1) {
+					nx ^= tex1Dfetch<int>(tets, index * 4 + idx2 - 1);
+					/*switch (idx2 - 1) {
 					case 0:
 						nx ^= ((int4)tex1Dfetch<int4>(tets, index)).x;
 						break;
@@ -778,7 +787,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 					case 2:
 						nx ^= ((int4)tex1Dfetch<int4>(tets, index)).z;
 						break;
-					}
+					}*/
 				}
 
                 id[0] = id[3];
@@ -1274,26 +1283,26 @@ void copy_to_gpu(TetMesh16& tet_mesh)
 {
     copy_to_gpu_helper(tet_mesh);
 
-	int4* h_tets16 = new int4[tet_mesh.m_tets.size()];
+	int* h_tets16 = new int[tet_mesh.m_tets.size()*4];
 
 	for (size_t i = 0; i < tet_mesh.m_tets.size(); i++)
 	{
-		h_tets16[i] = make_int4(tet_mesh.m_tet16s[i].n[0],
-			tet_mesh.m_tet16s[i].n[1],
-			tet_mesh.m_tet16s[i].n[2],
-			tet_mesh.m_tet16s[i].x);
+		h_tets16[i*4] = tet_mesh.m_tet16s[i].n[0];
+		h_tets16[i*4+1] = tet_mesh.m_tet16s[i].n[1];
+		h_tets16[i*4+2] = tet_mesh.m_tet16s[i].n[2];
+		h_tets16[i*4+3] = tet_mesh.m_tet16s[i].x;
 	}
 
     cudaFree(d_tet16s);
-    cudaMalloc(&d_tet16s, tet_mesh.m_tets.size() * sizeof(int4));
-    cudaMemcpy(d_tet16s, h_tets16, tet_mesh.m_tets.size() * sizeof(int4), cudaMemcpyHostToDevice);
+    cudaMalloc(&d_tet16s, tet_mesh.m_tets.size() * sizeof(int) * 4);
+    cudaMemcpy(d_tet16s, h_tets16, tet_mesh.m_tets.size() * sizeof(int) * 4, cudaMemcpyHostToDevice);
 
 	cudaResourceDesc res_desc;
 	memset(&res_desc, 0, sizeof(res_desc));
 	res_desc.resType = cudaResourceTypeLinear;
 	res_desc.res.linear.devPtr = d_tet16s;
-	res_desc.res.linear.desc = cudaCreateChannelDesc<int4>();
-	res_desc.res.linear.sizeInBytes = sizeof(int4) * tet_mesh.m_tets.size();
+	res_desc.res.linear.desc = cudaCreateChannelDesc<int>();
+	res_desc.res.linear.sizeInBytes = sizeof(int) * tet_mesh.m_tets.size() * 4;
 
 	cudaTextureDesc tex_desc;
 	memset(&tex_desc, 0, sizeof(tex_desc));
@@ -1301,6 +1310,38 @@ void copy_to_gpu(TetMesh16& tet_mesh)
 
 	check_cuda(cudaCreateTextureObject(&t_tets16, &res_desc,
 		&tex_desc, NULL));
+
+	//==========================================================================
+	float4* h_points = new float4[tet_mesh.m_points.size()];
+
+	for (size_t i = 0; i < tet_mesh.m_points.size(); i++)
+	{
+		h_points[i] = make_float4(tet_mesh.m_points[i].x,
+			tet_mesh.m_points[i].y,
+			tet_mesh.m_points[i].z,
+			NAN);
+	}
+
+	cudaFree(d_points2);
+	cudaMalloc(&d_points2, tet_mesh.m_points.size() * sizeof(float4));
+	cudaMemcpy(d_points2, h_points, tet_mesh.m_points.size() * sizeof(float4), cudaMemcpyHostToDevice);
+
+	cudaResourceDesc res_desc2;
+	memset(&res_desc2, 0, sizeof(res_desc2));
+	res_desc2.resType = cudaResourceTypeLinear;
+	res_desc2.res.linear.devPtr = d_points2;
+	res_desc2.res.linear.desc = cudaCreateChannelDesc<float4>();
+	res_desc2.res.linear.sizeInBytes = sizeof(float4) * tet_mesh.m_points.size();
+
+	cudaTextureDesc tex_desc2;
+	memset(&tex_desc2, 0, sizeof(tex_desc2));
+	tex_desc2.readMode = cudaReadModeElementType;
+
+	check_cuda(cudaCreateTextureObject(&t_points, &res_desc2,
+		&tex_desc2, NULL));
+
+	delete[] h_tets16;
+	delete[] h_points;
 
     print_cuda_error("CUDA copy Tet16 to GPU");
 }
@@ -1480,14 +1521,14 @@ void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution,
     }
     else if (tet_mesh_type == 2)
     {
-        ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, t_tets16, d_cons_faces, d_faces, d_intersectdata);
+        ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, t_points, t_tets16, d_cons_faces, d_faces, d_intersectdata);
     }
     else if (tet_mesh_type == 3)
     {
         ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tetsSctp, d_cons_faces, d_faces, d_intersectdata);
     }
-    cudaDeviceSynchronize();
 	//print_cuda_error("Kernel:");
+    cudaDeviceSynchronize();
 
     end = std::chrono::steady_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
@@ -1564,7 +1605,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 		}
 		else if (tet_mesh_type == 2)
 		{
-			ray_cast_kernel << < stream_size / t, t, 0, streams[id_s] >> > (*d_scene, *d_source_tet, *d_res, offset, tile_size, d_points, t_tets16, d_cons_faces, d_faces, d_intersectdata);
+			ray_cast_kernel << < stream_size / t, t, 0, streams[id_s] >> > (*d_scene, *d_source_tet, *d_res, offset, tile_size, t_points, t_tets16, d_cons_faces, d_faces, d_intersectdata);
 		}
 		else if (tet_mesh_type == 3)
 		{
