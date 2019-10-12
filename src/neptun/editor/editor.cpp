@@ -760,6 +760,11 @@ void Editor::DrawTetGen()
                 copy_to_gpu(*(TetMesh16*)scene->tet_mesh);
                 Logger::Log("TetMesh16 data copied to GPU");
             }
+			else if (current_tet_mesh_type == 3)
+			{
+				copy_to_gpu(*(TetMeshSctp*)scene->tet_mesh);
+				Logger::Log("TetMesh w/ ScTP data copied to GPU");
+			}
         }
 
         ImGui::SameLine();
@@ -1273,7 +1278,7 @@ void Editor::DrawRenderedFrame()
     ImGui::Checkbox("Shadows", &ray_tracer->shadows);
 
     const char* reps[] = { "Default", "Default (SIMD)", "Default(GPU)", "ScTP", "ScTP(GPU)", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
-    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, Method::Method_count); //9 yerine Method_count kullanýldý problem yaratýr mý ?
+    ImGui::Combo("Method", (int*)&ray_tracer->method, reps, Method::Method_count); //9 yerine Method_count kullanï¿½ldï¿½ problem yaratï¿½r mï¿½ ?
 
     if (res != ray_tracer->m_resolution)
     {
