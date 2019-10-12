@@ -1,3 +1,4 @@
+#include "cuda.h"
 #include "cuda_runtime.h"
 
 #include "device_launch_parameters.h"
@@ -16,6 +17,8 @@
 #include <stdio.h>
 #include <string.h>
 
+
+//TCDT utils
 
 __device__
 inline void swapvec2(glm::vec2 &a, glm::vec2 &b)
