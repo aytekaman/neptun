@@ -433,3 +433,78 @@ public:
 
     Tet16* m_tet16s = nullptr;
 };
+
+class TetMesh80 : public TetMesh
+{
+public:
+	struct Plucker
+	{
+		float m_Pi[6];
+	};
+
+	struct Tet80Face
+	{
+
+	};
+
+	struct Tet80
+	{
+		int m_semantics[4];
+		// Neighboring tetra and face [0..3] on two bits
+		int m_nextTetraFace[4];
+	};
+
+	TetMesh80(
+		const Scene& scene,
+		const bool preserve_triangles,
+		const bool create_bbox,
+		const float quality = 5.0f);
+
+	TetMesh80(const Scene& scene);
+
+	virtual int get_size_in_bytes();
+
+	void init_acceleration_data() override;
+
+	int find_tet(
+		const glm::vec3& point,
+		SourceTet& tet) override;
+
+	//// Returns the index of th tet that contains the 'point'.
+	//// int  find_tet_idx(const glm::vec3& point);
+
+	// Casts a ray from a point inside the 'tet'.
+	bool intersect(
+		const Ray& ray,
+		const SourceTet& tet,
+		IntersectionData& intersection_data) override;
+
+	// Casts a ray from a point on the 'tet_face'
+	bool intersect(
+		const Ray& ray,
+		const TetFace& tet_face,
+		IntersectionData& intersection_data) override;
+
+	// Returns true if a ray can reach to a target_tet_idx'th tet.
+	bool intersect(
+		const Ray& ray,
+		const TetFace& tet_face,
+		const int& target_tet_idx) override;
+
+	// Casts a ray from a point inside the 'tet'.
+	virtual bool intersect_stats(
+		const Ray& ray,
+		const SourceTet& tet,
+		IntersectionData& intersection_data,
+		DiagnosticData& diagnostic_data) override;
+
+	void intersect4(TetRayHit4& tet_ray_hit);
+
+	void intersect4_simd(TetRayHit4& tet_ray_hit);
+
+	int get_exit_face(const Plucker& pl_ray, const int id_vertex, const int id_entry_face);
+
+	Tet80* m_tet80s = nullptr;
+	glm::vec4* m_vertices = nullptr;
+};
+
