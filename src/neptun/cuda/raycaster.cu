@@ -39,6 +39,95 @@ cudaStream_t* streams;
 const int NSTREAMS = 3;
 
 
+//=============== TCDT utils =====================
+#define TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
+
+#define TCDT_LOOK_UP_CONSTANT
+#define TCDT_MAGIC_ERROR -1
+
+
+#ifdef TCDT_LOOK_UP_CONSTANT
+												//   3 2 1 0 /id 0 1 2
+__constant__ char c_orderVertices[4] = {	//  00100111,    3 1 2 
+											0x27,
+											//  00110010,    2 0 3
+											0x32,
+											//  00010011,    3 0 1
+											0x13,
+											//  00100001     1 0 2
+											0x21
+};
+
+//   3 2 1 0 /id 0 1 2
+__constant__ char c_exitFace[4] = {	//  00111001,    1 2 3
+										0x39,
+										//  00101100,    0 3 2
+										0x2c,
+										//  00110100,    0 1 3
+										0x34,
+										//  00011000     0 2 1
+										0x18
+};
+#endif
+
+#define GET_NEXT_TETRA( _t )( ( _t & 0x3fffffff ) )
+#define GET_NEXT_FACE( _t )( ( _t >> 30 ) & 0x3 )
+#define GET_FACE_VERTEX( _f, _id )( ( c_orderVertices[_f] >> (2*_id) ) & 0x3 ) // Get face vertices ID
+#define GET_CMP_VERTEX( _f )( _f ) // Get complementary vertex ID
+#define GET_EXIT_FACE( _f, _id )( ( c_exitFace[_f] >> (2*_id) ) & 0x3 ) // Get exit face from id
+
+#ifdef TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
+#define LOAD_TETRA( id )	tex1Dfetch<int2>(	t_tet96s, id )
+#define LOAD_VERTEX( id )	tex1Dfetch<float4>( t_vertices, id ) 
+#else 
+#define LOAD_TETRA( id )	d_tet96s[id]
+#define LOAD_VERTEX( id )	d_vertices[id]
+#endif
+
+__device__
+int get_exit_face(const TetMesh80::Plucker& plRay,
+	const int idTetra, const int idEntryFace, cudaTextureObject_t t_vertices) {
+	int idExit;
+
+	const float4 cmpV = LOAD_VERTEX(idTetra + GET_CMP_VERTEX(idEntryFace));
+
+	// Translate ray to vOrig
+	const float4 rMom = make_float4(
+		(plRay.m_Pi[1] * cmpV.z - plRay.m_Pi[2] * cmpV.y) + plRay.m_Pi[3],
+		(plRay.m_Pi[2] * cmpV.x - plRay.m_Pi[0] * cmpV.z) + plRay.m_Pi[4],
+		(plRay.m_Pi[0] * cmpV.y - plRay.m_Pi[1] * cmpV.x) + plRay.m_Pi[5],
+		0.f);
+
+	// Perform first Plucker test (with 0)
+	// and get next Plucker line to test
+	float4 edge = LOAD_VERTEX(idTetra + GET_FACE_VERTEX(idEntryFace, 2));
+	edge.x -= cmpV.x;
+	edge.y -= cmpV.y;
+	edge.z -= cmpV.z;
+
+	// Get next edge [1..2] according to side's result
+	idExit = ((rMom.x * edge.x
+		+ rMom.y * edge.y
+		+ rMom.z * edge.z) < 0.0f);
+
+	// Perform second and last test and get exit face [0..3]
+	edge = LOAD_VERTEX(idTetra + GET_FACE_VERTEX(idEntryFace, idExit));
+	edge.x -= cmpV.x;
+	edge.y -= cmpV.y;
+	edge.z -= cmpV.z;
+
+	// idNextEdge is used as an exit ID
+	idExit += ((rMom.x * edge.x
+		+ rMom.y * edge.y
+		+ rMom.z * edge.z) >= 0.0f);
+
+	// Real idExit
+	idExit = GET_EXIT_FACE(idEntryFace, idExit);
+
+	return idExit;
+}
+
+
 //============================ Ray Caster Kernels where rays are initialized ===============================
 
 //----------------------------------------- For TetMesh32 -------------------------------------------------
@@ -577,6 +666,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 	}
 }
 
+//---------------------------------------- For TetMesh16 --------------------------------------------------
+
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
 	glm::vec3* points, TetMesh16::Tet16* tets, ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
@@ -768,6 +859,119 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		}
 		else
 			output[outputindex].hit = false;
+	}
+}
+
+//---------------------------------------- For TetMesh96 --------------------------------------------------
+
+__global__
+void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
+	cudaTextureObject_t t_vertices, cudaTextureObject_t t_tet96s, int2* d_tet96s, ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
+{
+	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (idx < resolution.x * resolution.y)
+	{
+		const glm::vec3 camTarget = scene.camTarget;
+		glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+
+		dir = dir * glm::cos(scene.camOrbitX);
+		dir.y = glm::sin(scene.camOrbitX);
+
+		glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+
+		const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
+		const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
+		const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
+
+		const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
+
+		const float aspect = (float)resolution.x / resolution.y;
+		const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+		const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
+		const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
+
+		const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
+		const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
+		const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
+
+		const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
+		const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
+		const int max_job_index = tile_count_x * tile_count_y;
+
+		glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
+		glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+		rect_max = (glm::min)(rect_max, resolution);
+
+		int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
+
+		glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
+
+		int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
+
+		//j = rect_min.y
+		//i = rect_min.x
+		glm::vec3 ray_origin = cam_pos;
+		glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+
+		TetMesh80::Plucker pl_ray = make_plucker_from_ray(ray_origin, ray_dir);
+
+		int id_tetra, id_vertex, id_entry_face;
+		int id_exit;
+		int semantic;
+		int2 tetra;
+
+		// Get first tetra
+		id_tetra = source_tet.idx * 4;
+
+		tetra = LOAD_TETRA(id_tetra);
+
+		glm::vec3 a(((float4)LOAD_VERTEX(id_tetra + 2)).x, ((float4)LOAD_VERTEX(id_tetra + 2)).y, ((float4)LOAD_VERTEX(id_tetra + 2)).z);
+		glm::vec3 b(((float4)LOAD_VERTEX(id_tetra + 3)).x, ((float4)LOAD_VERTEX(id_tetra + 3)).y, ((float4)LOAD_VERTEX(id_tetra + 3)).z);
+		dir = glm::normalize(b - a);//dir re-used
+		glm::vec3 vv = glm::cross(a, b);
+
+		id_entry_face = (dir[0] * pl_ray.m_Pi[3] +
+			dir[1] * pl_ray.m_Pi[4] +
+			dir[2] * pl_ray.m_Pi[5] +
+			vv[0] * pl_ray.m_Pi[0] +
+			vv[1] * pl_ray.m_Pi[1] +
+			vv[2] * pl_ray.m_Pi[2]) < 0.0f;
+
+		//==============================================================
+		// Now begin traversal
+		//==============================================================
+		int cpt = 0;
+		do {
+			if (cpt++ == 5000) { // In case of numeric error
+				semantic = TCDT_MAGIC_ERROR;
+				break;
+			}
+
+			id_exit = get_exit_face(pl_ray, id_tetra, id_entry_face, t_vertices);
+
+			tetra = LOAD_TETRA(id_tetra + id_exit);
+			semantic = tetra.y;
+
+			if (semantic >= 0)
+				break;
+
+			// Update data for next tetra
+			id_tetra = GET_NEXT_TETRA(tetra.x) * 4;
+			id_entry_face = GET_NEXT_FACE(tetra.x);
+
+		} while (true);
+		// Store result
+		//out.m_idFace = idVertex + idExit;
+		//out.m_idMtl = semantic;
+		//out.m_idVol = idTetra;
+
+		if (semantic >= 1)
+			output[outputindex].hit = true;
+		else
+			output[outputindex].hit = false;
+
 	}
 }
 
@@ -1250,6 +1454,8 @@ void copy_to_gpu(TetMeshSctp& tet_mesh)
 
 void copy_to_gpu(TetMesh80& tet_mesh)
 {
+	copy_to_gpu_helper(tet_mesh);
+
 	num_int2_d_tets = 4 * tet_mesh.m_tets.size();
 	num_float4_d_vertices = tet_mesh.m_points.size();
 
@@ -1486,6 +1692,11 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 	{
 		ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tetSctps, d_cons_faces, d_faces, d_intersectdata);
 	}
+	else if (tet_mesh_type == 4)
+	{
+		ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, t_vertices, t_tet96s, d_tet96s, d_cons_faces, d_faces, d_intersectdata);
+	}
+	print_cuda_error("Kernel: ");
 	cudaDeviceSynchronize();
 
 	end = std::chrono::steady_clock::now();
