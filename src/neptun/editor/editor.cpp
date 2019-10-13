@@ -721,8 +721,6 @@ void Editor::DrawTetGen()
 			copy_to_gpu(*(TetMesh80*)scene->tet_mesh);
 			Logger::Log("TetMesh80 data copied to GPU");
 		}
-
-        //Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
     }
 
     ImGui::Separator();
@@ -1360,7 +1358,8 @@ void Editor::DrawRenderedFrame()
     if (render && scene->has_accelerator())
     {
         if(ray_tracer->method == Method::Default_gpu ||
-            ray_tracer->method == Method::ScTP_gpu)
+            ray_tracer->method == Method::ScTP_gpu || 
+			ray_tracer->method == Method::Tet96_gpu)
             ray_tracer->render_gpu(*scene, diagnostics);
         else
             ray_tracer->Render(*scene, diagnostics);
