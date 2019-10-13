@@ -2622,8 +2622,8 @@ int TetMesh80::get_size_in_bytes()
 {
     int size_in_bytes = 0;
 
-    size_in_bytes += m_tets.size() * sizeof(Tet80);
-    size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
+    size_in_bytes += m_tets.size() * 80;
+    //size_in_bytes += m_constrained_faces.size() * sizeof(ConstrainedFace);
 
     return size_in_bytes;
 }
@@ -2695,8 +2695,8 @@ void TetMesh80::init_acceleration_data()
                 m_constrained_faces.push_back(cf);
 
                 //m_tetSctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);
-
-                m_tet80s[i].m_semantics[j] = 1;
+                m_tet80s[i].m_semantics[j] = m_tets[i].face_idx[j];
+                //m_tet80s[i].m_semantics[j] = 1;
             }
             else
             {
@@ -2815,8 +2815,30 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     //out.m_idMtl = semantic;
     //out.m_idVol = idTetra;
 
-    if (semantic >= 1)
+    if (semantic > 0)
+    {
+        const Face& face = faces[semantic - 1];
+
+        const glm::vec3 *v = face.vertices;
+        const glm::vec3 *n = face.normals;
+        const glm::vec2 *t = face.uvs;
+
+        const glm::vec3 e1 = v[1] - v[0];
+        const glm::vec3 e2 = v[2] - v[0];
+        const glm::vec3 s = ray.origin - v[0];
+        const glm::vec3 q = glm::cross(s, e1);
+        const glm::vec3 p = glm::cross(ray.dir, e2);
+        const float f = 1.0f / glm::dot(e1, p);
+        const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
+
+        intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
+        intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+        intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+        //intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
+        //intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+
         return true;
+    }
     else
         return false;
 }
