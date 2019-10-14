@@ -910,8 +910,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 		int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
 
-		//j = rect_min.y
-		//i = rect_min.x
+		//j = rect_min.y 
+		//i = rect_min.x 
 		glm::vec3 ray_origin = cam_pos;
 		glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
 
@@ -922,14 +922,14 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		int semantic;
 		int2 tetra;
 
-		// Get first tetra
+		// Get first tetra 
 		id_tetra = source_tet.idx * 4;
 
 		tetra = LOAD_TETRA(id_tetra);
 
 		glm::vec3 a(((float4)LOAD_VERTEX(id_tetra + 2)).x, ((float4)LOAD_VERTEX(id_tetra + 2)).y, ((float4)LOAD_VERTEX(id_tetra + 2)).z);
 		glm::vec3 b(((float4)LOAD_VERTEX(id_tetra + 3)).x, ((float4)LOAD_VERTEX(id_tetra + 3)).y, ((float4)LOAD_VERTEX(id_tetra + 3)).z);
-		dir = glm::normalize(b - a);//dir re-used
+		dir = glm::normalize(b - a);//dir re-used 
 		glm::vec3 vv = glm::cross(a, b);
 
 		id_entry_face = (dir[0] * pl_ray.m_Pi[3] +
@@ -939,12 +939,12 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			vv[1] * pl_ray.m_Pi[1] +
 			vv[2] * pl_ray.m_Pi[2]) < 0.0f;
 
-		//==============================================================
-		// Now begin traversal
-		//==============================================================
+		//============================================================== 
+		// Now begin traversal 
+		//============================================================== 
 		int cpt = 0;
 		do {
-			if (cpt++ == 5000) { // In case of numeric error
+			if (cpt++ == 5000) { // In case of numeric error 
 				semantic = TCDT_MAGIC_ERROR;
 				break;
 			}
@@ -957,15 +957,15 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			if (semantic >= 0)
 				break;
 
-			// Update data for next tetra
+			// Update data for next tetra 
 			id_tetra = GET_NEXT_TETRA(tetra.x) * 4;
 			id_entry_face = GET_NEXT_FACE(tetra.x);
 
 		} while (true);
-		// Store result
-		//out.m_idFace = idVertex + idExit;
-		//out.m_idMtl = semantic;
-		//out.m_idVol = idTetra;
+		// Store result 
+		//out.m_idFace = idVertex + idExit; 
+		//out.m_idMtl = semantic; 
+		//out.m_idVol = idTetra; 
 
 		if (semantic >= 1)
 			output[outputindex].hit = true;
@@ -1456,8 +1456,8 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 {
 	copy_to_gpu_helper(tet_mesh);
 
-	num_int2_d_tets = 4 * tet_mesh.m_tets.size();
-	num_float4_d_vertices = tet_mesh.m_points.size();
+	num_int2_d_tets = tet_mesh.m_tets.size() * 4;
+	num_float4_d_vertices = tet_mesh.m_tets.size() * 4;
 
 	int2* h_tets = new int2[num_int2_d_tets];
 	float4* h_vertices = new float4[num_float4_d_vertices];
@@ -1472,9 +1472,9 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 			);
 		}
 	}
-	for (int i = 0; i < tet_mesh.m_points.size(); ++i) {
-		const glm::vec3& v = tet_mesh.m_points[i];
-		h_vertices[i] = make_float4(v.x, v.y, v.z, NAN);
+	for (int i = 0; i < tet_mesh.m_tets.size()*4; ++i) {
+		const glm::vec4& v = tet_mesh.m_vertices[i];
+		h_vertices[i] = make_float4(v.x, v.y, v.z, v.w);
 	}
 
 	const size_t size_tets = num_int2_d_tets * sizeof(int2);
@@ -1519,6 +1519,8 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 			&texDesc, NULL));
 	}
 #endif
+	delete[] h_tets;
+	delete[] h_vertices;
 	print_cuda_error("CUDA copy Tet80 as Tet96 to GPU");
 }
 
@@ -1696,7 +1698,6 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 	{
 		ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, t_vertices, t_tet96s, d_tet96s, d_cons_faces, d_faces, d_intersectdata);
 	}
-	print_cuda_error("Kernel: ");
 	cudaDeviceSynchronize();
 
 	end = std::chrono::steady_clock::now();
