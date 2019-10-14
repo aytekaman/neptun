@@ -127,10 +127,59 @@ int get_exit_face(const TetMesh80::Plucker& plRay,
 	return idExit;
 }
 
+//================= Inits a ray for corresponding pixel & return index for the output of that vertex data ==================
+__device__
+int init_ray(Scene& scene, glm::ivec2& resolution, int tile_size, int idx, glm::vec3& ray_origin, glm::vec3& ray_dir)
+{
+	const glm::vec3 camTarget = scene.camTarget;
+	glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+
+	dir = dir * glm::cos(scene.camOrbitX);
+	dir.y = glm::sin(scene.camOrbitX);
+
+	glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+
+	const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
+	const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
+	const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
+
+	const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
+
+	const float aspect = (float)resolution.x / resolution.y;
+	const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+	const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
+	const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
+
+	const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
+	const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
+	const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
+
+	const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
+	const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
+	const int max_job_index = tile_count_x * tile_count_y;
+
+	glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
+	glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+	rect_max = (glm::min)(rect_max, resolution);
+
+	int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
+
+	glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
+
+	int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
+
+	//j = rect_min.y
+	//i = rect_min.x
+	ray_origin = cam_pos;
+	ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+
+	return outputindex;
+}
 
 //============================ Ray Caster Kernels where rays are initialized ===============================
 
-//----------------------------------------- For TetMesh32 -------------------------------------------------
+//----------------------------------------- For TetMeshScTP -------------------------------------------------
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
 	glm::vec3* points, TetMeshSctp::TetSctp* tets, ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
@@ -139,48 +188,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 	if (idx < resolution.x * resolution.y)
 	{
-		const glm::vec3 camTarget = scene.camTarget;
-		glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
-
-		dir = dir * glm::cos(scene.camOrbitX);
-		dir.y = glm::sin(scene.camOrbitX);
-
-		glm::vec3 cam_pos = camTarget + dir * scene.camDist;
-
-		const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
-		const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
-		const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
-
-		const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
-
-		const float aspect = (float)resolution.x / resolution.y;
-		const float scale_y = glm::tan(glm::pi<float>() / 8);
-
-		const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
-
-		const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
-		const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
-
-		const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
-		const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
-		const int max_job_index = tile_count_x * tile_count_y;
-
-		glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
-		glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-		rect_max = (glm::min)(rect_max, resolution);
-
-		int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
-
-		glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
-
-		int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
-
-		//j = rect_min.y
-		//i = rect_min.x
-		glm::vec3 ray_origin = cam_pos;
-		glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+		glm::vec3 ray_origin, ray_dir;
+		int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
 
 		unsigned int id[4];
 		glm::vec3 p[4];
@@ -323,7 +332,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 	}
 }
 
-//----------------------------------------- For TetMesh20 -------------------------------------------------
+//----------------------------------------- For TetMesh32 -------------------------------------------------
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
@@ -333,48 +342,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 	if (idx < resolution.x * resolution.y)
 	{
-		const glm::vec3 camTarget = scene.camTarget;
-		glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
-
-		dir = dir * glm::cos(scene.camOrbitX);
-		dir.y = glm::sin(scene.camOrbitX);
-
-		glm::vec3 cam_pos = camTarget + dir * scene.camDist;
-
-		const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
-		const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
-		const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
-
-		const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
-
-		const float aspect = (float)resolution.x / resolution.y;
-		const float scale_y = glm::tan(glm::pi<float>() / 8);
-
-		const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
-
-		const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
-		const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
-
-		const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
-		const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
-		const int max_job_index = tile_count_x * tile_count_y;
-
-		glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
-		glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-		rect_max = (glm::min)(rect_max, resolution);
-
-		int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
-
-		glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
-
-		int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
-
-		//j = rect_min.y
-		//i = rect_min.x
-		glm::vec3 ray_origin = cam_pos;
-		glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+		glm::vec3 ray_origin, ray_dir;
+		int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
 
 		unsigned int id[4];
 		glm::vec2 p[4];
@@ -483,7 +452,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 	}
 }
 
-//----------------------------------------- For TetMesh16 -------------------------------------------------
+//----------------------------------------- For TetMesh20 -------------------------------------------------
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
@@ -493,48 +462,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 	if (idx < resolution.x * resolution.y)
 	{
-		const glm::vec3 camTarget = scene.camTarget;
-		glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
-
-		dir = dir * glm::cos(scene.camOrbitX);
-		dir.y = glm::sin(scene.camOrbitX);
-
-		glm::vec3 cam_pos = camTarget + dir * scene.camDist;
-
-		const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
-		const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
-		const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
-
-		const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
-
-		const float aspect = (float)resolution.x / resolution.y;
-		const float scale_y = glm::tan(glm::pi<float>() / 8);
-
-		const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
-
-		const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
-		const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
-
-		const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
-		const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
-		const int max_job_index = tile_count_x * tile_count_y;
-
-		glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
-		glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-		rect_max = (glm::min)(rect_max, resolution);
-
-		int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
-
-		glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
-
-		int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
-
-		//j = rect_min.y
-		//i = rect_min.x
-		glm::vec3 ray_origin = cam_pos;
-		glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+		glm::vec3 ray_origin, ray_dir;
+		int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
 
 		unsigned int id[4];
 		glm::vec2 p[4];
@@ -676,48 +605,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 	if (idx < resolution.x * resolution.y)
 	{
-		const glm::vec3 camTarget = scene.camTarget;
-		glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
-
-		dir = dir * glm::cos(scene.camOrbitX);
-		dir.y = glm::sin(scene.camOrbitX);
-
-		glm::vec3 cam_pos = camTarget + dir * scene.camDist;
-
-		const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
-		const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
-		const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
-
-		const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
-
-		const float aspect = (float)resolution.x / resolution.y;
-		const float scale_y = glm::tan(glm::pi<float>() / 8);
-
-		const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
-
-		const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
-		const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
-
-		const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
-		const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
-		const int max_job_index = tile_count_x * tile_count_y;
-
-		glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
-		glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-		rect_max = (glm::min)(rect_max, resolution);
-
-		int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
-
-		glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
-
-		int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
-
-		//j = rect_min.y
-		//i = rect_min.x
-		glm::vec3 ray_origin = cam_pos;
-		glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+		glm::vec3 ray_origin, ray_dir;
+		int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
 
 		unsigned int id[4];
 		glm::vec2 p[4];
@@ -872,48 +761,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 	if (idx < resolution.x * resolution.y)
 	{
-		const glm::vec3 camTarget = scene.camTarget;
-		glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
-
-		dir = dir * glm::cos(scene.camOrbitX);
-		dir.y = glm::sin(scene.camOrbitX);
-
-		glm::vec3 cam_pos = camTarget + dir * scene.camDist;
-
-		const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
-		const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
-		const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
-
-		const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
-
-		const float aspect = (float)resolution.x / resolution.y;
-		const float scale_y = glm::tan(glm::pi<float>() / 8);
-
-		const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)resolution.y;
-
-		const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
-		const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)resolution.x;
-		const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)resolution.y;
-
-		const int tile_count_x = (resolution.x + tile_size - 1) / tile_size;
-		const int tile_count_y = (resolution.y + tile_size - 1) / tile_size;
-		const int max_job_index = tile_count_x * tile_count_y;
-
-		glm::ivec2 rect_min = glm::ivec2((idx / (tile_size * tile_size) % tile_count_x) * tile_size, (idx / (tile_size * tile_size) / tile_count_x) * tile_size);
-		glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-		rect_max = (glm::min)(rect_max, resolution);
-
-		int tile_offset = idx - rect_min.x * tile_size - rect_min.y * (resolution.x);
-
-		glm::ivec2 pixel_coords = glm::ivec2(rect_min.x + tile_offset % tile_size, rect_min.y + tile_offset / tile_size);
-
-		int outputindex = pixel_coords.x + pixel_coords.y * resolution.x;
-
-		//j = rect_min.y 
-		//i = rect_min.x 
-		glm::vec3 ray_origin = cam_pos;
-		glm::vec3 ray_dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray_origin);
+		glm::vec3 ray_origin, ray_dir;
+		int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
 
 		TetMesh80::Plucker pl_ray = make_plucker_from_ray(ray_origin, ray_dir);
 
@@ -929,7 +778,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 		glm::vec3 a(((float4)LOAD_VERTEX(id_tetra + 2)).x, ((float4)LOAD_VERTEX(id_tetra + 2)).y, ((float4)LOAD_VERTEX(id_tetra + 2)).z);
 		glm::vec3 b(((float4)LOAD_VERTEX(id_tetra + 3)).x, ((float4)LOAD_VERTEX(id_tetra + 3)).y, ((float4)LOAD_VERTEX(id_tetra + 3)).z);
-		dir = glm::normalize(b - a);//dir re-used 
+		glm::vec3 dir  = glm::normalize(b - a);
 		glm::vec3 vv = glm::cross(a, b);
 
 		id_entry_face = (dir[0] * pl_ray.m_Pi[3] +
