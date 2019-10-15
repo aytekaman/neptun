@@ -26,6 +26,7 @@ extern void copy_to_gpu(TetMesh32& tet_mesh);
 extern void copy_to_gpu(TetMesh20& tet_mesh);
 extern void copy_to_gpu(TetMesh16& tet_mesh);
 extern void copy_to_gpu(TetMeshSctp& tet_mesh);
+extern void copy_to_gpu(TetMesh80& tet_mesh);
 
 #ifdef _WIN32
     std::string builtin_scenes_folder_path = "../../scenes/";
@@ -928,6 +929,7 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
     TetMesh20* tet20;
     TetMesh16* tet16;
 	TetMeshSctp* tetSctp;
+	TetMesh80* tet80;
     scene.load_from_file(builtin_scenes_folder_path + scene_name + ".scene");
 
     ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
@@ -935,6 +937,7 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
     tet20 = new TetMesh20(scene);
     tet16 = new TetMesh16(scene);
 	tetSctp = new TetMeshSctp(scene);
+	tet80 = new TetMesh80(scene);
 
     int N = 100;
 
@@ -942,33 +945,39 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
     float tet20_fps = 0.0f;
     float tet16_fps = 0.0f;
 	float tetSctp_fps = 0.0f;
+	float tet80_fps = 0.0f;
 
     float tet32_prep_time = std::numeric_limits<float>::infinity();
     float tet20_prep_time = std::numeric_limits<float>::infinity();
     float tet16_prep_time = std::numeric_limits<float>::infinity();
 	float tetSctp_prep_time = std::numeric_limits<float>::infinity();
+	float tet80_prep_time = std::numeric_limits<float>::infinity();
 
     float tet32_copy_time = std::numeric_limits<float>::infinity();
     float tet20_copy_time = std::numeric_limits<float>::infinity();
     float tet16_copy_time = std::numeric_limits<float>::infinity();
 	float tetSctp_copy_time = std::numeric_limits<float>::infinity();
+	float tet80_copy_time = std::numeric_limits<float>::infinity();
 
     float tet32_kernel_time = std::numeric_limits<float>::infinity();
     float tet20_kernel_time = std::numeric_limits<float>::infinity();
     float tet16_kernel_time = std::numeric_limits<float>::infinity();
 	float tetSctp_kernel_time = std::numeric_limits<float>::infinity();
+	float tet80_kernel_time = std::numeric_limits<float>::infinity();
 
     float tet32_copy_back_time = std::numeric_limits<float>::infinity();
     float tet20_copy_back_time = std::numeric_limits<float>::infinity();
     float tet16_copy_back_time = std::numeric_limits<float>::infinity();
 	float tetSctp_copy_back_time = std::numeric_limits<float>::infinity();
+	float tet80_copy_back_time = std::numeric_limits<float>::infinity();
 
     float tet32_draw_time = std::numeric_limits<float>::infinity();
     float tet20_draw_time = std::numeric_limits<float>::infinity();
     float tet16_draw_time = std::numeric_limits<float>::infinity();
 	float tetSctp_draw_time = std::numeric_limits<float>::infinity();
+	float tet80_draw_time = std::numeric_limits<float>::infinity();
 
-    for (int j = 0; j < 4; j++)
+    for (int j = 0; j < 5; j++)
     {
         switch(j)
         {
@@ -997,11 +1006,17 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
 					scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
 				copy_to_gpu(*(TetMeshSctp*)scene.tet_mesh);
 				break;
+			case 4:
+				scene.tet_mesh = tet80;
+				if (sort_tet)
+					scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+				copy_to_gpu(*(TetMesh80*)scene.tet_mesh);
+				break;
         }
 
         for (int k = 0; k < N; ++k)
         {
-            ray_tracer.method = j != 3 ? Method::Default_gpu : Method::ScTP_gpu;
+            ray_tracer.method = j < 3 ? Method::Default_gpu : (j == 3 ? Method::ScTP_gpu : Method::Tet96_gpu);
             ray_tracer.render_gpu(scene);
 			switch (j)
 			{
@@ -1042,6 +1057,15 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
 					tetSctp_copy_back_time = glm::min(Stats::gpu_copy_back_time, tetSctp_copy_back_time);
 					tetSctp_draw_time = glm::min(Stats::draw_time, tetSctp_draw_time);
 					break;
+				case 4:
+					tet80_fps = glm::max(1.0f / ray_tracer.last_render_time, tet80_fps);
+
+					tet80_prep_time = glm::min(Stats::ray_prep_time, tet80_prep_time);
+					tet80_copy_time = glm::min(Stats::gpu_copy_time, tet80_copy_time);
+					tet80_kernel_time = glm::min(Stats::gpu_kernel_time, tet80_kernel_time);
+					tet80_copy_back_time = glm::min(Stats::gpu_copy_back_time, tet80_copy_back_time);
+					tet80_draw_time = glm::min(Stats::draw_time, tet80_draw_time);
+					break;
 			}
         }
     }
@@ -1069,12 +1093,19 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
 		<< "Ray copy time: " << tetSctp_copy_time << "ms" << std::endl
 		<< "Kernel time: " << tetSctp_kernel_time << "ms" << std::endl
 		<< "Intersectiondata copy time: " << tetSctp_copy_back_time << "ms" << std::endl
-		<< "Draw time: " << tetSctp_draw_time << "ms" << std::endl;
+		<< "Draw time: " << tetSctp_draw_time << "ms" << std::endl << std::endl;
+	std::cout << "-------Tet80/96 :-------" << std::endl << "FPS: " << tet80_fps << std::endl
+		<< "Ray preparation time: " << tet80_prep_time << "ms" << std::endl
+		<< "Ray copy time: " << tet80_copy_time << "ms" << std::endl
+		<< "Kernel time: " << tet80_kernel_time << "ms" << std::endl
+		<< "Intersectiondata copy time: " << tet80_copy_back_time << "ms" << std::endl
+		<< "Draw time: " << tet80_draw_time << "ms" << std::endl << std::endl;
 
 	delete tet32;
 	delete tet20;
 	delete tet16;
 	delete tetSctp;
+	delete tet80;
 }
 
 void lagae_scenes_gpu_tetmesh_comparison()
@@ -1333,7 +1364,7 @@ int run_command_line(int argc, char const* argv[])
     }
     else if (command.name == "gpu_benchmark")
     {
-        gpu_tetmesh_type_comparison(true, "lagae_forest");
+        gpu_tetmesh_type_comparison(true);
     }
 	else if (command.name == "lagae_gpu_benchmark")
 	{
