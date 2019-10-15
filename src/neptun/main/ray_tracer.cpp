@@ -960,36 +960,36 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     }
 	else if (method == Method::Tet96_gpu)
 	{
-	if (gpu_init_rays)
-	{
-		//--------------------------------------------
-		Stats::ray_prep_time = 0;
-		//--------------------------------------------
-		if (dynamic_cast<TetMesh80*>(scene.tet_mesh) != nullptr)
-			cast_rays_gpu(scene, source_tet, m_resolution, tile_size, 4, m_intersect_data);
-
-		threads = new std::thread * [thread_count];
-		job_index = thread_count;
-
-		//--------------------------------------------
-		start_2 = std::chrono::steady_clock::now();
-		//--------------------------------------------
-		for (int i = 0; i < thread_count; i++)
+		if (gpu_init_rays)
 		{
-			void (RayTracer:: * mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
-			threads[i] = new std::thread(mem_funct, this, i, lightInfos);
-		}
+			//--------------------------------------------
+			Stats::ray_prep_time = 0;
+			//--------------------------------------------
+			if (dynamic_cast<TetMesh80*>(scene.tet_mesh) != nullptr)
+				cast_rays_gpu(scene, source_tet, m_resolution, tile_size, 4, m_intersect_data);
 
-		for (int i = 0; i < thread_count; i++)
-		{
-			threads[i]->join();
-			delete threads[i];
+			threads = new std::thread * [thread_count];
+			job_index = thread_count;
+
+			//--------------------------------------------
+			start_2 = std::chrono::steady_clock::now();
+			//--------------------------------------------
+			for (int i = 0; i < thread_count; i++)
+			{
+				void (RayTracer:: * mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
+				threads[i] = new std::thread(mem_funct, this, i, lightInfos);
+			}
+
+			for (int i = 0; i < thread_count; i++)
+			{
+				threads[i]->join();
+				delete threads[i];
+			}
+			//--------------------------------------------
+			end_2 = std::chrono::steady_clock::now();
+			Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+			//--------------------------------------------
 		}
-		//--------------------------------------------
-		end_2 = std::chrono::steady_clock::now();
-		Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
-		//--------------------------------------------
-	}
 	}
 
     delete[] threads;
