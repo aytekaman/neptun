@@ -2500,8 +2500,6 @@ bool TetMesh16::intersect_stats(const Ray & ray, const SourceTet& source_tet, In
     }
     else
         return false;
-
-    return false;
 }
 
 bool TetMesh16::intersect(const Ray& ray, const TetFace& tet_face, IntersectionData& intersection_data)
