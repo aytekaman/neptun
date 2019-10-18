@@ -232,17 +232,26 @@ int command_render_scene(const argparse::ArgumentData& args)
     if (rendering_method.find("tet-mesh") != std::string::npos)
     {
         const bool use_cache = args["usecache"]->cast<bool>();
+        const float quality = args["quality"]->cast<float>();
+        const bool preserve_triangles = !args["split-triangles"]->cast<bool>();
+
+        // Limit quality
+        if (quality < 1 || quality > 25)
+        {
+            std::cerr << "Quality must be in range [1, 25]\n";
+            return EXIT_FAILURE;
+        }
 
         if(rendering_method == "tet-mesh-16")
-            scene.tet_mesh = use_cache ? new TetMesh16(scene) : new TetMesh16(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh16(scene) : new TetMesh16(scene, preserve_triangles, true, quality);
         else if (rendering_method == "tet-mesh-20")
-            scene.tet_mesh = use_cache ? new TetMesh20(scene) : new TetMesh20(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh20(scene) : new TetMesh20(scene, preserve_triangles, true, quality);
         else if (rendering_method == "tet-mesh-32")
-            scene.tet_mesh = use_cache ? new TetMesh32(scene) : new TetMesh32(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh32(scene) : new TetMesh32(scene, preserve_triangles, true, quality);
         else if (rendering_method == "tet-mesh-80")
-            scene.tet_mesh = use_cache ? new TetMesh80(scene) : new TetMesh80(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMesh80(scene) : new TetMesh80(scene, preserve_triangles, true, quality);
         else if (rendering_method == "tet-mesh-sctp")
-            scene.tet_mesh = use_cache ? new TetMeshSctp(scene) : new TetMeshSctp(scene, true, true);
+            scene.tet_mesh = use_cache ? new TetMeshSctp(scene) : new TetMeshSctp(scene, preserve_triangles, true, quality);
         else
         {
             std::cerr << "Unrecognized rendering method " << rendering_method << std::endl;
@@ -404,7 +413,10 @@ int run_command_line(int argc, char const* argv[])
               .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
               .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
               .add_keyword_argument("sorting", "Sorting method for tet-mesh-32. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert")
-              .add_keyword_argument("usecache", "Use .tetmesh cache file", ArgumentType::BOOL, "c", "false");
+              .add_keyword_argument("usecache", "Use .tetmesh cache file", ArgumentType::BOOL, "c", "false")
+              .add_keyword_argument("quality", "Tetmesh quality (Minimum radius-edge ratio)", ArgumentType::FLOAT, "q", "5.0")
+              .add_keyword_argument("split-triangles", "Allow triangles to be splitted in tetmesh. (!preserve triangles)", ArgumentType::BOOL, "y");
+              
 
         return parser.parse(argc - 2, argv + 2);
     }
