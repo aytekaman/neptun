@@ -185,7 +185,59 @@ std::ostream& ArgumentData::print_warnings(std::ostream& os) const
 
 std::ostream& ArgumentData::print_usage(std::ostream& os) const
 { 
-    constexpr std::size_t table_margins[2] = {2, 20};
+    constexpr std::size_t column_starts[2] = {2, 25};
+    constexpr std::size_t max_line_length = 80;
+
+    std::size_t line_pos = 0; // Current line position
+    auto print_arg_name  = [&os, &line_pos, &column_starts](const std::string& name){
+        os << std::string(column_starts[0], ' ');
+        os << name;
+
+        line_pos += name.size() + 2;
+    };
+
+    auto print_arg_description = [&os, &line_pos, &column_starts, &max_line_length](const std::string& desc){
+        size_t space = 0;
+
+        if (line_pos > column_starts[1])
+        {
+            space = 4;    
+        }
+        else
+        {
+            space = column_starts[1] - line_pos;
+        }
+
+        os << std::string(space, ' ');
+        
+        // Print description
+        for (size_t i = 0; i < desc.size();)
+        {
+            const std::size_t characters_left = desc.size() - i;
+            const std::size_t space_left = max_line_length - line_pos; 
+            if (characters_left <= space_left)
+            {
+                os << desc.substr(i) << "\n";
+                line_pos = 0;
+                return;
+            }
+            else
+            {
+                // Find nearest end of word
+                size_t print_idx = i + space_left;
+                while (desc[print_idx] != ' ' && print_idx > i + 1)
+                {
+                    print_idx--;
+                }
+
+                // Print until nearest end of word
+                os << desc.substr(i, print_idx) << "\n";
+                os << std::string(column_starts[1], ' ');
+                line_pos = column_starts[1];
+                i = print_idx + 1;
+            }
+        }
+    }; 
 
     // Print: Usage: prog_name [Options] args...
     os << "Usage: " << m_parser->program_name << " ";
@@ -204,7 +256,7 @@ std::ostream& ArgumentData::print_usage(std::ostream& os) const
     // Print program description
     if (m_parser->program_desc.size() > 0)
     {
-        os << std::string(table_margins[0], ' ') << m_parser->program_desc << "\n";
+        os << std::string(column_starts[0], ' ') << m_parser->program_desc << "\n";
     }
     
     // Print positional arguments
@@ -214,8 +266,8 @@ std::ostream& ArgumentData::print_usage(std::ostream& os) const
 
         for (const auto& arg : m_positional_arguments)
         {
-            os  << std::string(table_margins[0], ' ') << arg->name
-                << std::string(table_margins[1] - arg->name.size(), ' ') << arg->desc << "\n";
+            print_arg_name(arg->name);
+            print_arg_description(arg->desc);
         }
     }
     
@@ -229,10 +281,9 @@ std::ostream& ArgumentData::print_usage(std::ostream& os) const
             KeywordArgument* arg = it.second;
             const std::string name = "--" + arg->name;
             const std::string short_name = arg->has_short_name() ? (", -" + arg->short_name) : "";
-            const std::size_t space = table_margins[1] - ( name.size() + short_name.size() );
 
-            os  << std::string(table_margins[0], ' ') << name << short_name 
-                << std::string(space, ' ') << arg->desc << "\n";
+            print_arg_name(name + short_name);
+            print_arg_description(arg->desc);
         }
     }
 
