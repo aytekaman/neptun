@@ -620,12 +620,13 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		const glm::vec3 up(b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y);
 
 		int index;
+		glm::vec3 point;
 
 		#pragma unroll
 		for (int j = 0; j < 4; j++)
 		{
 			id[j] = source_tet.v[j];
-			const glm::vec3 point = points[id[j]] - ray_origin;
+			point = points[id[j]] - ray_origin;
 			p[j].x = glm::dot(right, point);
 			p[j].y = glm::dot(up, point);
 		}
@@ -667,10 +668,10 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		while (index >= 0)
 		{
 			id[3] = tets[index].x ^ id[0] ^ id[1] ^ id[2];
-			const glm::vec3 newPoint = points[id[3]] - ray_origin;
+			point = points[id[3]] - ray_origin;
 
-			p[3].x = glm::dot(right, newPoint);
-			p[3].y = glm::dot(up, newPoint);
+			p[3].x = glm::dot(right, point);
+			p[3].y = glm::dot(up, point);
 
 			idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
