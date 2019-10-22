@@ -129,7 +129,7 @@ int get_exit_face(const TetMesh80::Plucker& plRay,
 
 //================= Inits a ray for corresponding pixel & return index for the output of that vertex data ==================
 __device__
-int init_ray(Scene& scene, glm::ivec2& resolution, int tile_size, int idx, glm::vec3& ray_origin, glm::vec3& ray_dir)
+inline int init_ray(Scene& scene, glm::ivec2& resolution, int tile_size, int idx, glm::vec3& ray_origin, glm::vec3& ray_dir)
 {
 	const glm::vec3 camTarget = scene.camTarget;
 	glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
@@ -621,6 +621,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 		int index;
 
+		#pragma unroll
 		for (int j = 0; j < 4; j++)
 		{
 			id[j] = source_tet.v[j];
@@ -661,6 +662,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		}
 
 		int nx = source_tet.idx;
+		int idx, idx2;
 
 		while (index >= 0)
 		{
@@ -670,7 +672,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			p[3].x = glm::dot(right, newPoint);
 			p[3].y = glm::dot(up, newPoint);
 
-			const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
+			idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
 			if (idx != 0)
 				nx ^= tets[index].n[idx - 1];
@@ -679,7 +681,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			{
 				if (p[3].x * p[2].y >= p[3].y * p[2].x)
 				{
-					const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
+					idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
 
 					if (idx2 != 0)
 						nx ^= tets[index].n[idx2 - 1];
@@ -689,7 +691,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 				}
 				else
 				{
-					const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+					idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
 					if (idx2 != 0)
 						nx ^= tets[index].n[idx2 - 1];
@@ -700,7 +702,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			}
 			else if (p[3].x * p[1].y < p[3].y * p[1].x)
 			{
-				const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
+				idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
 
 				if (idx2 != 0)
 					nx ^= tets[index].n[idx2 - 1];
@@ -710,7 +712,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			}
 			else
 			{
-				const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+				idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
 				if (idx2 != 0)
 					nx ^= tets[index].n[idx2 - 1];
