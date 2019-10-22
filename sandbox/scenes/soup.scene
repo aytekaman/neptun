@@ -1,0 +1,203 @@
+soup.tetmesh
+0.555087 1.2708 47.3728
+-0.21121 -1.4091 0.814318
+22
+Light
+16.1953 19.6971 26.3399
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+neptune
+0 2 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+12 2 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+armadillo
+12 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+-12 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+0 0 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+armadillo
+0 0 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+neptune
+-12 2 -12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+-12 2 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+12 2 12
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+torus_knot
+-6.20599 4.57604 9.30869
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+torus_knot
+5.713 3.10735 7.51765
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+torus_knot
+7.69548 9.9392 2.15014
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+armadillo
+-22.1901 0.521955 -13.9958
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+neptune
+-25.0069 0 -4.57357
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+neptune
+20.8941 -1.00293 -0.487848
+-86 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+armadillo
+-22.0392 0 8.84192
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+armadillo.obj
+torus_knot
+-2.77883 11.591 -6.28736
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+torus_knot
+3.27058 12.0372 -3.65452
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+neptune
+-18.1347 12.4734 -1.10917
+0 0 90
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+neptune.obj
+torus_knot
+13.8335 12.5366 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
+torus_knot
+18.3451 9.99342 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+torus_knot.obj
