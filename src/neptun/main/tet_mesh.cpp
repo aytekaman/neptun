@@ -85,7 +85,7 @@ void TetMesh::read_from_file(std::string file_name)
 
 void TetMesh::write_to_file()
 {
-    const char* FILENAME = "./Assets/tet_mesh.tetmesh";
+	const char* FILENAME = "tet_mesh.tetmesh";//"./Assets/tet_mesh.tetmesh";
     std::ofstream o(FILENAME, std::ios::binary);
 
     // write points

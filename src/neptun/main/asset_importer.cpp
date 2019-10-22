@@ -270,4 +270,4 @@ SceneObject * AssetImporter::CreateFromObj(const char * file_name)
     return scene_object;
 }
 
-std::string AssetImporter::assets_folder_path = ".\\Assets\\";
+std::string AssetImporter::assets_folder_path = "..\\..\\scenes\\";//".\\Assets\\";
