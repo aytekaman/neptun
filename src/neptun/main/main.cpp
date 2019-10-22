@@ -1116,6 +1116,69 @@ void lagae_scenes_gpu_tetmesh_comparison()
 		gpu_tetmesh_type_comparison(false, scene);
 }
 
+void cuda_benchmark(int tetmesh_type = 2)
+{
+	bool sort_tet = true;
+	RayTracer ray_tracer;
+	Scene scene;
+	TetMesh32* tet32;
+	TetMesh20* tet20;
+	TetMesh16* tet16;
+	TetMeshSctp* tetSctp;
+	TetMesh80* tet80;
+	scene.load_from_file(builtin_scenes_folder_path + "mix" + ".scene");
+
+	ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
+	tet32 = new TetMesh32(scene);
+	tet20 = new TetMesh20(scene);
+	tet16 = new TetMesh16(scene);
+	tetSctp = new TetMeshSctp(scene);
+	tet80 = new TetMesh80(scene);
+
+	int N = 50;
+
+	switch (tetmesh_type)
+	{
+	case 0:
+		scene.tet_mesh = tet32;
+		if (sort_tet)
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+		copy_to_gpu(*(TetMesh32*)scene.tet_mesh);
+		break;
+
+	case 1:
+		scene.tet_mesh = tet20;
+		if (sort_tet)
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+		copy_to_gpu(*(TetMesh20*)scene.tet_mesh);
+		break;
+	case 2:
+		scene.tet_mesh = tet16;
+		if (sort_tet)
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+		copy_to_gpu(*(TetMesh16*)scene.tet_mesh);
+		break;
+	case 3:
+		scene.tet_mesh = tetSctp;
+		if (sort_tet)
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+		copy_to_gpu(*(TetMeshSctp*)scene.tet_mesh);
+		break;
+	case 4:
+		scene.tet_mesh = tet80;
+		if (sort_tet)
+			scene.tet_mesh->sort(SortingMethod::Hilbert, 16U, false);
+		copy_to_gpu(*(TetMesh80*)scene.tet_mesh);
+		break;
+	}
+
+	for (int k = 0; k < N; ++k)
+	{
+		ray_tracer.method = tetmesh_type < 3 ? Method::Default_gpu : (tetmesh_type  == 3 ? Method::ScTP_gpu : Method::Tet96_gpu);
+		ray_tracer.render_gpu(scene);
+	}
+}
+
 void simd_comparison()
 {
     RayTracer ray_tracer;
