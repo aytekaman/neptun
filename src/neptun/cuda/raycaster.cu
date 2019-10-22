@@ -40,7 +40,7 @@ const int NSTREAMS = 3;
 
 
 //=============== TCDT utils =====================
-#define TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
+//#define TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
 
 #define TCDT_LOOK_UP_CONSTANT
 #define TCDT_MAGIC_ERROR -1
@@ -86,7 +86,7 @@ __constant__ char c_exitFace[4] = {	//  00111001,    1 2 3
 
 __device__
 int get_exit_face(const TetMesh80::Plucker& plRay,
-	const int idTetra, const int idEntryFace, cudaTextureObject_t t_vertices) {
+	const int idTetra, const int idEntryFace, float4* d_vertices/*cudaTextureObject_t t_vertices*/) {
 	int idExit;
 
 	const float4 cmpV = LOAD_VERTEX(idTetra + GET_CMP_VERTEX(idEntryFace));
@@ -755,7 +755,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-	cudaTextureObject_t t_vertices, cudaTextureObject_t t_tet96s, int2* d_tet96s, ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
+	/*cudaTextureObject_t t_vertices,*/ float4* d_vertices, cudaTextureObject_t t_tet96s, int2* d_tet96s, ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -798,7 +798,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 				break;
 			}
 
-			id_exit = get_exit_face(pl_ray, id_tetra, id_entry_face, t_vertices);
+			id_exit = get_exit_face(pl_ray, id_tetra, id_entry_face, d_vertices/*t_vertices*/);
 
 			tetra = LOAD_TETRA(id_tetra + id_exit);
 			semantic = tetra.y;
@@ -1545,7 +1545,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 	}
 	else if (tet_mesh_type == 4)
 	{
-		ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, t_vertices, t_tet96s, d_tet96s, d_cons_faces, d_faces, d_intersectdata);
+		ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, /*t_vertices,*/ d_vertices, t_tet96s, d_tet96s, d_cons_faces, d_faces, d_intersectdata);
 	}
 	cudaDeviceSynchronize();
 
