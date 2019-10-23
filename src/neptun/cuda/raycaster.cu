@@ -620,13 +620,12 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		const glm::vec3 up(b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y);
 
 		int index;
-		glm::vec3 point;
 
-		#pragma unroll
+#pragma unroll
 		for (int j = 0; j < 4; j++)
 		{
 			id[j] = source_tet.v[j];
-			point = points[id[j]] - ray_origin;
+			const glm::vec3 point = points[id[j]] - ray_origin;
 			p[j].x = glm::dot(right, point);
 			p[j].y = glm::dot(up, point);
 		}
@@ -668,10 +667,10 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		while (index >= 0)
 		{
 			id[3] = tets[index].x ^ id[0] ^ id[1] ^ id[2];
-			point = points[id[3]] - ray_origin;
+			const glm::vec3 newPoint = points[id[3]] - ray_origin;
 
-			p[3].x = glm::dot(right, point);
-			p[3].y = glm::dot(up, point);
+			p[3].x = glm::dot(right, newPoint);
+			p[3].y = glm::dot(up, newPoint);
 
 			idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
@@ -781,7 +780,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 		glm::vec3 a(((float4)LOAD_VERTEX(id_tetra + 2)).x, ((float4)LOAD_VERTEX(id_tetra + 2)).y, ((float4)LOAD_VERTEX(id_tetra + 2)).z);
 		glm::vec3 b(((float4)LOAD_VERTEX(id_tetra + 3)).x, ((float4)LOAD_VERTEX(id_tetra + 3)).y, ((float4)LOAD_VERTEX(id_tetra + 3)).z);
-		glm::vec3 dir  = glm::normalize(b - a);
+		glm::vec3 dir = glm::normalize(b - a);
 		glm::vec3 vv = glm::cross(a, b);
 
 		id_entry_face = (dir[0] * pl_ray.m_Pi[3] +
@@ -1324,7 +1323,7 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 			);
 		}
 	}
-	for (int i = 0; i < tet_mesh.m_tets.size()*4; ++i) {
+	for (int i = 0; i < tet_mesh.m_tets.size() * 4; ++i) {
 		const glm::vec4& v = tet_mesh.m_vertices[i];
 		h_vertices[i] = make_float4(v.x, v.y, v.z, v.w);
 	}
