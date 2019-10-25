@@ -24,6 +24,24 @@ float Stats::get_avg_render_time(int frame_count)
     return render_time_sum / frame_count;
 }
 
+float Stats::get_best_render_time(int frame_count)
+{
+    frame_count = s_render_times.size() < frame_count ? s_render_times.size() : frame_count;
+
+    if (frame_count < 1)
+        return 0.0f;
+
+    float best_render_time = s_render_times[s_render_times.size() - 1];
+
+    for (int i = 0; i < frame_count; i++)
+    {
+        if(s_render_times[s_render_times.size() - 1 - i] < best_render_time)
+            best_render_time = s_render_times[s_render_times.size() - 1 - i];
+    }
+
+    return best_render_time;
+}
+
 void Stats::add_build_time(float build_time)
 {
     last_build_time = build_time;
