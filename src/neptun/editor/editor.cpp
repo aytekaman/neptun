@@ -267,6 +267,7 @@ void Editor::DrawMainMenuBar()
                     selected_scene_object = nullptr;
                     cam_target = scene->camTarget;
                 }
+				printf("%d triangles\n", scene->get_triangle_count());
             }
 
             if (ImGui::MenuItem("Reset"))
