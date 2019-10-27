@@ -1369,7 +1369,8 @@ int run_command_line(int argc, char const* argv[])
         {"render", "Renders a scene"},
         {"gpu_benchmark", "Benchmark tetmesh types for gpu"},
         {"cpu_gpu_compare", "Compare CPU and GPU performance"},
-		{"lagae_gpu_benchmark", "Benchmark tetmesh types for gpu with Lagae's scenes"}
+		{"lagae_gpu_benchmark", "Benchmark tetmesh types for gpu with Lagae's scenes"},
+		{"cuda_benchmark", "Use with nsigth benchmark"}
     };
 
     auto command_it = std::find_if(commands.begin(), commands.end(), [command_name](const Command& c){ return c.name == command_name; });
@@ -1437,6 +1438,10 @@ int run_command_line(int argc, char const* argv[])
     {
         cpu_gpu_comparison();
     }
+	else if (command.name == "cuda_benchmark")
+	{
+		cuda_benchmark();
+	}
 
     return EXIT_SUCCESS;
 }
