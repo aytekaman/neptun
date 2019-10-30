@@ -308,7 +308,7 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     std::cout << std::fixed << std::setprecision(5); // Set precision and print format for floating point numbers
     std::cout << "triangle_count=" << scene.get_triangle_count() << std::endl;
-    std::cout << "build_time=" << 1000. * Stats::last_build_time << std::endl;
+    std::cout << "build_time=" << Stats::last_build_time << std::endl;
     std::cout << "render_time=" << 1000. * Stats::get_best_render_time(N) << std::endl;
     std::cout << "visited_node_count=" << ray_tracer.avg_test_count << std::endl; // avg
     std::cout << "size_in_bytes=" << accelerator_size_in_bytes << std::endl;
