@@ -40,7 +40,7 @@ const int NSTREAMS = 3;
 
 
 //=============== TCDT utils =====================
-//#define TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
+#define TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
 
 #define TCDT_LOOK_UP_CONSTANT
 #define TCDT_MAGIC_ERROR -1
