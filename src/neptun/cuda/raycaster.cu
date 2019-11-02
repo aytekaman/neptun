@@ -674,27 +674,27 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 			idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
-			if (idx != 0)
-				nx ^= tets[index].n[idx - 1];
+			if (idx != 3)
+				nx ^= tets[index].n[idx];
 
-			if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
+			if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here? 
 			{
 				if (p[3].x * p[2].y >= p[3].y * p[2].x)
 				{
-					idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
+					const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
 
-					if (idx2 != 0)
-						nx ^= tets[index].n[idx2 - 1];
+					if (idx2 != 3)
+						nx ^= tets[index].n[idx2];
 
 					id[1] = id[3];
 					p[1] = p[3];
 				}
 				else
 				{
-					idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+					const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
-					if (idx2 != 0)
-						nx ^= tets[index].n[idx2 - 1];
+					if (idx2 != 3)
+						nx ^= tets[index].n[idx2];
 
 					id[0] = id[3];
 					p[0] = p[3];
@@ -702,20 +702,20 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			}
 			else if (p[3].x * p[1].y < p[3].y * p[1].x)
 			{
-				idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
+				const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
 
-				if (idx2 != 0)
-					nx ^= tets[index].n[idx2 - 1];
+				if (idx2 != 3)
+					nx ^= tets[index].n[idx2];
 
 				id[2] = id[3];
 				p[2] = p[3];
 			}
 			else
 			{
-				idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+				const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
-				if (idx2 != 0)
-					nx ^= tets[index].n[idx2 - 1];
+				if (idx2 != 3)
+					nx ^= tets[index].n[idx2];
 
 				id[0] = id[3];
 				p[0] = p[3];
