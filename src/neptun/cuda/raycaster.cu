@@ -77,16 +77,16 @@ __constant__ char c_exitFace[4] = {	//  00111001,    1 2 3
 #define GET_EXIT_FACE( _f, _id )( ( c_exitFace[_f] >> (2*_id) ) & 0x3 ) // Get exit face from id
 
 #ifdef TCDT_CUDA_TCDT_USE_TEXTURES_OBJECTS
-#define LOAD_TETRA( id )	tex1Dfetch<int2>(	t_tet96s, id )
-#define LOAD_VERTEX( id )	tex1Dfetch<float4>( t_vertices, id ) 
+#define LOAD_TETRA( id )	tex1Dfetch<int2>(	tets, id )
+#define LOAD_VERTEX( id )	tex1Dfetch<float4>( vertices, id ) 
 #else 
-#define LOAD_TETRA( id )	d_tet96s[id]
-#define LOAD_VERTEX( id )	d_vertices[id]
+#define LOAD_TETRA( id )	tet96s[id]
+#define LOAD_VERTEX( id )	vertices[id]
 #endif
 
 __device__
 int get_exit_face(const TetMesh80::Plucker& plRay,
-	const int idTetra, const int idEntryFace, float4* d_vertices/*cudaTextureObject_t t_vertices*/) {
+	const int idTetra, const int idEntryFace, /*float4* vertices*/ cudaTextureObject_t vertices) {
 	int idExit;
 
 	const float4 cmpV = LOAD_VERTEX(idTetra + GET_CMP_VERTEX(idEntryFace));
@@ -757,7 +757,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-	/*cudaTextureObject_t t_vertices,*/ float4* d_vertices, cudaTextureObject_t t_tet96s, int2* d_tet96s, ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
+	/*float4* vertices, int2* tets,*/ cudaTextureObject_t vertices, cudaTextureObject_t tets,  ConstrainedFace* cons_faces,
+	Face* faces, IntersectionData* output)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -800,7 +801,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 				break;
 			}
 
-			id_exit = get_exit_face(pl_ray, id_tetra, id_entry_face, d_vertices/*t_vertices*/);
+			id_exit = get_exit_face(pl_ray, id_tetra, id_entry_face, vertices);
 
 			tetra = LOAD_TETRA(id_tetra + id_exit);
 			semantic = tetra.y;
