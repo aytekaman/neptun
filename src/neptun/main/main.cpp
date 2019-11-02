@@ -939,7 +939,7 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
 	tetSctp = new TetMeshSctp(scene);
 	tet80 = new TetMesh80(scene);
 
-    int N = 100;
+    int N = 200;
 
     float tet32_fps = 0.0f;
     float tet20_fps = 0.0f;
