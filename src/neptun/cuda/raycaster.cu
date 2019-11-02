@@ -1242,17 +1242,17 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 
 void copy_to_gpu_helper(TetMesh& tet_mesh)
 {
-	cudaFree(d_points);
-	cudaMalloc(&d_points, tet_mesh.m_points.size() * sizeof(glm::vec3));
-	cudaMemcpy(d_points, tet_mesh.m_points.data(), tet_mesh.m_points.size() * sizeof(glm::vec3), cudaMemcpyHostToDevice);
+	check_cuda(cudaFree(d_points));
+	check_cuda(cudaMalloc(&d_points, tet_mesh.m_points.size() * sizeof(glm::vec3)));
+	check_cuda(cudaMemcpy(d_points, tet_mesh.m_points.data(), tet_mesh.m_points.size() * sizeof(glm::vec3), cudaMemcpyHostToDevice));
 
-	cudaFree(d_cons_faces);
-	cudaMalloc(&d_cons_faces, tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace));
-	cudaMemcpy(d_cons_faces, tet_mesh.m_constrained_faces.data(), tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace), cudaMemcpyHostToDevice);
+	check_cuda(cudaFree(d_cons_faces));
+	check_cuda(cudaMalloc(&d_cons_faces, tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace)));
+	check_cuda(cudaMemcpy(d_cons_faces, tet_mesh.m_constrained_faces.data(), tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace), cudaMemcpyHostToDevice));
 
-	cudaFree(d_faces);
-	cudaMalloc(&d_faces, tet_mesh.faces.size() * sizeof(Face));
-	cudaMemcpy(d_faces, tet_mesh.faces.data(), tet_mesh.faces.size() * sizeof(Face), cudaMemcpyHostToDevice);
+	check_cuda(cudaFree(d_faces));
+	check_cuda(cudaMalloc(&d_faces, tet_mesh.faces.size() * sizeof(Face)));
+	check_cuda(cudaMemcpy(d_faces, tet_mesh.faces.data(), tet_mesh.faces.size() * sizeof(Face), cudaMemcpyHostToDevice));
 
 	//print_cuda_error("CUDA copy error");
 }
