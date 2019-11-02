@@ -415,6 +415,11 @@ public:
         const SourceTet& tet,
         IntersectionData& intersection_data) override;
 
+	bool intersect_stats(const Ray& ray, 
+		const SourceTet& source_tet, 
+		IntersectionData& intersection_data, 
+		DiagnosticData& diagnostic_data) override;
+
     // Casts a ray from a point on the 'tet_face'
     bool intersect(
         const Ray& ray,
