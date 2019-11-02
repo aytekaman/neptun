@@ -757,8 +757,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-	/*float4* vertices, int2* tets,*/ cudaTextureObject_t vertices, cudaTextureObject_t tets,  ConstrainedFace* cons_faces,
-	Face* faces, IntersectionData* output)
+	/*float4* vertices, int2* tets,*/ cudaTextureObject_t vertices, cudaTextureObject_t tets,  /*ConstrainedFace* cons_faces,
+	Face* faces,*/ IntersectionData* output)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -1306,7 +1306,15 @@ void copy_to_gpu(TetMeshSctp& tet_mesh)
 
 void copy_to_gpu(TetMesh80& tet_mesh)
 {
-	copy_to_gpu_helper(tet_mesh);
+	//copy_to_gpu_helper(tet_mesh);
+
+	/*check_cuda(cudaFree(d_cons_faces));
+	check_cuda(cudaMalloc(&d_cons_faces, tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace)));
+	check_cuda(cudaMemcpy(d_cons_faces, tet_mesh.m_constrained_faces.data(), tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace), cudaMemcpyHostToDevice));
+
+	check_cuda(cudaFree(d_faces));
+	check_cuda(cudaMalloc(&d_faces, tet_mesh.faces.size() * sizeof(Face)));
+	check_cuda(cudaMemcpy(d_faces, tet_mesh.faces.data(), tet_mesh.faces.size() * sizeof(Face), cudaMemcpyHostToDevice));*/
 
 	num_int2_d_tets = tet_mesh.m_tets.size() * 4;
 	num_float4_d_vertices = tet_mesh.m_tets.size() * 4;
@@ -1374,6 +1382,9 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 	delete[] h_tets;
 	delete[] h_vertices;
 	print_cuda_error("CUDA copy Tet80 as Tet96 to GPU");
+
+	printf("TetMesh96 size: %d MB\n",
+		(size_tets + size_vertices + tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace)) / (1024 * 1024));
 }
 
 //================================= Traversal of rays initialized at CPU =================================
@@ -1548,7 +1559,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 	}
 	else if (tet_mesh_type == 4)
 	{
-		ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, t_vertices, /*d_vertices,*/ t_tet96s, /*d_tet96s,*/ d_cons_faces, d_faces, d_intersectdata);
+		ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, t_vertices, /*d_vertices,*/ t_tet96s, /*d_tet96s,*/ /*d_cons_faces, d_faces,*/ d_intersectdata);
 	}
 	check_cuda(cudaDeviceSynchronize());
 
