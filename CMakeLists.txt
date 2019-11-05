@@ -72,14 +72,15 @@ source_group ("thirdparty\\" FILES
     ${thirdparty_sources}
 )
 
-#set (accelerator_sources
-#    src/neptun/accelerators/accelerator.h
-#    src/neptun/accelerators/accelerator.cpp
-#)
-#
-#source_group ("accelerators\\" FILES
-#    ${accelerator_sources}
-#)
+set (accelerator_sources
+    src/neptun/accelerators/accelerator.cpp
+    src/neptun/accelerators/accelerator.h
+    src/neptun/accelerators/ray.h
+)
+
+source_group ("accelerators\\" FILES
+    ${accelerator_sources}
+)
 
 
 set (cuda_sources
@@ -182,6 +183,7 @@ source_group ("main\\" FILES
 
 add_executable (neptun
     #${cuda_sources}
+    ${accelerator_sources}
     ${editor_sources}
     ${main_sources}
     ${math_sources}
