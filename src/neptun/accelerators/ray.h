@@ -10,6 +10,7 @@ namespace neptun
 
 // hit results usually return this when ray does not intersect anything
 constexpr unsigned int INVALID_PRIMITIVE_ID = (std::numeric_limits<unsigned int>::max());
+constexpr unsigned int INVALID_GEOMETRY_ID = (std::numeric_limits<unsigned int>::max());
 
 // Forward declarations
 template <size_t N>
@@ -45,7 +46,7 @@ using Stats4    = Stats_<4>;
 using Stats8    = Stats_<8>;
 using Stats16   = Stats_<16>;
 
-// Used for intersection queries with dynamic size
+// Used for intersection queries with dynamic size.
 // TODO: Implement
 struct RayN;
 struct HitN;
@@ -100,6 +101,7 @@ public:
     float nz[N];
 
     unsigned int primitive_id[N];
+    unsigned int geometry_id[N];
 };
 
 template <>
@@ -115,6 +117,7 @@ public:
     float nz;
 
     unsigned int primitive_id;
+    unsigned int geometry_id;
 };
 
 template <size_t N>
@@ -138,27 +141,27 @@ struct Stats_<1>
     unsigned int hit_test_count;
 };
 
-// Make sure that alignment of the types are correct 
-static_assert(alignof(Ray) == 4);
-static_assert(alignof(Hit) == 4);
-static_assert(alignof(Ray4) == 16);
-static_assert(alignof(Hit4) == 16);
-static_assert(alignof(Ray8) == 32);
-static_assert(alignof(Hit8) == 32);
-static_assert(alignof(Ray16) == 64);
-static_assert(alignof(Hit16) == 64);
+// Make sure that alignment of the types are correct. 
+static_assert(alignof(Ray) == 4, "Alignment error");
+static_assert(alignof(Hit) == 4, "Alignment error");
+static_assert(alignof(Ray4) == 16, "Alignment error");
+static_assert(alignof(Hit4) == 16, "Alignment error");
+static_assert(alignof(Ray8) == 32, "Alignment error");
+static_assert(alignof(Hit8) == 32, "Alignment error");
+static_assert(alignof(Ray16) == 64, "Alignment error");
+static_assert(alignof(Hit16) == 64, "Alignment error");
 
 // Utility functions
 
-// Copy functions is used to extract/store information for packed ray, hit, and stats types
+// Copy functions is used to extract/store information for packed ray, hit, and stats types.
 template <size_t N>
-void rayCpy(const Ray_<N>& src, Ray& dst, size_t src_index)
+inline void ray_cpy(const Ray_<N>& src, Ray& dst, size_t src_index)
 {
     assert(src_index < N);
 
-    dst.org_x = src.dir_x[src_index];
-    dst.org_y = src.dir_y[src_index];
-    dst.org_z = src.dir_z[src_index];
+    dst.org_x = src.org_x[src_index];
+    dst.org_y = src.org_y[src_index];
+    dst.org_z = src.org_z[src_index];
 
     dst.dir_x = src.dir_x[src_index];
     dst.dir_y = src.dir_y[src_index];
@@ -169,13 +172,13 @@ void rayCpy(const Ray_<N>& src, Ray& dst, size_t src_index)
 }
 
 template <size_t N>
-void rayCpy(const Ray& src, Ray_<N>& dst, size_t dst_index)
+inline void ray_cpy(const Ray& src, Ray_<N>& dst, size_t dst_index)
 {
     assert(dst_index < N);
 
-    dst.org_x[dst_index] = src.dir_x;
-    dst.org_y[dst_index] = src.dir_y;
-    dst.org_z[dst_index] = src.dir_z;
+    dst.org_x[dst_index] = src.org_x;
+    dst.org_y[dst_index] = src.org_y;
+    dst.org_z[dst_index] = src.org_z;
 
     dst.dir_x[dst_index] = src.dir_x;
     dst.dir_y[dst_index] = src.dir_y;
@@ -186,7 +189,7 @@ void rayCpy(const Ray& src, Ray_<N>& dst, size_t dst_index)
 }
 
 template <size_t N>
-void hitCpy(const Hit_<N>& src, Hit& dst, size_t src_index)
+inline void hit_cpy(const Hit_<N>& src, Hit& dst, size_t src_index)
 {
     assert(src_index < N);
 
@@ -198,10 +201,11 @@ void hitCpy(const Hit_<N>& src, Hit& dst, size_t src_index)
     dst.nz = src.nz[src_index];
 
     dst.primitive_id = src.primitive_id[src_index];
+    dst.geometry_id = src.geometry_id[src_index];
 }
 
 template <size_t N>
-void hitCpy(const Hit& src, Hit_<N>& dst, size_t dst_index)
+inline void hit_cpy(const Hit& src, Hit_<N>& dst, size_t dst_index)
 {
     assert(dst_index < N);
 
@@ -213,10 +217,11 @@ void hitCpy(const Hit& src, Hit_<N>& dst, size_t dst_index)
     dst.nz[dst_index] = src.nz;
 
     dst.primitive_id[dst_index] = src.primitive_id;
+    dst.geometry_id[dst_index] = src.geometry_id;
 }
 
 template <size_t N>
-void statsCpy(const Stats_<N>& src, Stats& dst, size_t src_index)
+inline void stats_cpy(const Stats_<N>& src, Stats& dst, size_t src_index)
 {
     assert(src_index < N);
 
@@ -225,12 +230,11 @@ void statsCpy(const Stats_<N>& src, Stats& dst, size_t src_index)
 }
 
 template <size_t N>
-void statsCpy(const Stats& src, Stats_<N>& dst, size_t dst_index)
+inline void stats_cpy(const Stats& src, Stats_<N>& dst, size_t dst_index)
 {
     assert(dst_index < N);
 
     dst.traversal_count[dst_index] = src.traversal_count;
     dst.hit_test_count[dst_index] = src.hit_test_count;
 }
-
 } // end of namespace neptun
