@@ -19,7 +19,7 @@ original_scene_names_without_box = [
     "Mix",
     "Mix close", ]
 
-def benchmar_tetmesh_traversal():
+def benchmark_tetmesh_traversal():
 
     scene_names = original_scene_names
 
@@ -136,7 +136,7 @@ def benchmar_tetmesh_traversal():
     print(benchmark_data)
     
 def main():
-    benchmar_tetmesh_traversal()
+    benchmark_tetmesh_traversal()
     #experiment_tetmesh_sorting()
     #experiment_tetmesh_weight()
     #experiment_camera_distance()
