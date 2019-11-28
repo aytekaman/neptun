@@ -5,15 +5,16 @@
 #include <iostream>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "memory.h"
-
 #include "mesh.h"
+#include "neptun/math/transform.h"
+#include "neptun/util/timer.h"
 #include "stats.h"
 
 void KdNode::InitLeaf(int *primNums, int np,
@@ -39,7 +40,7 @@ KdTree::KdTree(Scene& scene,
     maxPrims(maxPrims_),
     emptyBonus(emptyBonus_)
     {
-        clock_t start_time = clock();
+        Timer timer;
 
         scene_ptr = &scene;
 
@@ -96,16 +97,16 @@ KdTree::KdTree(Scene& scene,
     buildTree(0, bounds, primBounds, primNums, faces.size(),
         maxDepth, edges, prims0, prims1);
 
-    clock_t elapsed = clock() - start_time;
+    timer.stop();
 
-	for (int i = 0; i < 3; ++i)
-		delete[] edges[i];// = new BoundEdge[2 * faces.size()];
+    for (int i = 0; i < 3; ++i)
+	    delete[] edges[i];// = new BoundEdge[2 * faces.size()];
 
 	delete[] prims0;
 	delete[] prims1;
 	delete[] primNums;
 
-    Stats::add_build_time(elapsed / (float)CLOCKS_PER_SEC);
+    Stats::add_build_time(timer.seconds());
 }
 
 KdTree::~KdTree()
@@ -126,30 +127,23 @@ void KdTree::initFaces()
         if (mesh == nullptr)
             continue;
 
-        glm::mat4 t = glm::translate(glm::mat4(1.0f), scene_objects[i]->pos);
-        glm::vec3 rot = glm::radians(scene_objects[i]->rot);
-        glm::mat4 r = glm::eulerAngleYXZ(rot.y, rot.x, rot.z);
-        glm::mat4 s = glm::scale(glm::mat4(1.0), scene_objects[i]->scale);
-
-        s[3][3] = 1;
-
-        glm::mat4 m = t * r * s;
+        Transform tr = Transform::translate(scene_objects[i]->pos) * 
+            Transform::rotate(glm::radians(scene_objects[i]->rot)) *
+            Transform::scale(scene_objects[i]->scale);
 
         for (int j = 0; j < mesh->m_vertex_count; j += 3)
         {
-            glm::vec3 vertex = glm::vec3(m * glm::vec4(mesh->m_vertices[j], 1));
-
-            Face face;
+            Face face;;
 
             //face.material = scene.sceneObjects[i]->material;
 
-            face.vertices[0] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 0], 1));
-            face.vertices[1] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 1], 1));
-            face.vertices[2] = glm::vec3(m * glm::vec4(mesh->m_vertices[j + 2], 1));
+            face.vertices[0] = tr.transform_point(mesh->m_vertices[j + 0]);
+            face.vertices[1] = tr.transform_point(mesh->m_vertices[j + 1]);
+            face.vertices[2] = tr.transform_point(mesh->m_vertices[j + 2]);
 
-            face.normals[0] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 0], 1));
-            face.normals[1] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 1], 1));
-            face.normals[2] = glm::vec3(r * glm::vec4(mesh->m_normals[j + 2], 1));
+            face.normals[0] = tr.transform_normal(mesh->m_normals[j + 0]);
+            face.normals[1] = tr.transform_normal(mesh->m_normals[j + 1]);
+            face.normals[2] = tr.transform_normal(mesh->m_normals[j + 2]);
 
             //if (mesh->uvs.size() > 0)
             //{

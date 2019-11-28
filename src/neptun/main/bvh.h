@@ -1,6 +1,8 @@
 #pragma once
 
 #include <atomic>
+#include <memory>
+#include <vector>
 
 #include "accelerator.h"
 #include "bounds.h"
@@ -12,9 +14,6 @@
 #define EMBREE_STATIC_LIB
 #endif
 #include "embree3/rtcore.h"
-
-#include <memory>
-#include <vector>
 
 class Scene;
 

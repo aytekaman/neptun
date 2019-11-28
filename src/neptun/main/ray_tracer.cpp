@@ -1,34 +1,33 @@
 #include "ray_tracer.h"
 
-#include "gl3w/include/GL/gl3w.h"
-#include "GLFW/glfw3.h"
-
 #include <chrono>
 #include <ctime>
 #include <iostream>
 #include <thread>
 
+#include "gl3w/include/GL/gl3w.h"
+#include "GLFW/glfw3.h"
+
 #include "glm/trigonometric.hpp"
+#include "glm/gtc/constants.hpp"
 
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 //#include "stb_image_write.h"
 
 #include "asset_importer.h"
 #include "bvh.h"
+#include "color.h"
 #include "image.h"
 #include "kd_tree.h"
 #include "light.h"
 #include "logger.h"
 #include "material.h"
+#include "neptun/util/timer.h"
 #include "ray.h"
 #include "scene.h"
 #include "stats.h"
-#include "texture.h"
 #include "tet_mesh.h"
-
-#include "color.h"
-
-#include "glm/gtc/constants.hpp"
+#include "texture.h"
 
 RayTracer::RayTracer()
 {
@@ -90,7 +89,9 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
     job_index = thread_count;
 
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    Timer timer;
+    timer.start();
 
     for (int i = 0; i < thread_count; i++)
         threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
@@ -101,15 +102,13 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
         delete threads[i];
     }
 
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    timer.stop();
 
     delete[] threads;
 
-    last_render_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e9;
+    last_render_time = timer.seconds();
 
     Stats::add_render_time(last_render_time);
-
-    //printf("Rendered in %.3f seconds. (%.1f FPS)\n", last_render_time, 1 / last_render_time);
 
     avg_test_count = 0;
     L1_count = 0;
@@ -119,8 +118,6 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
         avg_test_count += traversed_tetra_count[i] / (float)thread_count;
         L1_count += L1_hit_count[i];
     }
-
-    //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, resolution.x, resolution.y, GL_BGR, GL_UNSIGNED_BYTE, pixels);
 }
 
 //#define NOMINMAX
