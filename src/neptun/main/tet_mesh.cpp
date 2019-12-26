@@ -2032,8 +2032,6 @@ void TetMesh16::init_acceleration_data()
                 //if (tet_datas[i][j].second < 0)
                     //m_constrained_faces[tet_datas[i][j].second & 0x7FFFFFFF].other_tet_idx |= (order << 29);
                 tet_datas[i][j].second |= (order << 29);
-
-                
             }
         }
     }
@@ -2305,7 +2303,8 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         p[3].x = glm::dot(basis.right, newPoint);
         p[3].y = glm::dot(basis.up, newPoint);
 
-        const int idx = (index & 0x60000000) >> 29;
+        //const int idx = (index & 0x60000000) >> 29;
+        const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
         if(idx != 3)
             nx ^= m_tet16s[index & 0x9FFFFFFF].n[idx];
@@ -2317,7 +2316,7 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
                 const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
 
                 if (idx2 != 3)
-                    nx ^= m_tet16s[index].n[idx2];
+                    nx ^= m_tet16s[index & 0x9FFFFFFF].n[idx2];
 
                 id[1] = id[3];
                 p[1] = p[3];
@@ -2327,7 +2326,7 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
                 const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
                 if (idx2 != 3)
-                    nx ^= m_tet16s[index].n[idx2];
+                    nx ^= m_tet16s[index & 0x9FFFFFFF].n[idx2];
 
                 id[0] = id[3];
                 p[0] = p[3];
@@ -2338,7 +2337,7 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
             const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
 
             if (idx2 != 3)
-                nx ^= m_tet16s[index].n[idx2];
+                nx ^= m_tet16s[index & 0x9FFFFFFF].n[idx2];
 
             id[2] = id[3];
             p[2] = p[3];
@@ -2348,7 +2347,7 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
             const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
             if (idx2 != 3)
-                nx ^= m_tet16s[index].n[idx2];
+                nx ^= m_tet16s[index & 0x9FFFFFFF].n[idx2];
 
             id[0] = id[3];
             p[0] = p[3];
@@ -2357,27 +2356,27 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         std::swap(nx, index);
     }
 
-    if (index != -1)
+    if ((index) != -1)
     {
-        index = (index & 0x7FFFFFFF);
-        const Face& face = *m_constrained_faces[index].face;
+        index = (index & 0x1FFFFFFF);
+        //const Face& face = *m_constrained_faces[index].face;
 
-        const glm::vec3 *v = face.vertices;
-        const glm::vec3 *n = face.normals;
-        const glm::vec2 *t = face.uvs;
+        //const glm::vec3 *v = face.vertices;
+        //const glm::vec3 *n = face.normals;
+        //const glm::vec2 *t = face.uvs;
 
-        const glm::vec3 e1 = v[1] - v[0];
-        const glm::vec3 e2 = v[2] - v[0];
-        const glm::vec3 s = ray.origin - v[0];
-        const glm::vec3 q = glm::cross(s, e1);
-        const glm::vec3 p = glm::cross(ray.dir, e2);
-        const float f = 1.0f / glm::dot(e1, p);
-        const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
-        intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
-        intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
-        intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
-        intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
-        intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        //const glm::vec3 e1 = v[1] - v[0];
+        //const glm::vec3 e2 = v[2] - v[0];
+        //const glm::vec3 s = ray.origin - v[0];
+        //const glm::vec3 q = glm::cross(s, e1);
+        //const glm::vec3 p = glm::cross(ray.dir, e2);
+        //const float f = 1.0f / glm::dot(e1, p);
+        //const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
+        //intersection_data.position = ray.origin + f * glm::dot(e2, q) * ray.dir;
+        //intersection_data.normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+        //intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+        //intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
+        //intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
 
         return true;
     }
