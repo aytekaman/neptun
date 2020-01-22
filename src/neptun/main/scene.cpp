@@ -119,7 +119,7 @@ void Scene::save_to_file(const std::string & file_name)
 {
     std::string inputfile = AssetImporter::assets_folder_path;
     inputfile.append(file_name);
-    std::ofstream o(inputfile);
+    std::ofstream o("D:\\Dev\\Github\\neptun\\sandbox\\scenes\\AAA.scene"/*inputfile*/);
 
     o << "MyScene" << std::endl;
     o << camOrbitX << " " << camOrbitY << " " << camDist << std::endl;
