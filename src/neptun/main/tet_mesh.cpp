@@ -264,12 +264,12 @@ void TetMesh::build_from_scene(
         }
     }
     
-    const int success = tetmesh_builder->tetrahedralize(in_data, out_data);
+	const int success = tetmesh_builder->tetrahedralize(in_data, out_data);
     if (success != 0){
         Logger::LogError("TetGen error: %d", success);
         return;
     }
-
+	
     m_points = std::move(out_data.points);
     m_tets = std::move(out_data.tets);
     m_air_region_id = out_data.air_region_id;
@@ -279,6 +279,7 @@ void TetMesh::build_from_scene(
     Logger::Log("Air region ID: %d", m_air_region_id);
     Logger::Log("Constrained face count: %d", m_constrained_face_count);
 }
+
 
 void TetMesh::sort(const SortingMethod sorting_method, const unsigned int bit_count, const bool use_regions, const bool swap)
 {

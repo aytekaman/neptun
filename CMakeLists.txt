@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CheckFunctionExists)
 
+add_subdirectory(src/thirdparty/tetwild)
+
 if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
 endif()
@@ -174,6 +176,7 @@ set (main_sources
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
     src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
+    src/neptun/tet_mesh/tetwild_tet_mesh_builder.h
     src/neptun/util/timer.h
 )
 
@@ -303,3 +306,6 @@ endif()
 set_target_properties(
     neptun
     PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY  "${CMAKE_SOURCE_DIR}/sandbox/bin/$(Configuration)")
+
+
+target_link_libraries(neptun libTetWild)

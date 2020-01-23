@@ -62,6 +62,8 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
     if(scene.tet_mesh)
         tet_index = scene.tet_mesh->find_tet(cam_pos, source_tet);
 
+	std::cout << "Tet index: " << tet_index << std::endl;
+
     if (tet_index < 0)
         return;
 

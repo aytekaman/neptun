@@ -326,13 +326,76 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     return EXIT_SUCCESS;
 }
+void parse_tetwild() {
+
+	std::ifstream in("output.txt");
+	std::string s, t;
+
+	// Read vertices
+	in >> s >> t;
+
+	int vertex_count = std::stoi(t.substr(1));
+	std::vector< glm::vec3 > points;
+
+	for (int i = 0; i < vertex_count; i++) {
+		double a, b, c;
+		in >> a >> b >> c;
+		//std::cout << a << " " << b << " " << c << std::endl;
+		points.push_back({a, b, c});
+	}
+
+
+	// Read tetrahedras
+	in >> s >> t;
+	int tetra_count = std::stoi(t.substr(1));
+	std::vector<Tet> tets(tetra_count);
+	for (int i = 0; i < tetra_count; i++) {
+		int a, b, c, d;
+		in >> a >> b >> c >> d;
+		tets[i].v[0] = a;
+		tets[i].v[1] = b;
+		tets[i].v[2] = c;
+		tets[i].v[3] = d;
+
+		tets[i].region_id =0;
+		//std::cout << a << " " << b << " " << c << " " << d << std::endl;
+	}
+
+	// Read constrained faces
+	in >> s >> t;
+	for (int i = 0; i < tetra_count; i++) {
+		for (int j = 0; j < 4; j++) {
+			in >> s;
+			int face_id = -1;
+			if (s != "-") {
+				face_id = std::stoi(s);
+			}
+			tets[i].face_idx[j] = face_id;
+		}
+	}
+
+	// Read neighbours
+	in >> s;
+	for (int i = 0; i < tetra_count; i++) {
+		for (int j = 0; j < 4; j++) {
+			in >> s;
+			int n_id = -1;
+			if (s != "-") {
+				n_id = std::stoi(s);
+			}
+			tets[i].n[j] = n_id;
+		}
+	}
+
+
+}
 
 int run_editor()
 {
     Scene scene;
     Graphics graphics;
     RayTracer ray_tracer;
-
+	//parse_tetwild();
     Editor editor(&scene, &graphics, &ray_tracer);
 
     editor.Run();
