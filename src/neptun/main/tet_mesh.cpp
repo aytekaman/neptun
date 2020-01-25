@@ -29,17 +29,14 @@
 
 TetMesh::TetMesh(
     const Scene& scene,
-    const bool preserve_triangles,
-    const bool create_bbox,
-    const float quality,
-    const bool half_space_optimization)
+    const TetParams params)
 {
     Timer timer;
     timer.start();
 
-    build_from_scene(scene, preserve_triangles, create_bbox, quality);
+    build_from_scene(scene, params);
 
-    if(half_space_optimization)
+    if(params.half_space_optimization)
         perform_half_space_optimization();
 
     //init_acceleration_data();
@@ -110,9 +107,7 @@ void TetMesh::write_to_file()
 
 void TetMesh::build_from_scene(
     const Scene& scene,
-    const bool preserve_triangles,
-    const bool create_bbox,
-    const float quality)
+	TetParams params)
 {
     init_faces(scene);
 
@@ -192,14 +187,26 @@ void TetMesh::build_from_scene(
     //	}
     //}
 
+	
+
     // Get tet mesh builder
-    TetMeshBuilder* tetmesh_builder = TetMeshBuilderFactory::default_builder(); 
+    TetMeshBuilder* tetmesh_builder;
+
+	switch (params.method) {
+	case TetGen:
+		tetmesh_builder = new TetgenTetMeshBuilder();
+		break;
+	case TetWild:
+		tetmesh_builder = new TetwildTetMeshBuilder(params);
+		break;
+	}
+
     TetMeshBuilder::TetMeshOut out_data;
     TetMeshBuilder::TetMeshIn in_data((int)vertices.size(), (int)triangles.size() / 3, triangles.size());
 
     // Fill TetMeshIn struct
-    in_data.preserve_triangles = preserve_triangles;
-    in_data.quality = quality;
+    in_data.preserve_triangles = params.preserveTriangles;
+    in_data.quality = params.quality;
 
     in_data.points = vertices;
     in_data.facets = triangles;
@@ -209,7 +216,7 @@ void TetMesh::build_from_scene(
         in_data.is_face_visible[i] = faces[i].is_visible;
     }
 
-    if (create_bbox){
+    if (params.method == TetGen && params.create_bounding_box){
         constexpr int face_indices[6][4] = {{0,1,3,2},  // bottom
                                             {4,5,7,6},  // top
                                             {1,3,7,5},  // right
@@ -681,11 +688,8 @@ void TetMesh::clear()
 
 TetMesh32::TetMesh32(
     const Scene & scene,
-    const bool preserve_triangles,
-    const bool create_bbox,
-    const float quality,
-    const bool half_space_optimization) :
-    TetMesh(scene, preserve_triangles, create_bbox, quality, half_space_optimization)
+	TetParams params) :
+    TetMesh(scene, params)
 {
     init_acceleration_data();
     compute_weight();
@@ -1390,10 +1394,8 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
 
 TetMesh20::TetMesh20(
     const Scene & scene,
-    const bool preserve_triangles,
-    const bool create_bbox,
-    const float quality) :
-    TetMesh(scene, preserve_triangles, create_bbox, quality)
+	TetParams params) :
+    TetMesh(scene, params)
 {
     init_acceleration_data();
     compute_weight();
@@ -1901,10 +1903,8 @@ bool TetMesh20::intersect(const Ray& ray, const TetFace& tet_face, const int& ta
 
 TetMesh16::TetMesh16(
     const Scene& scene,
-    const bool preserve_triangles,
-    const bool create_bbox,
-    const float quality) :
-    TetMesh(scene, preserve_triangles, create_bbox, quality)
+	TetParams params) :
+    TetMesh(scene, params)
 {
     init_acceleration_data();
     compute_weight();
@@ -2589,10 +2589,8 @@ const char c_exitFace[4] = {	//  00111001,    1 2 3
 
 TetMesh80::TetMesh80(
     const Scene& scene, 
-    const bool preserve_triangles, 
-    const bool create_bbox, 
-    const float quality) : 
-    TetMesh(scene, preserve_triangles, create_bbox, quality)
+	TetParams params) :
+    TetMesh(scene, params)
 {
     init_acceleration_data();
     compute_weight();
@@ -2948,10 +2946,8 @@ int TetMesh80::get_exit_face(const Plucker& plRay, const int idVertex, const int
 
 TetMeshSctp::TetMeshSctp(
     const Scene& scene,
-    const bool preserve_triangles,
-    const bool create_bbox,
-    const float quality) :
-    TetMesh(scene, preserve_triangles, create_bbox, quality)
+	TetParams params) :
+    TetMesh(scene, params)
 {
     init_acceleration_data();
     compute_weight();

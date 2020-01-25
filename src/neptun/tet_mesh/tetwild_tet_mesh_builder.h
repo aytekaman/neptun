@@ -6,6 +6,7 @@
 
 class TetwildTetMeshBuilder : public TetMeshBuilder {
 public:
+	TetwildTetMeshBuilder(const TetParams& params): params(params){}
 	// Construct tetmesh
 	int tetrahedralize(TetMeshIn& in, TetMeshOut& out) const override{
 		std::vector<glm::vec3> vertices = in.points;
@@ -27,8 +28,9 @@ public:
 		}
 
 		tetwild::Args arg;
-		arg.initial_edge_len_rel = 50;
+		arg.initial_edge_len_rel = params.ideal_edge_length;
 		arg.max_num_passes = 15;
+		arg.is_quiet = true;
 		tetwild::tetrahedralization(VI, FI, VO, TO, AO, arg);
 		out.constrained_face_count = 0;
 		parse_tetwild(out.points, out.tets, out.constrained_face_count, out.air_region_id);
@@ -36,6 +38,7 @@ public:
 		return 0;
 	}
 private:
+	TetParams params;
 	void parse_tetwild(std::vector<glm::vec3> &points, std::vector<Tet> &tets, int &constrained_face_count, int &air_region_id) const{
 		std::ifstream in("torus_output.txt");
 		std::string s, t;

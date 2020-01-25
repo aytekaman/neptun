@@ -235,6 +235,10 @@ void Scene::build_tet_mesh(bool preserve_triangles, bool create_bounding_box, fl
 {
     if (tet_mesh)
         delete tet_mesh;
+	TetParams params;
+	params.preserveTriangles = preserve_triangles;
+	params.create_bounding_box = create_bounding_box;
+	params.quality = quality;
 
-    tet_mesh = new TetMesh32(*this, preserve_triangles, create_bounding_box, quality);
+    tet_mesh = new TetMesh32(*this, params);
 }

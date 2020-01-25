@@ -242,16 +242,21 @@ int command_render_scene(const argparse::ArgumentData& args)
             return EXIT_FAILURE;
         }
 
+		TetParams params;
+		params.preserveTriangles = preserve_triangles;
+		params.quality = quality;
+		params.create_bounding_box = true;
+
         if(rendering_method == "tet-mesh-16")
-            scene.tet_mesh = use_cache ? new TetMesh16(scene) : new TetMesh16(scene, preserve_triangles, true, quality);
+            scene.tet_mesh = use_cache ? new TetMesh16(scene) : new TetMesh16(scene, params);
         else if (rendering_method == "tet-mesh-20")
-            scene.tet_mesh = use_cache ? new TetMesh20(scene) : new TetMesh20(scene, preserve_triangles, true, quality);
+            scene.tet_mesh = use_cache ? new TetMesh20(scene) : new TetMesh20(scene, params);
         else if (rendering_method == "tet-mesh-32")
-            scene.tet_mesh = use_cache ? new TetMesh32(scene) : new TetMesh32(scene, preserve_triangles, true, quality);
+            scene.tet_mesh = use_cache ? new TetMesh32(scene) : new TetMesh32(scene, params);
         else if (rendering_method == "tet-mesh-80")
-            scene.tet_mesh = use_cache ? new TetMesh80(scene) : new TetMesh80(scene, preserve_triangles, true, quality);
+            scene.tet_mesh = use_cache ? new TetMesh80(scene) : new TetMesh80(scene, params);
         else if (rendering_method == "tet-mesh-sctp")
-            scene.tet_mesh = use_cache ? new TetMeshSctp(scene) : new TetMeshSctp(scene, preserve_triangles, true, quality);
+            scene.tet_mesh = use_cache ? new TetMeshSctp(scene) : new TetMeshSctp(scene, params);
         else
         {
             std::cerr << "Unrecognized rendering method " << rendering_method << std::endl;

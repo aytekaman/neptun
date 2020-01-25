@@ -71,7 +71,7 @@ private:
         TetgenTetMeshBuilder* tetgen_builder = new TetgenTetMeshBuilder();
         register_builder("TetGen", tetgen_builder);
 
-		TetwildTetMeshBuilder* tetwild_builder = new TetwildTetMeshBuilder();
+		TetwildTetMeshBuilder* tetwild_builder = new TetwildTetMeshBuilder(TetParams());
         register_builder("TetWild", tetwild_builder);
 
         m_default_builder = tetwild_builder;

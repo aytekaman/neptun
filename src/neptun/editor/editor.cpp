@@ -585,20 +585,28 @@ void Editor::DrawTetGen()
     //	ImGui::EndPopup();
     //}
 
-    ImGui::Begin("TetGen", 0, flags);
+    ImGui::Begin("Tetrahedralization", 0, flags);
 
-    static bool preserveTriangles = true;
-    static bool half_space_optimization = false;
-    static bool process_light_sources = false;
-    static bool create_bounding_box = true;
-    static float quality = 5.0f;
+	static TetParams params;
+	
+	const char* mesher_methods[] = { "TetGen", "TetWild" };
+	ImGui::Combo("Mesher Method", (int*) &params.method, mesher_methods, 2);
 
-    ImGui::Checkbox("Preserve Triangles", &preserveTriangles);
-    ImGui::Checkbox("Half-space Optimization", &half_space_optimization);
-    ImGui::Checkbox("Create Bounding Box", &create_bounding_box);
-    ImGui::SliderFloat("Quality", &quality, 1.0, 10.0, "%.2f");
-
-
+	switch (params.method) {
+	case TetGen:
+		ImGui::Checkbox("Preserve Triangles", &params.preserveTriangles);
+		ImGui::Checkbox("Half-space Optimization", &params.half_space_optimization);
+		ImGui::Checkbox("Create Bounding Box", &params.create_bounding_box);
+		ImGui::SliderFloat("Quality", &params.quality, 1.0, 10.0, "%.2f");
+		break;
+	case TetWild:
+		ImGui::SliderFloat("Ideal Edge Length", &params.ideal_edge_length, 0.05f, 300.f);
+		break;
+	default:
+		break;
+	}
+	
+	
     static int current_tet_mesh_type = 0;
     const char* reps[] = { "TetMesh32", "TetMesh20", "TetMesh16", "TetMesh80", "TetMeshSctp" };
     ImGui::Combo("Type", &current_tet_mesh_type, reps, 5);
@@ -620,27 +628,27 @@ void Editor::DrawTetGen()
 
         if (current_tet_mesh_type == 0)
         {
-            scene->tet_mesh = new TetMesh32(*scene, preserveTriangles, create_bounding_box, quality, half_space_optimization);
+            scene->tet_mesh = new TetMesh32(*scene, params);
             Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
         else if (current_tet_mesh_type == 1)
         {
-            scene->tet_mesh = new TetMesh20(*scene, preserveTriangles, create_bounding_box, quality);
+            scene->tet_mesh = new TetMesh20(*scene, params);
             Logger::Log("TetMesh20 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
         else if (current_tet_mesh_type == 2)
         {
-            scene->tet_mesh = new TetMesh16(*scene, preserveTriangles, create_bounding_box, quality);
+            scene->tet_mesh = new TetMesh16(*scene, params);
             Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
         else if (current_tet_mesh_type == 3)
         {
-            scene->tet_mesh = new TetMesh80(*scene, preserveTriangles, create_bounding_box, quality);
+            scene->tet_mesh = new TetMesh80(*scene, params);
             Logger::Log("TetMesh80 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
         else if (current_tet_mesh_type == 4)
         {
-            scene->tet_mesh = new TetMeshSctp(*scene, preserveTriangles, create_bounding_box, quality);
+            scene->tet_mesh = new TetMeshSctp(*scene, params);
             Logger::Log("TetMeshSctp size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
         }
     }
