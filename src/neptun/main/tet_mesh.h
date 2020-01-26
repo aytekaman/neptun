@@ -15,20 +15,20 @@ class Material;
 class Scene;
 
 enum MesherMethod {
-	TetGen,
-	TetWild
+    TetGen,
+    TetWild
 };
 
 struct TetParams {
-	bool preserveTriangles = true;
-	bool half_space_optimization = false;
-	bool process_light_sources = false;
-	bool create_bounding_box = true;
-	float quality = 5.0f;
+    bool preserveTriangles = true;
+    bool half_space_optimization = false;
+    bool process_light_sources = false;
+    bool create_bounding_box = true;
+    float quality = 5.0f;
 
-	float ideal_edge_length = 50.f;
+    float ideal_edge_length = 50.f;
 
-	MesherMethod method = TetGen;
+    MesherMethod method = TetGen;
 };
 
 struct Tet
@@ -112,7 +112,7 @@ public:
     TetMesh(const Scene &scene);
     TetMesh(
         const Scene &scene,
-		TetParams params);
+        TetParams params);
 
     TetMesh(const TetMesh& tet_mesh)
     {
@@ -305,7 +305,7 @@ public:
 
     TetMesh20(
         const Scene &scene,
-		TetParams params);
+        TetParams params);
 
     TetMesh20(const Scene &scene);
 
@@ -358,7 +358,7 @@ public:
 
     TetMesh16(
         const Scene &scene,
-		TetParams params);
+        TetParams params);
 
     TetMesh16(const Scene &scene);
 
@@ -429,7 +429,7 @@ public:
 
     TetMesh80(
         const Scene &scene,
-		TetParams params);
+        TetParams params);
 
     TetMesh80(const Scene &scene);
 
@@ -493,7 +493,7 @@ public:
 
     TetMeshSctp(
         const Scene &scene,
-		TetParams params);
+        TetParams params);
 
     TetMeshSctp(const Scene &scene);
 

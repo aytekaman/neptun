@@ -587,26 +587,26 @@ void Editor::DrawTetGen()
 
     ImGui::Begin("Tetrahedralization", 0, flags);
 
-	static TetParams params;
-	
-	const char* mesher_methods[] = { "TetGen", "TetWild" };
-	ImGui::Combo("Mesher Method", (int*) &params.method, mesher_methods, 2);
+    static TetParams params;
+    
+    const char* mesher_methods[] = { "TetGen", "TetWild" };
+    ImGui::Combo("Mesher Method", (int*) &params.method, mesher_methods, 2);
 
-	switch (params.method) {
-	case TetGen:
-		ImGui::Checkbox("Preserve Triangles", &params.preserveTriangles);
-		ImGui::Checkbox("Half-space Optimization", &params.half_space_optimization);
-		ImGui::Checkbox("Create Bounding Box", &params.create_bounding_box);
-		ImGui::SliderFloat("Quality", &params.quality, 1.0, 10.0, "%.2f");
-		break;
-	case TetWild:
-		ImGui::SliderFloat("Ideal Edge Length", &params.ideal_edge_length, 0.05f, 300.f);
-		break;
-	default:
-		break;
-	}
-	
-	
+    switch (params.method) {
+    case TetGen:
+        ImGui::Checkbox("Preserve Triangles", &params.preserveTriangles);
+        ImGui::Checkbox("Half-space Optimization", &params.half_space_optimization);
+        ImGui::Checkbox("Create Bounding Box", &params.create_bounding_box);
+        ImGui::SliderFloat("Quality", &params.quality, 1.0, 10.0, "%.2f");
+        break;
+    case TetWild:
+        ImGui::SliderFloat("Ideal Edge Length", &params.ideal_edge_length, 0.05f, 300.f);
+        break;
+    default:
+        break;
+    }
+    
+    
     static int current_tet_mesh_type = 0;
     const char* reps[] = { "TetMesh32", "TetMesh20", "TetMesh16", "TetMesh80", "TetMeshSctp" };
     ImGui::Combo("Type", &current_tet_mesh_type, reps, 5);

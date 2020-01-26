@@ -107,7 +107,7 @@ void TetMesh::write_to_file()
 
 void TetMesh::build_from_scene(
     const Scene& scene,
-	TetParams params)
+    TetParams params)
 {
     init_faces(scene);
 
@@ -187,19 +187,19 @@ void TetMesh::build_from_scene(
     //	}
     //}
 
-	
+    
 
     // Get tet mesh builder
     TetMeshBuilder* tetmesh_builder;
 
-	switch (params.method) {
-	case TetGen:
-		tetmesh_builder = new TetgenTetMeshBuilder();
-		break;
-	case TetWild:
-		tetmesh_builder = new TetwildTetMeshBuilder(params);
-		break;
-	}
+    switch (params.method) {
+    case TetGen:
+        tetmesh_builder = new TetgenTetMeshBuilder();
+        break;
+    case TetWild:
+        tetmesh_builder = new TetwildTetMeshBuilder(params);
+        break;
+    }
 
     TetMeshBuilder::TetMeshOut out_data;
     TetMeshBuilder::TetMeshIn in_data((int)vertices.size(), (int)triangles.size() / 3, triangles.size());
@@ -271,12 +271,12 @@ void TetMesh::build_from_scene(
         }
     }
     
-	const int success = tetmesh_builder->tetrahedralize(in_data, out_data);
+    const int success = tetmesh_builder->tetrahedralize(in_data, out_data);
     if (success != 0){
         Logger::LogError("TetGen error: %d", success);
         return;
     }
-	
+    
     m_points = std::move(out_data.points);
     m_tets = std::move(out_data.tets);
     m_air_region_id = out_data.air_region_id;
@@ -688,7 +688,7 @@ void TetMesh::clear()
 
 TetMesh32::TetMesh32(
     const Scene & scene,
-	TetParams params) :
+    TetParams params) :
     TetMesh(scene, params)
 {
     init_acceleration_data();
@@ -1394,7 +1394,7 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
 
 TetMesh20::TetMesh20(
     const Scene & scene,
-	TetParams params) :
+    TetParams params) :
     TetMesh(scene, params)
 {
     init_acceleration_data();
@@ -1903,7 +1903,7 @@ bool TetMesh20::intersect(const Ray& ray, const TetFace& tet_face, const int& ta
 
 TetMesh16::TetMesh16(
     const Scene& scene,
-	TetParams params) :
+    TetParams params) :
     TetMesh(scene, params)
 {
     init_acceleration_data();
@@ -2589,7 +2589,7 @@ const char c_exitFace[4] = {	//  00111001,    1 2 3
 
 TetMesh80::TetMesh80(
     const Scene& scene, 
-	TetParams params) :
+    TetParams params) :
     TetMesh(scene, params)
 {
     init_acceleration_data();
@@ -2946,7 +2946,7 @@ int TetMesh80::get_exit_face(const Plucker& plRay, const int idVertex, const int
 
 TetMeshSctp::TetMeshSctp(
     const Scene& scene,
-	TetParams params) :
+    TetParams params) :
     TetMesh(scene, params)
 {
     init_acceleration_data();
