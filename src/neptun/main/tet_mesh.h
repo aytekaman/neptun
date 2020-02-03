@@ -27,6 +27,7 @@ struct TetParams {
     float quality = 5.0f;
 
     float ideal_edge_length = 50.f;
+    int max_passes = 80;
 
     MesherMethod method = TetGen;
 };

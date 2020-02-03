@@ -190,6 +190,7 @@ int command_render_scene(const argparse::ArgumentData& args)
         return EXIT_SUCCESS;
     }
 
+
     const std::string scene_file = args["scene"]->value();
     const std::string output_file = args["output"]->value();
     const std::string rendering_method = args["accelerator"]->value();
@@ -231,9 +232,15 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     if (rendering_method.find("tet-mesh") != std::string::npos)
     {
+        std::cout << "Selam 1" << std::endl;
+        TetParams params;
+
         const bool use_cache = args["usecache"]->cast<bool>();
         const float quality = args["quality"]->cast<float>();
         const bool preserve_triangles = !args["split-triangles"]->cast<bool>();
+        const MesherMethod mesher = (args["mesher"]->has_value() && args["mesher"]->value() == "tetwild" ? TetWild : TetGen);
+        const float ideal_edge_length = (args["edge-length"]->has_value() ? args["edge-length"]->cast<float>() : params.ideal_edge_length);
+        std::cout << "Selam 2" << std::endl;
 
         // Limit quality
         if (quality < 1 || quality > 25)
@@ -242,10 +249,13 @@ int command_render_scene(const argparse::ArgumentData& args)
             return EXIT_FAILURE;
         }
 
-        TetParams params;
+        std::cout << mesher << " , " << ideal_edge_length << std::endl;
+
         params.preserveTriangles = preserve_triangles;
         params.quality = quality;
         params.create_bounding_box = true;
+        params.method = mesher;
+        params.ideal_edge_length = ideal_edge_length;
 
         if(rendering_method == "tet-mesh-16")
             scene.tet_mesh = use_cache ? new TetMesh16(scene) : new TetMesh16(scene, params);
@@ -475,16 +485,18 @@ int run_command_line(int argc, char const* argv[])
                                         command_render_scene);
         
         parser.add_positional_argument("scene", "Scene file to be rendered")
-              .add_keyword_argument("accelerator", "Accelerator type used for intersections. (tet-mesh-32, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh-32")
-              .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
-              .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "1920x1440")
-              .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
-              .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
-              .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
-              .add_keyword_argument("sorting", "Sorting method for tet-mesh-32. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert")
-              .add_keyword_argument("usecache", "Use .tetmesh cache file", ArgumentType::BOOL, "c", "false")
-              .add_keyword_argument("quality", "Tetmesh quality (Minimum radius-edge ratio)", ArgumentType::FLOAT, "q", "5.0")
-              .add_keyword_argument("split-triangles", "Allow triangles to be splitted in tetmesh. (!preserve triangles)", ArgumentType::BOOL, "y");
+            .add_keyword_argument("accelerator", "Accelerator type used for intersections. (tet-mesh-32, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh-32")
+            .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
+            .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "1920x1440")
+            .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
+            .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
+            .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
+            .add_keyword_argument("sorting", "Sorting method for tet-mesh-32. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert")
+            .add_keyword_argument("usecache", "Use .tetmesh cache file", ArgumentType::BOOL, "c", "false")
+            .add_keyword_argument("quality", "Tetmesh quality (Minimum radius-edge ratio)", ArgumentType::FLOAT, "q", "5.0")
+            .add_keyword_argument("split-triangles", "Allow triangles to be splitted in tetmesh. (!preserve triangles)", ArgumentType::BOOL, "y")
+            .add_keyword_argument("mesher", "Select tetmesh generator (tetgen, tetwild)", ArgumentType::STRING, "mr")
+            .add_keyword_argument("edge-length", "Ideal edge length", ArgumentType::FLOAT, "e");
               
 
         return parser.parse(argc - 2, argv + 2);

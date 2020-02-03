@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <unordered_set>
+
 class TetwildTetMeshBuilder : public TetMeshBuilder {
 public:
     TetwildTetMeshBuilder(const TetParams& params): params(params){}
@@ -29,8 +31,9 @@ public:
 
         tetwild::Args arg;
         arg.initial_edge_len_rel = params.ideal_edge_length;
-        arg.max_num_passes = 15;
+        arg.max_num_passes = params.max_passes;
         arg.is_quiet = true;
+        
         tetwild::tetrahedralization(VI, FI, VO, TO, AO, arg);
         out.constrained_face_count = 0;
         parse_tetwild(out.points, out.tets, out.constrained_face_count, out.air_region_id);
@@ -73,7 +76,7 @@ private:
         }
         constrained_face_count = 0;
         // Read constrained faces
-        //bool *flags = new bool[2880];
+        std::unordered_set<int> flags;
         in >> s >> t;
         for (int i = 0; i < tetra_count; i++) {
             for (int j = 0; j < 4; j++) {
@@ -81,13 +84,13 @@ private:
                 int face_id = -1;
                 if (s != "-") {
                     face_id = std::stoi(s) + 1;
-                    //flags[face_id] = true;
+                    flags.insert(face_id);
                     constrained_face_count++;
                 }
-                tets[i].face_idx[3 - j] = face_id;
+                tets[i].face_idx[j] = face_id;
             }
         }
-        //std::cout << "Unique faces: " << std::count(flags, flags + 2880, true) << std::endl;
+        std::cout << "Unique faces: " << flags.size() << std::endl;
         std::cout << "Constrained face count: " << constrained_face_count << std::endl;
 
         // Read neighbours

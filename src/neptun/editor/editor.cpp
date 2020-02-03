@@ -601,6 +601,7 @@ void Editor::DrawTetGen()
         break;
     case TetWild:
         ImGui::SliderFloat("Ideal Edge Length", &params.ideal_edge_length, 0.05f, 300.f);
+        ImGui::SliderInt("Maximum Passes", &params.max_passes, 0, 100);
         break;
     default:
         break;
