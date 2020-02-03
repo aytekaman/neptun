@@ -226,7 +226,6 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                 {
 
                     color = glm::vec3();
-
                     for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
                     {
                         Ray shadow_ray(intersection_data.position, glm::normalize(lightInfos[light_idx].pos - intersection_data.position));
@@ -293,170 +292,170 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 }
 
 
-void RayTracer::asynch_ray_traverse_worker_gpu(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
-{
-    //TetMesh& tet_mesh = *scene.tet_mesh;
-	//Init rays
-    const glm::vec3 camTarget = scene.camTarget;
-    glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
-
-    dir = dir * glm::cos(scene.camOrbitX);
-    dir.y = glm::sin(scene.camOrbitX);
-
-    glm::vec3 cam_pos = camTarget + dir * scene.camDist;
-
-    const glm::vec3 forward = glm::normalize(scene.camTarget - cam_pos);
-    const glm::vec3 right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
-    const glm::vec3 down = glm::cross(forward, right);
-
-    const float aspect = (float)m_resolution.x / m_resolution.y;
-    const float scale_y = glm::tan(glm::pi<float>() / 8);
-
-    const glm::vec3 top_left = cam_pos + forward - down * scale_y - right * scale_y * aspect;
-    const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
-    const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
-
-    Ray ray(cam_pos);
-
-    int total_test_count = 0;
-    int total_L1_hit_count = 0;
-
-
-    const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
-    const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
-    const int max_job_index = tile_count_x * tile_count_y;
-
-    int idx = thread_idx;
-    unsigned rays_index = 0;
-
-    while (idx < max_job_index)
-    {
-        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
-        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
-
-        rect_max = (glm::min)(rect_max, m_resolution);
-
-        rays_index = 0;
-
-        for (int j = rect_min.y; j < rect_max.y; j++)
-        {
-            for (int i = rect_min.x; i < rect_max.x; i++)
-            {
-                ray.dir = glm::normalize(top_left + right_step * (float)i + down_step * (float)j - ray.origin);
-                ray.source_tet = source_tet;
-
-                glm::vec3 pos, normal;
-                glm::vec2 uv;
-                Face face;
-
-                DiagnosticData diagnostic_data;
-                diagnostic_data.total_tet_distance = 0;
-                diagnostic_data.visited_node_count = 0;
-                diagnostic_data.L1_hit_count = 0;
-
-                // int tet_index_copy = tet_index;
-
-                if (method == Method::Default ||
-                    method == Method::Fast_basis ||
-                    method == Method::ScTP)
-                    ray.tet_idx = 0;
-                else
-                    ray.tMax = 100000000;
-
-                m_rays[rays_index++ + idx * tile_size * tile_size] = ray;
-				//End of Ray init.
-
-                /*if (is_diagnostic)
-                {
-                    if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
-                        hit = scene.tet_mesh->intersect_stats(ray, source_tet, intersection_data, diagnostic_data);
-                    else if (method == Method::Kd_tree)
-                        hit = scene.kd_tree->Intersect_stats(ray, intersection_data, diagnostic_data);
-                    else if (method == Method::BVH_pbrt)
-                        hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);
-                }
-
-                else
-                {
-                    if (method == Method::Default)
-                        hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
-                    else if (method == Method::DefaultSimd)
-                        hit = scene.tet_mesh->intersect_simd(ray, source_tet, intersection_data);
-                    else if (method == Method::Kd_tree)
-                        hit = scene.kd_tree->Intersect(ray, intersection_data);
-                    else if (method == Method::BVH_embree)
-                        hit = scene.bvh_embree->Intersect(ray, intersection_data);
-                    else if (method == Method::BVH_pbrt)
-                        hit = scene.bvh->Intersect(ray, intersection_data);
-                }*/
-            }
-        }
-        if (idx % (max_job_index / m_stream_count) == 0 && idx != 0)//Ray traversal
-        {
-            int tetmesh_type = 0;
-            if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
-                tetmesh_type = 1;
-            else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
-                tetmesh_type = 2;
-            //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-            int stream_num = idx / (max_job_index / m_stream_count) - 1;
-            traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
-            draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
-        }
-        idx = job_index++;
-    }
-
-    if (idx == max_job_index)
-    {
-        int tetmesh_type = 0;
-        if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
-            tetmesh_type = 1;
-        else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
-            tetmesh_type = 2;
-        //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-        int stream_num = idx / (max_job_index / m_stream_count) - 1;
-        traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);//End of Ray traversal
-        draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);//intersection data is drawn
-    }
-}
-//DOES NOT WORK !!!
-void RayTracer::asynch_ray_cast_worker_gpu(Scene& scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
-{
-	const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
-	const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
-	const int max_job_index = tile_count_x * tile_count_y;
-
-	int idx = thread_idx;
-
-	while (idx < max_job_index)
-	{
-		if (idx % (max_job_index / m_stream_count) == 0 && idx != 0)//Ray traversal
-		{
-			int tetmesh_type = 0;
-			if (dynamic_cast<TetMesh20*>(scene.tet_mesh) != nullptr)
-				tetmesh_type = 1;
-			else if (dynamic_cast<TetMesh16*>(scene.tet_mesh) != nullptr)
-				tetmesh_type = 2;
-			//printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-			int stream_num = idx / (max_job_index / m_stream_count) - 1;
-			cast_rays_gpu(scene, source_tet, m_resolution, tile_size, m_stream_count, stream_num, tetmesh_type, m_intersect_data);
-			draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
-		}
-		idx = job_index++;
-	}
-	if (idx == max_job_index)
-	{
-		int tetmesh_type = 0;
-		if (dynamic_cast<TetMesh20*>(scene.tet_mesh) != nullptr)
-			tetmesh_type = 1;
-		else if (dynamic_cast<TetMesh16*>(scene.tet_mesh) != nullptr)
-			tetmesh_type = 2;
-		//printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
-		int stream_num = idx / (max_job_index / m_stream_count) - 1;
-		cast_rays_gpu(scene, source_tet, m_resolution, tile_size, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
-		draw_intersectiondata_rowmajor(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
-	}
-}
+//void RayTracer::asynch_ray_traverse_worker_gpu(Scene & scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
+//{
+//    //TetMesh& tet_mesh = *scene.tet_mesh;
+//	//Init rays
+//    const glm::vec3 camTarget = scene.camTarget;
+//    glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+//
+//    dir = dir * glm::cos(scene.camOrbitX);
+//    dir.y = glm::sin(scene.camOrbitX);
+//
+//    glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+//
+//    const glm::vec3 forward = glm::normalize(scene.camTarget - cam_pos);
+//    const glm::vec3 right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+//    const glm::vec3 down = glm::cross(forward, right);
+//
+//    const float aspect = (float)m_resolution.x / m_resolution.y;
+//    const float scale_y = glm::tan(glm::pi<float>() / 8);
+//
+//    const glm::vec3 top_left = cam_pos + forward - down * scale_y - right * scale_y * aspect;
+//    const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
+//    const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
+//
+//    Ray ray(cam_pos);
+//
+//    int total_test_count = 0;
+//    int total_L1_hit_count = 0;
+//
+//
+//    const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
+//    const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
+//    const int max_job_index = tile_count_x * tile_count_y;
+//
+//    int idx = thread_idx;
+//    unsigned rays_index = 0;
+//
+//    while (idx < max_job_index)
+//    {
+//        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+//        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+//
+//        rect_max = (glm::min)(rect_max, m_resolution);
+//
+//        rays_index = 0;
+//
+//        for (int j = rect_min.y; j < rect_max.y; j++)
+//        {
+//            for (int i = rect_min.x; i < rect_max.x; i++)
+//            {
+//                ray.dir = glm::normalize(top_left + right_step * (float)i + down_step * (float)j - ray.origin);
+//                ray.source_tet = source_tet;
+//
+//                glm::vec3 pos, normal;
+//                glm::vec2 uv;
+//                Face face;
+//
+//                DiagnosticData diagnostic_data;
+//                diagnostic_data.total_tet_distance = 0;
+//                diagnostic_data.visited_node_count = 0;
+//                diagnostic_data.L1_hit_count = 0;
+//
+//                // int tet_index_copy = tet_index;
+//
+//                if (method == Method::Default ||
+//                    method == Method::Fast_basis ||
+//                    method == Method::ScTP)
+//                    ray.tet_idx = 0;
+//                else
+//                    ray.tMax = 100000000;
+//
+//                m_rays[rays_index++ + idx * tile_size * tile_size] = ray;
+//				//End of Ray init.
+//
+//                /*if (is_diagnostic)
+//                {
+//                    if (method == Method::Default || method == Method::Fast_basis || method == Method::ScTP)
+//                        hit = scene.tet_mesh->intersect_stats(ray, source_tet, intersection_data, diagnostic_data);
+//                    else if (method == Method::Kd_tree)
+//                        hit = scene.kd_tree->Intersect_stats(ray, intersection_data, diagnostic_data);
+//                    else if (method == Method::BVH_pbrt)
+//                        hit = scene.bvh->Intersect_stats(ray, intersection_data, diagnostic_data);
+//                }
+//
+//                else
+//                {
+//                    if (method == Method::Default)
+//                        hit = scene.tet_mesh->intersect(ray, source_tet, intersection_data);
+//                    else if (method == Method::DefaultSimd)
+//                        hit = scene.tet_mesh->intersect_simd(ray, source_tet, intersection_data);
+//                    else if (method == Method::Kd_tree)
+//                        hit = scene.kd_tree->Intersect(ray, intersection_data);
+//                    else if (method == Method::BVH_embree)
+//                        hit = scene.bvh_embree->Intersect(ray, intersection_data);
+//                    else if (method == Method::BVH_pbrt)
+//                        hit = scene.bvh->Intersect(ray, intersection_data);
+//                }*/
+//            }
+//        }
+//        if (idx % (max_job_index / m_stream_count) == 0 && idx != 0)//Ray traversal
+//        {
+//            int tetmesh_type = 0;
+//            if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
+//                tetmesh_type = 1;
+//            else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
+//                tetmesh_type = 2;
+//            //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
+//            int stream_num = idx / (max_job_index / m_stream_count) - 1;
+//            traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
+//            draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
+//        }
+//        idx = job_index++;
+//    }
+//
+//    if (idx == max_job_index)
+//    {
+//        int tetmesh_type = 0;
+//        if (dynamic_cast<TetMesh20 *>(scene.tet_mesh) != nullptr)
+//            tetmesh_type = 1;
+//        else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
+//            tetmesh_type = 2;
+//        //printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
+//        int stream_num = idx / (max_job_index / m_stream_count) - 1;
+//        traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, m_stream_count, tetmesh_type, stream_num, m_intersect_data);//End of Ray traversal
+//        draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);//intersection data is drawn
+//    }
+//}
+////DOES NOT WORK !!!
+//void RayTracer::asynch_ray_cast_worker_gpu(Scene& scene, SourceTet source_tet, int thread_idx, std::vector<LightInfo> lightInfos, bool is_diagnostic)
+//{
+//	const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
+//	const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
+//	const int max_job_index = tile_count_x * tile_count_y;
+//
+//	int idx = thread_idx;
+//
+//	while (idx < max_job_index)
+//	{
+//		if (idx % (max_job_index / m_stream_count) == 0 && idx != 0)//Ray traversal
+//		{
+//			int tetmesh_type = 0;
+//			if (dynamic_cast<TetMesh20*>(scene.tet_mesh) != nullptr)
+//				tetmesh_type = 1;
+//			else if (dynamic_cast<TetMesh16*>(scene.tet_mesh) != nullptr)
+//				tetmesh_type = 2;
+//			//printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
+//			int stream_num = idx / (max_job_index / m_stream_count) - 1;
+//			cast_rays_gpu(scene, source_tet, m_resolution, tile_size, m_stream_count, stream_num, tetmesh_type, m_intersect_data);
+//			draw_intersectiondata(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
+//		}
+//		idx = job_index++;
+//	}
+//	if (idx == max_job_index)
+//	{
+//		int tetmesh_type = 0;
+//		if (dynamic_cast<TetMesh20*>(scene.tet_mesh) != nullptr)
+//			tetmesh_type = 1;
+//		else if (dynamic_cast<TetMesh16*>(scene.tet_mesh) != nullptr)
+//			tetmesh_type = 2;
+//		//printf("idt-call: %d\n", idx / (max_job_index / thread_count) - 1);
+//		int stream_num = idx / (max_job_index / m_stream_count) - 1;
+//		cast_rays_gpu(scene, source_tet, m_resolution, tile_size, m_stream_count, tetmesh_type, stream_num, m_intersect_data);
+//		draw_intersectiondata_rowmajor(stream_num * (max_job_index / m_stream_count), idx, lightInfos);
+//	}
+//}
 void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread_idx, bool is_diagnostic)
 {
     //TetMesh& tet_mesh = *scene.tet_mesh;
@@ -690,7 +689,7 @@ void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<Li
 	}
 }
 
-void RayTracer::draw_intersectiondata_rowmajor(int thread_idx, std::vector<LightInfo> lightInfos)
+void RayTracer::draw_intersectiondata_rowmajor(Scene& scene, int thread_idx, std::vector<LightInfo> lightInfos)
 {
     int idx = ((m_resolution.x * m_resolution.y) / thread_count) * thread_idx;
     int upperbound = min( ( (m_resolution.x * m_resolution.y) / thread_count ) * (thread_idx + 1), m_resolution.x * m_resolution.y);
@@ -699,21 +698,77 @@ void RayTracer::draw_intersectiondata_rowmajor(int thread_idx, std::vector<Light
     {
         //rays_index = 0;
         glm::vec3 color;
-        if (m_intersect_data[idx].hit)
-        {
-            color = glm::vec3();
-            //color = glm::vec3(1.0f, 1.0f, 1.0f);
-            for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
-            {
-                Ray shadow_ray(m_intersect_data[idx].position,
-                    glm::normalize(lightInfos[light_idx].pos - m_intersect_data[idx].position));
-                {
-                    glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[idx].position);
-                    float diffuse = glm::clamp(glm::dot(m_intersect_data[idx].normal, to_light), 0.0f, 1.0f);
-                    color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
-                }
-            }
-        }
+		//printf("index: %d\n", m_gpu_face_indices[idx]);
+		if (m_gpu_face_indices[idx] != -1/*m_intersect_data[idx].hit*/)
+		{
+			m_gpu_face_indices[idx] = (m_gpu_face_indices[idx] & 0x7FFFFFFF);
+			//printf("index: %d\n", scene.tet_mesh->faces[scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[idx]].face_idx].vertices->x);
+
+			color = glm::vec3();
+
+			//---------------Generate Ray-------------
+			const glm::vec3 camTarget = scene.camTarget;
+			glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+
+			dir = dir * glm::cos(scene.camOrbitX);
+			dir.y = glm::sin(scene.camOrbitX);
+
+			glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+
+			const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
+			const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
+			const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
+
+			const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
+
+			const float aspect = (float)m_resolution.x / m_resolution.y;
+			const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+			const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
+			const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)m_resolution.y;
+
+			const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
+			const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
+			const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)m_resolution.y;
+
+			glm::ivec2 pixel_coords = glm::ivec2(idx%(m_resolution.x), idx / (m_resolution.x));
+
+			Ray ray;
+			ray.origin = cam_pos;
+			ray.dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray.origin);
+
+			//calculate face data
+			const Face& face = scene.tet_mesh->faces[scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[idx]].face_idx];
+			const glm::vec3* v = face.vertices;
+			const glm::vec3* n = face.normals;
+			const glm::vec2* t = face.uvs;
+
+			const glm::vec3 e1 = v[1] - v[0];
+			const glm::vec3 e2 = v[2] - v[0];
+			const glm::vec3 s = ray.origin - v[0];
+			const glm::vec3 q = glm::cross(s, e1);
+			const glm::vec3 p = glm::cross(ray.dir, e2);
+			const float f = 1.0f / glm::dot(e1, p);
+			const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
+
+			m_intersect_data[idx].position = ray.origin + f * glm::dot(e2, q) * ray.dir;
+			m_intersect_data[idx].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+			m_intersect_data[idx].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+			m_intersect_data[idx].tet_idx = scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[idx]].tet_idx;
+			m_intersect_data[idx].neighbor_tet_idx = scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[idx]].other_tet_idx;
+
+			//color = glm::vec3(1.0f, 1.0f, 1.0f);
+			for (int light_idx = 0; light_idx < lightInfos.size(); light_idx++)
+			{
+				Ray shadow_ray(m_intersect_data[idx].position,
+					glm::normalize(lightInfos[light_idx].pos - m_intersect_data[idx].position));
+				{
+					glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - m_intersect_data[idx].position);
+					float diffuse = glm::clamp(glm::dot(m_intersect_data[idx].normal, to_light), 0.0f, 1.0f);
+					color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
+				}
+			}
+		}
         else
             color = glm::vec3(0.1, 0.1, 0.1);
 
@@ -803,13 +858,19 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 
     if (m_old_res != m_resolution)
     {
-        if (!m_intersect_data)
+		if (!m_intersect_data)
+		{
             delete[] m_intersect_data;
-        if (!m_rays)
+			//delete[] m_gpu_face_indices;
+		}
+		if (!m_rays)
+		{
             delete[] m_rays;
+		}
 
         m_rays = new Ray[m_resolution.x * m_resolution.y];
         m_intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
+		m_gpu_face_indices = new unsigned int[m_resolution.x * m_resolution.y];
         m_old_res = m_resolution;
     }
     //--------------------------------------------
@@ -841,7 +902,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
                 tetmesh_type = 2;
 
-			cast_rays_gpu(scene, source_tet, m_resolution, tile_size, tetmesh_type, m_intersect_data);
+			cast_rays_gpu(scene, source_tet, m_resolution, tile_size, tetmesh_type, m_gpu_face_indices/*m_intersect_data*/);
 
 
             threads = new std::thread*[thread_count];
@@ -852,8 +913,8 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             //--------------------------------------------
             for (int i = 0; i < thread_count; i++)
             {
-                void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
-                threads[i] = new std::thread(mem_funct, this, i, lightInfos);
+                void (RayTracer::*mem_funct)(Scene&, int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
+                threads[i] = new std::thread(mem_funct, this, scene, i, lightInfos);
             }
 
             for (int i = 0; i < thread_count; i++)
@@ -899,7 +960,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
                 tetmesh_type = 2;
 
-            traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, m_intersect_data);
+            //traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, m_intersect_data);
 
             threads = new std::thread*[thread_count];
             job_index = thread_count;
@@ -933,7 +994,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             Stats::ray_prep_time = 0;
             //--------------------------------------------
             if (dynamic_cast<TetMeshSctp *>(scene.tet_mesh) != nullptr)
-                cast_rays_gpu(scene, source_tet, m_resolution, tile_size, 3, m_intersect_data);
+                cast_rays_gpu(scene, source_tet, m_resolution, tile_size, 3, m_gpu_face_indices);
 
             threads = new std::thread*[thread_count];
             job_index = thread_count;
@@ -943,8 +1004,8 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             //--------------------------------------------
             for (int i = 0; i < thread_count; i++)
             {
-                void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
-                threads[i] = new std::thread(mem_funct, this, i, lightInfos);
+				void (RayTracer::* mem_funct)(Scene&, int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
+				threads[i] = new std::thread(mem_funct, this, scene, i, lightInfos);
             }
 
             for (int i = 0; i < thread_count; i++)
@@ -966,7 +1027,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 			Stats::ray_prep_time = 0;
 			//--------------------------------------------
 			if (dynamic_cast<TetMesh80*>(scene.tet_mesh) != nullptr)
-				cast_rays_gpu(scene, source_tet, m_resolution, tile_size, 4, m_intersect_data);
+				cast_rays_gpu(scene, source_tet, m_resolution, tile_size, 4, m_gpu_face_indices);
 
 			threads = new std::thread * [thread_count];
 			job_index = thread_count;
@@ -976,8 +1037,8 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 			//--------------------------------------------
 			for (int i = 0; i < thread_count; i++)
 			{
-				void (RayTracer:: * mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
-				threads[i] = new std::thread(mem_funct, this, i, lightInfos);
+				void (RayTracer::* mem_funct)(Scene&, int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata_rowmajor;
+				threads[i] = new std::thread(mem_funct, this, scene, i, lightInfos);
 			}
 
 			for (int i = 0; i < thread_count; i++)

@@ -79,10 +79,10 @@ enum ImageType
     Locality
 };
 
-extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
-extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
-extern void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, IntersectionData* output);
-extern void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, int num_streams, int id_s, unsigned int tet_mesh_type, IntersectionData* output);
+//extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output);
+//extern void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int idt, IntersectionData* output);
+extern void cast_rays_gpu(Scene & scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, unsigned int* face_indices/*IntersectionData* output*/);
+//extern void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, int num_streams, int id_s, unsigned int tet_mesh_type, IntersectionData* output);
 
 class RayTracer
 {
@@ -119,7 +119,7 @@ public:
 
     void draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos);
     void draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos);
-    void draw_intersectiondata_rowmajor(int thread_idx, std::vector<LightInfo> lightInfos);
+    void draw_intersectiondata_rowmajor(Scene& scene, int thread_idx, std::vector<LightInfo> lightInfos);
 	void draw_intersectiondata_rowmajor(int set_start, int set_end, std::vector<LightInfo> lightInfos);
 
     void render_gpu(Scene & scene, const bool is_diagnostic = false);
@@ -150,6 +150,8 @@ public:
     glm::ivec2 m_resolution = glm::ivec2(640, 480);
     glm::ivec2 m_old_res = glm::ivec2();
     IntersectionData* m_intersect_data;
+
+	unsigned int* m_gpu_face_indices;
     Ray* m_rays;
     int tile_size = 8;
     //glm::u8vec3 *pixels;
