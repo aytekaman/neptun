@@ -710,22 +710,17 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			semantic = tetra.y;
 
 			if (semantic >= 0)
+			{
 				break;
+			}
 
 			// Update data for next tetra 
 			id_tetra = GET_NEXT_TETRA(tetra.x) * 4;
 			id_entry_face = GET_NEXT_FACE(tetra.x);
 
 		} while (true);
-		// Store result 
-		//out.m_idFace = idVertex + idExit; 
-		//out.m_idMtl = semantic; 
-		//out.m_idVol = idTetra; 
 
-		if (semantic >= 1)
-			face_indices[outputindex] = 100;//FIX!!!!!!!!!!
-		else
-			face_indices[outputindex] = -1;
+		face_indices[outputindex] = semantic;
 
 	}
 }

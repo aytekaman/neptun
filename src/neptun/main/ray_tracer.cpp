@@ -693,16 +693,15 @@ void RayTracer::draw_intersectiondata_rowmajor(Scene& scene, int thread_idx, std
 {
     int idx = ((m_resolution.x * m_resolution.y) / thread_count) * thread_idx;
     int upperbound = min( ( (m_resolution.x * m_resolution.y) / thread_count ) * (thread_idx + 1), m_resolution.x * m_resolution.y);
+	bool hit = false;
 
     while (idx < upperbound)
     {
-        //rays_index = 0;
         glm::vec3 color;
-		//printf("index: %d\n", m_gpu_face_indices[idx]);
-		if (m_gpu_face_indices[idx] != -1/*m_intersect_data[idx].hit*/)
+		hit = method != Method::Tet96_gpu ? (m_gpu_face_indices[idx] != -1) : (m_gpu_face_indices[idx] > 0);
+		if(hit)
 		{
-			m_gpu_face_indices[idx] = (m_gpu_face_indices[idx] & 0x7FFFFFFF);
-			//printf("index: %d\n", scene.tet_mesh->faces[scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[idx]].face_idx].vertices->x);
+			m_gpu_face_indices[idx] = method != Method::Tet96_gpu ? (m_gpu_face_indices[idx] & 0x7FFFFFFF) : (m_gpu_face_indices[idx]) - 1;
 
 			color = glm::vec3();
 
@@ -738,7 +737,8 @@ void RayTracer::draw_intersectiondata_rowmajor(Scene& scene, int thread_idx, std
 			ray.dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray.origin);
 
 			//calculate face data
-			const Face& face = scene.tet_mesh->faces[scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[idx]].face_idx];
+			const Face& face = method != Method::Tet96_gpu ? 
+				*(scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[idx]].face) : scene.tet_mesh->faces[m_gpu_face_indices[idx]];
 			const glm::vec3* v = face.vertices;
 			const glm::vec3* n = face.normals;
 			const glm::vec2* t = face.uvs;

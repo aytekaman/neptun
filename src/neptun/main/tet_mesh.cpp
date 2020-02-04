@@ -2892,7 +2892,7 @@ void TetMesh80::init_acceleration_data()
 
 				//m_tetSctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);
 
-				m_tet80s[i].m_semantics[j] = 1;
+				m_tet80s[i].m_semantics[j] = m_tets[i].face_idx[j];
 			}
 			else
 			{
