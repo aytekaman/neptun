@@ -270,6 +270,42 @@ void Editor::DrawMainMenuBar()
             }
 
             ImGui::Separator();
+            if (ImGui::MenuItem("Cornell Box"))
+            {
+                scene->clear();
+                selected_scene_object = nullptr;
+
+
+                auto create_wall = [](Scene* scene, const glm::ivec3 p, const glm::vec3 c = glm::vec3(1.f)) {
+                    SceneObject* cube = new SceneObject("Cube");
+
+                    cube->mesh = ProceduralMeshGenerator::create_cube();
+                    const glm::vec3 a = (glm::sign(glm::abs(p)));
+                    const glm::vec3 b = 1 - (glm::sign(glm::abs(p)));
+
+                    cube->material->diffuse = c;
+                    cube->scale = a * 0.1f + b * 20.f;
+                    cube->pos = glm::vec3(glm::sign(p)) * 10.05f;
+                    scene->add_scene_object(cube);
+                };
+                create_wall(scene, glm::ivec3(0, -1, 0));
+                create_wall(scene, glm::ivec3(0, 1, 0));
+                create_wall(scene, glm::ivec3(-1, 0, 0), glm::vec3(1, 0, 0));
+                create_wall(scene, glm::ivec3(1, 0, 0), glm::vec3(0, 1, 0));
+                create_wall(scene, glm::ivec3(0, 0, -1));
+
+                SceneObject* light = new SceneObject("Cube");
+                light->mesh = ProceduralMeshGenerator::create_cube();
+                light->scale = glm::vec3(8, 0.1, 8);
+                light->pos = glm::vec3(0, 10.f - 0.1f, 0);
+                light->material->le = glm::vec3(4.f);
+                scene->add_scene_object(light);
+
+                if (scene->sceneObjects.size() > 0)
+                    selected_scene_object = scene->sceneObjects.back();
+            }
+
+            ImGui::Separator();
 
             if (ImGui::MenuItem("Import OBJ file"))
             {
@@ -472,6 +508,7 @@ void Editor::DrawInspector()
             ImGui::Text("Material");
             ImGui::ColorEdit3("Diffuse", &selected_scene_object->material->diffuse.r);
 
+            ImGui::DragFloat3("LE", &selected_scene_object->material->le.r);
             ImGui::Separator();
 
             Material *material = selected_scene_object->material;
@@ -1236,6 +1273,10 @@ void Editor::DrawRenderedFrame()
     //ImGui::InputInt("Size", &ray_tracer->tile_size);
     ImGui::Checkbox("Shadows", &ray_tracer->shadows);
 
+    static bool path_tracing = false;
+    ImGui::Checkbox("Path Tracing", &path_tracing);
+    ray_tracer->integrator = path_tracing ? Integrator::PathTracing : Integrator::RayCasting;
+
     const char* reps[] = { "Default", "Default (SIMD)", "ScTP", "Fast Basis", "kd-tree", "BVH (pbrt)", "BVH (embree)" };
     ImGui::Combo("Method", (int*)&ray_tracer->method, reps, 7);
 
@@ -1300,6 +1341,14 @@ void Editor::DrawRenderedFrame()
         glBindTexture(GL_TEXTURE_2D, locality_texture_id);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ray_tracer->m_resolution.x, ray_tracer->m_resolution.y, GL_RGB, GL_UNSIGNED_BYTE, ray_tracer->m_locality_image->get_pixels());
     }
+
+    // Stop rendering if we are using path tracing 
+    if (render && ray_tracer->integrator == Integrator::PathTracing)
+    {
+        render = false;
+        std::cout << "Scene rendered in " << Stats::last_render_time << " seconds" << std::endl; 
+    }
+
 
     ImGui::End();
 

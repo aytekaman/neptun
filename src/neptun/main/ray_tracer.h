@@ -1,6 +1,7 @@
 #pragma once
 
 #include "neptun/math/matrix.h"
+#include <neptun/math/random.h>
 
 #include <atomic>
 #include <vector>
@@ -14,6 +15,12 @@ class Scene;
 struct SourceTet;
 class TetMesh;
 class Texture;
+
+enum class Integrator
+{
+    RayCasting,
+    PathTracing
+};
 
 enum Method
 {
@@ -88,6 +95,12 @@ public:
         std::vector<LightInfo> lightInfos,
         bool is_diagnostic);
 
+    void Pathtrace_worker(Scene& scene,
+        SourceTet source_tet,
+        int thread_idx,
+        std::vector<LightInfo> lightInfos,
+        bool is_diagnostic);
+
 
     void save_to_disk(const char* file_name, ImageType image_type = ImageType::Render);
     void set_resolution(const glm::ivec2& resolution);
@@ -118,5 +131,10 @@ public:
     //KdTree *kd_tree = nullptr;
     //Bvh *bvh = nullptr;
 
+    std::vector<Sampler> m_samplers;
+    size_t m_max_depth = 6;
+    size_t m_sample_per_pixel = 1024;
+
     Method method = Method::Default;
+    Integrator integrator = Integrator::RayCasting;
 };

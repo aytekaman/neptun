@@ -301,6 +301,11 @@ int command_render_scene(const argparse::ArgumentData& args)
 
     ray_tracer.set_resolution(glm::ivec2(image_width, image_height));
 
+    if (args["path-tracing"]->cast<bool>())
+    {
+        ray_tracer.integrator = Integrator::PathTracing;
+    }
+
     const int N = args["repetition"]->cast<int>();
 
     for(int i = 0; i < N; ++i)
@@ -407,16 +412,17 @@ int run_command_line(int argc, char const* argv[])
                                         command_render_scene);
         
         parser.add_positional_argument("scene", "Scene file to be rendered")
-              .add_keyword_argument("accelerator", "Accelerator type used for intersections. (tet-mesh-32, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh-32")
-              .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
-              .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "1920x1440")
-              .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
-              .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
-              .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
-              .add_keyword_argument("sorting", "Sorting method for tet-mesh-32. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert")
-              .add_keyword_argument("usecache", "Use .tetmesh cache file", ArgumentType::BOOL, "c", "false")
-              .add_keyword_argument("quality", "Tetmesh quality (Minimum radius-edge ratio)", ArgumentType::FLOAT, "q", "5.0")
-              .add_keyword_argument("split-triangles", "Allow triangles to be splitted in tetmesh. (!preserve triangles)", ArgumentType::BOOL, "y");
+            .add_keyword_argument("accelerator", "Accelerator type used for intersections. (tet-mesh-32, bvh, kd, embree)", ArgumentType::STRING, "m", "tet-mesh-32")
+            .add_keyword_argument("output", "Output file", ArgumentType::STRING, "o", "a.png")
+            .add_keyword_argument("resolution", "Resolution of the output file", ArgumentType::STRING, "r", "1920x1440")
+            .add_keyword_argument("help", "Prints help", ArgumentType::BOOL, "h")
+            .add_keyword_argument("diagnostic", "Output diagnostic image", ArgumentType::BOOL, "d")
+            .add_keyword_argument("repetition", "Number of repetitions", ArgumentType::INTEGER, "n", "100")
+            .add_keyword_argument("sorting", "Sorting method for tet-mesh-32. (hilbert-regions, hilbert, none)", ArgumentType::STRING, "s", "hilbert")
+            .add_keyword_argument("usecache", "Use .tetmesh cache file", ArgumentType::BOOL, "c", "false")
+            .add_keyword_argument("quality", "Tetmesh quality (Minimum radius-edge ratio)", ArgumentType::FLOAT, "q", "5.0")
+            .add_keyword_argument("split-triangles", "Allow triangles to be splitted in tetmesh. (!preserve triangles)", ArgumentType::BOOL, "y")
+            .add_keyword_argument("path-tracing", "Use path tracing", ArgumentType::BOOL, "p");
               
 
         return parser.parse(argc - 2, argv + 2);

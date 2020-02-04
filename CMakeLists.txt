@@ -169,6 +169,9 @@ set (main_sources
     src/neptun/main/texture.h
     src/neptun/main/utils.cpp
     src/neptun/main/utils.h
+    src/neptun/math/random.cpp
+    src/neptun/math/random.h
+    src/neptun/math/tangent_frame.h
     src/neptun/math/transform.cpp
     src/neptun/math/transform.h
     src/neptun/tet_mesh/tet_mesh_builder_factory.h

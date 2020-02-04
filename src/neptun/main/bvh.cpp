@@ -698,6 +698,7 @@ bool Bvh::Intersect(const Ray &ray, IntersectionData& intersection_data) const {
 
                             intersection_data.position = ray.origin + bary.z * ray.dir;
                             intersection_data.normal =	(bary.x * p.normals[1] + bary.y * p.normals[2] + (1 - bary.x - bary.y) * p.normals[0]);
+                            intersection_data.material = p.material;
                             //uv =		(bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0]);
                         }
                             
@@ -759,6 +760,7 @@ bool Bvh::Intersect_stats(const Ray &ray, IntersectionData& intersection_data, D
 
                             intersection_data.position = ray.origin + bary.z * ray.dir;
                             intersection_data.normal = (bary.x * p.normals[1] + bary.y * p.normals[2] + (1 - bary.x - bary.y) * p.normals[0]);
+                            intersection_data.material = p.material;
                             //uv =		(bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0]);
                         }
 
@@ -851,7 +853,7 @@ void Bvh::initFaces()
         {
             Face face;;
 
-            //face.material = scene.sceneObjects[i]->material;
+            face.material = scene.sceneObjects[i]->material;
 
             face.vertices[0] = tr.transform_point(mesh->m_vertices[j + 0]);
             face.vertices[1] = tr.transform_point(mesh->m_vertices[j + 1]);
@@ -1011,6 +1013,7 @@ bool BvhEmbree::Intersect(const Ray& ray, IntersectionData& intersection_data) c
             faces[rtc_hit.hit.primID].normals[0] * (1 - rtc_hit.hit.u - rtc_hit.hit.v);
 
         intersection_data.normal = glm::normalize(intersection_data.normal);
+        intersection_data.material = faces[rtc_hit.hit.primID].material;
 
         return true;
     }

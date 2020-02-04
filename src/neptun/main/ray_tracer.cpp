@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "ray_tracer.h"
 
 #include <chrono>
@@ -28,6 +29,7 @@
 #include "stats.h"
 #include "tet_mesh.h"
 #include "texture.h"
+#include <neptun/math/tangent_frame.h>
 
 RayTracer::RayTracer()
 {
@@ -38,6 +40,14 @@ RayTracer::RayTracer()
 
     thread_count = std::thread::hardware_concurrency();
     Logger::Log("Number of threads: %d", thread_count);
+
+
+    m_samplers.clear();
+
+    for (size_t i = 0; i < m_resolution.x * m_resolution.y; ++i)
+    {
+        m_samplers.emplace_back(i);
+    }
 }
 
 void RayTracer::Render(Scene & scene, const bool is_diagnostic)
@@ -94,7 +104,12 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
     timer.start();
 
     for (int i = 0; i < thread_count; i++)
-        threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    {
+        if (integrator == Integrator::RayCasting)
+            threads[i] = new std::thread(&RayTracer::Raytrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+        else 
+            threads[i] = new std::thread(&RayTracer::Pathtrace_worker, this, std::ref(scene), source_tet, i, lightInfos, is_diagnostic);
+    }
 
     for (int i = 0; i < thread_count; i++)
     {
@@ -150,7 +165,6 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
 
     int total_test_count = 0;
     int total_L1_hit_count = 0;
-
 
     const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
     const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
@@ -291,6 +305,224 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
     L1_hit_count[thread_idx] = total_L1_hit_count;
 }
 
+void RayTracer::Pathtrace_worker(
+    Scene& scene,
+    SourceTet source_tet,
+    int thread_idx,
+    std::vector<LightInfo> lightInfos,
+    bool is_diagnostic)
+{
+    // Init camera
+    const glm::vec3 camTarget = scene.camTarget;
+    glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+
+    dir = dir * glm::cos(scene.camOrbitX);
+    dir.y = glm::sin(scene.camOrbitX);
+
+    glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+
+    const glm::vec3 forward = glm::normalize(scene.camTarget - cam_pos);
+    const glm::vec3 right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+    const glm::vec3 down = glm::cross(forward, right);
+
+    const float aspect = (float)m_resolution.x / m_resolution.y;
+    const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+    const glm::vec3 top_left = cam_pos + forward - down * scale_y - right * scale_y * aspect;
+    const glm::vec3 right_step = (right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
+    const glm::vec3 down_step = (down * scale_y * 2.0f) / (float)m_resolution.y;
+
+    const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
+    const int tile_count_y = (m_resolution.y + tile_size - 1) / tile_size;
+    const int max_job_index = tile_count_x * tile_count_y;
+
+    int idx = thread_idx;
+
+    size_t total_visited_tet_count = 0;
+
+    // For each tile
+    while (idx < max_job_index)
+    {
+        Sampler& sampler = m_samplers[idx];
+
+        glm::ivec2 rect_min = glm::ivec2((idx % tile_count_x) * tile_size, (idx / tile_count_x) * tile_size);
+        glm::ivec2 rect_max = rect_min + glm::ivec2(tile_size, tile_size);
+
+        rect_max = (glm::min)(rect_max, m_resolution);
+
+        // For each pixel
+        for (size_t j = rect_min.y; j < rect_max.y; j++)
+        {
+            for (size_t i = rect_min.x; i < rect_max.x; i++)
+            {
+                glm::u64vec2 pixel(i, j);
+                
+                glm::vec3 total_radiance(0.f);
+                float radiance_weight = 0.f;
+                size_t pixel_visited_tet_count = 0;
+
+                for (size_t s = 0; s < m_sample_per_pixel; ++s)
+                {
+                    Sampler& sampler = m_samplers[j * m_resolution.x + i];
+                    const glm::vec2 pixel_sample = sampler.next_vec2() + glm::vec2(pixel);
+                    //const glm::vec2 pixel_sample = glm::vec2(pixel);
+
+                    // Path tracing :D
+                    glm::vec3 radiance(0.f);
+                    glm::vec3 beta(1.f);  // Radiance contribution (pbrt calls it beta)
+                    size_t cur_depth = 0;
+
+                    SourceTet path_source_tet = source_tet;
+                    Ray ray(cam_pos);
+                    ray.dir = glm::normalize(
+                        top_left + right_step * pixel_sample.x + down_step * pixel_sample.y - ray.origin);
+            
+           
+                    if (method == Method::Default)
+                    {
+                        ray.tet_idx = source_tet.idx;
+                    }
+                    else
+                    {
+                        ray.tMax = 100000000;
+                    }
+
+                    // Path trace loop
+                    while (cur_depth < m_max_depth) 
+                    {
+                        IntersectionData isect;
+                        bool hit = false;
+
+                        if (is_diagnostic)
+                        {
+                            DiagnosticData diag;
+                            diag.visited_node_count = 0;
+
+                            hit = scene.bvh->Intersect_stats(ray, isect, diag);
+
+                            pixel_visited_tet_count += diag.visited_node_count;
+                        }
+                        else // not diagnostic
+                        {
+                            if (method == Method::Default)
+                                hit = scene.tet_mesh->intersect(ray, path_source_tet, isect);
+                            else if (method == Method::DefaultSimd)
+                                hit = scene.tet_mesh->intersect_simd(ray, path_source_tet, isect);
+                            else if (method == Method::BVH_embree)
+                                hit = scene.bvh_embree->Intersect(ray, isect);
+                            else if (method == Method::BVH_pbrt)        
+                                hit = scene.bvh->Intersect(ray, isect);
+                            else if (method == Method::Kd_tree)
+                                hit = scene.kd_tree->Intersect(ray, isect);
+                        }
+
+                        if (hit == false)
+                        {
+                            //radiance += beta * glm::vec3(0.1f); // background radiance
+                            radiance += beta * glm::vec3(1.f);
+                            
+                            break;
+                        }
+                        
+
+                        radiance += beta * isect.material->le;
+                        
+                        glm::vec3 wo = -ray.dir;
+                        glm::vec3 normal = glm::normalize(isect.normal);
+                        if (glm::dot(wo, normal) < 0)
+                            normal = -normal;
+
+                        // Create tangent frame
+                        TangentFrame frame(normal);
+                        const glm::vec3 t_wo = frame.to_local(wo);
+
+                        // Evaluate brdf
+                        float pdf;
+                        glm::vec3 t_wi;
+                        t_wi = sampler.sample_hemisphere(pdf);
+                        const glm::vec3 wi = frame.to_global(t_wi);
+                        const auto f = glm::vec3(glm::one_over_pi<float>());
+
+                        if (pdf == 0.f)
+                            break;
+
+                        const glm::vec3 diff = isect.material->diffuse;
+                        beta *= diff * f * (glm::abs(glm::dot(normal, glm::normalize(wi)))) / pdf;
+                       
+                        // ROULETTE
+                        //https://computergraphics.stackexchange.com/questions/2316/is-russian-roulette-really-the-answer
+                        //https://github.com/tunabrain/tungsten/blob/bda107574eb82edaef34ce0174c981340f5c1b0f/src/core/integrators/path_tracer/PathTracer.cpp
+                   
+                        const float roulette_pdf = glm::max(beta.x, glm::max(beta.y, beta.z));
+
+                        if (cur_depth > 2 && roulette_pdf < 0.1f)
+                        {
+                            if (sampler.next_float() < roulette_pdf)
+                            {
+                                beta /= roulette_pdf;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        // Create new ray
+                        Ray new_ray;
+                        new_ray.origin = isect.position + (normal * 0.00001f);
+                        new_ray.dir = glm::normalize(wi);
+                        
+                        if (method == Method::Default || method == Method::DefaultSimd)
+                        {
+                            new_ray.tet_idx = isect.tet_idx;
+
+                            path_source_tet.idx = isect.neighbor_tet_idx;
+                            TetMesh32* tm = dynamic_cast<TetMesh32*>(scene.tet_mesh);
+                            for (int i = 0; i < 4; ++i)
+                            {
+                                path_source_tet.v[i] = scene.tet_mesh->m_tets[isect.tet_idx].v[i];
+                                //path_source_tet.n[i] = scene.tet_mesh->m_tets[isect.tet_idx].n[i];
+                                path_source_tet.n[i] = tm->m_tet32s[isect.tet_idx].n[i];
+                            }
+                        }
+                        else
+                        {
+                            new_ray.tMax = 100000000;
+                        }
+
+                        ray = new_ray;
+                        ++cur_depth;
+                    } // end of while (cur_dept < MAX_DEPTH)
+
+                    total_radiance += radiance;
+                    radiance_weight += 1.f;
+                } 
+
+                const glm::vec3 clamped_color = glm::clamp((total_radiance / radiance_weight), { 0.f }, { 1.f });
+             
+                m_rendered_image->set_pixel(i, j, clamped_color * 255.f);
+
+                if (is_diagnostic)
+                {
+                    float scaled_visited_tet_count = pixel_visited_tet_count / 256.0f;
+                    scaled_visited_tet_count /= float(m_sample_per_pixel);
+                    
+                    stats.set(pixel, pixel_visited_tet_count / m_sample_per_pixel);
+
+                    glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
+                    m_visited_tets_image->set_pixel(i, j, visited_tet_count_color * 255.0f);
+
+                    total_visited_tet_count += pixel_visited_tet_count;
+                }
+            }
+        }
+
+        idx = job_index++;
+    }
+
+    traversed_tetra_count[thread_idx] = total_visited_tet_count / (((m_resolution.x * m_resolution.y * float(m_sample_per_pixel)) / (float)thread_count));
+}
+
 void RayTracer::save_to_disk(const char * file_name, ImageType image_type)
 {
     if (image_type == ImageType::Locality)
@@ -317,4 +549,11 @@ void RayTracer::set_resolution(const glm::ivec2& resolution)
     m_visited_tets_image = new Image(m_resolution.x, m_resolution.y);
 
     stats.set_size(resolution);
+
+    m_samplers.clear();
+
+    for (size_t i = 0; i < m_resolution.x * m_resolution.y; ++i)
+    {
+        m_samplers.emplace_back(i);
+    }
 }

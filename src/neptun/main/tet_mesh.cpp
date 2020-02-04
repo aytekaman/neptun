@@ -540,7 +540,7 @@ void TetMesh::init_faces(const Scene& scene)
         {
             Face face;
 
-            //face.material = scene.sceneObjects[i]->material;
+            face.material = scene.sceneObjects[i]->material;
 
             face.vertices[0] = tr.transform_point(mesh->m_vertices[j + 0]);
             face.vertices[1] = tr.transform_point(mesh->m_vertices[j + 1]);
@@ -1017,6 +1017,7 @@ bool TetMesh32::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
@@ -1120,6 +1121,7 @@ bool TetMesh32::intersect_stats(const Ray& ray, const SourceTet& source_tet, Int
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
@@ -1248,6 +1250,7 @@ bool TetMesh32::intersect_simd(const Ray& ray, const SourceTet& source_tet, Inte
         //intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
@@ -1749,6 +1752,7 @@ bool TetMesh20::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
@@ -1881,6 +1885,7 @@ bool TetMesh20::intersect_stats(const Ray & ray, const SourceTet & source_tet, I
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
@@ -2344,6 +2349,7 @@ bool TetMesh16::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
@@ -2482,6 +2488,7 @@ bool TetMesh16::intersect_stats(const Ray & ray, const SourceTet& source_tet, In
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
@@ -3087,6 +3094,7 @@ bool TetMeshSctp::intersect(const Ray& ray, const SourceTet& tet, IntersectionDa
         intersection_data.uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
         intersection_data.tet_idx = m_constrained_faces[index].tet_idx;
         intersection_data.neighbor_tet_idx = m_constrained_faces[index].other_tet_idx;
+        intersection_data.material = face.material;
 
         return true;
     }
