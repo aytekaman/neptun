@@ -78,13 +78,11 @@ public:
     float org_x;
     float org_y;
     float org_z;
+    float max_t;
 
     float dir_x;
     float dir_y;
     float dir_z;
-
-    // Union?
-    float max_t;
     int   tet_id;
 };
 
@@ -92,8 +90,8 @@ template <size_t N>
 struct alignas(4 * N) Hit_
 {
 public:
-    float u[N];
-    float v[N];
+    float bary_x[N];
+    float bary_y[N];
 
     // Not needed?
     float nx[N];
@@ -108,8 +106,8 @@ template <>
 struct alignas(4) Hit_<1>
 {
 public:
-    float u;
-    float v;
+    float bary_x;
+    float bary_y;
 
     // Not needed?
     float nx;
@@ -193,8 +191,8 @@ inline void hit_cpy(const Hit_<N>& src, Hit& dst, size_t src_index)
 {
     assert(src_index < N);
 
-    dst.u = src.u[src_index];
-    dst.v = src.v[src_index];
+    dst.bary_x = src.bary_x[src_index];
+    dst.bary_y = src.bary_y[src_index];
 
     dst.nx = src.nx[src_index];
     dst.ny = src.ny[src_index];
@@ -209,8 +207,8 @@ inline void hit_cpy(const Hit& src, Hit_<N>& dst, size_t dst_index)
 {
     assert(dst_index < N);
 
-    dst.u[dst_index] = src.u;
-    dst.v[dst_index] = src.v;
+    dst.bary_x[dst_index] = src.bary_x;
+    dst.bary_y[dst_index] = src.bary_y;
 
     dst.nx[dst_index] = src.nx;
     dst.ny[dst_index] = src.ny;

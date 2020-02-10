@@ -1,6 +1,6 @@
 #pragma once
 
-#include <neptun/accelerators/ray.h>
+#include "ray.h"
 
 #include <glm/glm.hpp>
 
