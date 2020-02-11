@@ -8,6 +8,8 @@
 #include <glm/gtc/random.hpp>
 #include <glm/gtx/color_space.hpp>
 
+#include <iostream>
+
 namespace neptun
 {
 
@@ -55,6 +57,26 @@ bool SceneObject::is_light() const
 bool SceneObject::has_mesh() const
 {
 	return m_mesh != nullptr;
+}
+
+std::ostream& operator<<(std::ostream& os, const SceneObject& obj)
+{
+	os << obj.m_name << " [type=" << (obj.is_light() ? "light" : "mesh")
+		<< ", pos=(" << obj.m_pos.x << " " << obj.m_pos.y << " " << obj.m_pos.z 
+		<< "), scale=(" << obj.m_scale.x << " " << obj.m_scale.y << " " << obj.m_scale.z 
+		<< "), rot=(" << obj.m_rot.x << " " << obj.m_rot.y << " " << obj.m_rot.z << ")]";
+	
+	if (obj.m_mesh != nullptr)
+		os << "\nmesh=" << obj.m_mesh->m_file_name;
+
+	if (obj.m_light)
+	{
+		os << "\nlight=[intensity" << obj.m_light->m_intensity
+			<< ", color=("<< obj.m_light->m_color.x << ", " << obj.m_light->m_color.y << ", " << obj.m_light->m_color.z << ")]";
+	}
+
+	os << "\n";
+ 	return os;
 }
 
 } // end of namespace neptun

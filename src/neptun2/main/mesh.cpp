@@ -1,7 +1,13 @@
 #include "mesh.h"
 
+#include <limits>
+
 namespace neptun
 {
+
+Mesh::Mesh(std::string file_name) : m_file_name(std::move(file_name))
+{
+}
 
 size_t Mesh::face_count() const
 {
@@ -23,6 +29,9 @@ void Mesh::clean()
 {
 	if (!m_dirty)
 		return;
+	
+	m_bounds_min = glm::vec3(std::numeric_limits<float>::infinity());
+	m_bounds_max = glm::vec3(-std::numeric_limits<float>::infinity());
 
 	for (size_t i = 0; i < m_vertices.size(); ++i)
 	{

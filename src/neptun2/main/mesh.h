@@ -11,6 +11,8 @@ namespace neptun
 class Mesh
 {
 public:
+    explicit Mesh(std::string file_name);
+
     size_t face_count() const;
     size_t vertex_count() const;
 

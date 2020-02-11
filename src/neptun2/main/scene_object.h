@@ -6,6 +6,7 @@
 
 #include <string>
 #include <memory>
+#include <iosfwd>
 
 namespace neptun
 {
@@ -26,6 +27,8 @@ public:
 
     bool is_light() const;
     bool has_mesh() const;
+
+    friend std::ostream& operator<<(std::ostream& os, const SceneObject& obj);
 
     std::string m_name;
     glm::vec4 m_color;
