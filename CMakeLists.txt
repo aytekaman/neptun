@@ -5,6 +5,9 @@ include(CheckFunctionExists)
 
 if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
+    add_compile_options("-Zi")
+    #add_compile_options("/arch:AVX2")
+    add_compile_definitions(NOMINMAX)
 endif()
 
 if(WIN32)
@@ -26,7 +29,7 @@ else()
 endif()
 
 #set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CONFIGURATION_TYPES Debug Release)
+set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo)
 #SET(USE_STATIC_RUNTIME)
 
 include_directories(src)
@@ -66,22 +69,39 @@ set (thirdparty_sources
     src/thirdparty/tetgen/tetgen.h
     src/thirdparty/tetgen/tetgen.cxx
     src/thirdparty/tetgen/predicates.cxx
+    src/thirdparty/tinyxml2/tinyxml2.h
+    src/thirdparty/tinyxml2/tinyxml2.cpp
 )
 
 source_group ("thirdparty\\" FILES
     ${thirdparty_sources}
 )
 
-set (accelerator_sources
-    src/neptun/accelerators/accelerator.cpp
-    src/neptun/accelerators/accelerator.h
-    src/neptun/accelerators/ray.h
+#TODO: SORT ME
+set (neptun2_sources
+    src/neptun2/accelerators/accelerator.cpp
+    src/neptun2/accelerators/accelerator.h
+    src/neptun2/accelerators/noaccelerator.cpp
+    src/neptun2/accelerators/noaccelerator.h
+    src/neptun2/accelerators/ray.h
+    src/neptun2/main/scene.cpp
+    src/neptun2/main/scene.h
+    src/neptun2/main/scene_object.cpp
+    src/neptun2/main/scene_object.h
+    src/neptun2/math/transform.cpp
+    src/neptun2/math/transform.h
+    src/neptun2/main/mesh.cpp
+    src/neptun2/main/mesh.h
+    src/neptun2/main/material.h
+    src/neptun2/main/sceneio.cpp
+    src/neptun2/main/sceneio.h
+    src/neptun2/util/filesystem.h
+    src/neptun2/util/timer.h
 )
 
-source_group ("accelerators\\" FILES
-    ${accelerator_sources}
+source_group ("neptun2_sources\\" FILES
+    ${neptun2_sources}
 )
-
 
 set (cuda_sources
     src/neptun/cuda/test1.cu
@@ -94,6 +114,8 @@ source_group ("cuda\\" FILES
 set (math_sources
     src/neptun/math/matrix.h
     src/neptun/math/matrix.cpp
+    src/neptun/math/transform.cpp
+    src/neptun/math/transform.h
 )
 
 source_group ("math\\" FILES
@@ -169,8 +191,6 @@ set (main_sources
     src/neptun/main/texture.h
     src/neptun/main/utils.cpp
     src/neptun/main/utils.h
-    src/neptun/math/transform.cpp
-    src/neptun/math/transform.h
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
     src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
@@ -183,7 +203,7 @@ source_group ("main\\" FILES
 
 add_executable (neptun
     #${cuda_sources}
-    ${accelerator_sources}
+    ${neptun2_sources}
     ${editor_sources}
     ${main_sources}
     ${math_sources}
@@ -298,6 +318,8 @@ else() #Windows
         neptun
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/sandbox/bin")
+    set_property(TARGET neptun APPEND PROPERTY LINK_FLAGS /DEBUG)
+    
 endif()
 
 set_target_properties(

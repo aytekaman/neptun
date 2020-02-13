@@ -38,15 +38,11 @@ Ray Camera::generate_ray(const glm::vec2& pixel) const
     const glm::vec3 dir = glm::normalize(m_top_left + m_right_step * pixel.x + m_down_step * pixel.y - origin);
     Ray ray;
 
-    ray.org_x = origin.x;
-    ray.org_y = origin.y;
-    ray.org_z = origin.z;
-
-    ray.dir_x = dir.x;
-    ray.dir_y = dir.y;
-    ray.dir_z = dir.z;
+    ray.org = origin;
+    ray.dir = dir;
 
     ray.max_t = 1000000000.f;
+    ray.tet_id = -1;
 
     return ray;
 }
