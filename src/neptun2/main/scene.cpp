@@ -65,6 +65,7 @@ void Scene::build_accelerator(Accelerator* accelerator)
     // Create triangle array
     std::vector<Triangle> triangles;
 
+    size_t obj_index = 0;
     for (const auto& obj : m_scene_objects)
     {
         obj->clean();
@@ -78,7 +79,7 @@ void Scene::build_accelerator(Accelerator* accelerator)
             for (size_t i = 0; i < mesh.m_vertices.size(); i += 3)
             {
                 Triangle triangle;
-                triangle.geometry_id = size_t(obj.get());
+                triangle.geometry_id = obj_index;
                 triangle.primitive_id = i / 3;
 
                 triangle.v[0] = tr.transform_point(mesh.m_vertices[i]);
@@ -88,7 +89,14 @@ void Scene::build_accelerator(Accelerator* accelerator)
                 triangles.push_back(triangle);
             }
         }
+
+        obj_index++;
     }
+
+    const bool build_success = accelerator->build(&triangles[0], triangles.size());
+
+    if (build_success)
+        m_accelerator.reset(accelerator);
 }
 
 Mesh* Scene::get_mesh(const std::string& mesh_file_name)
@@ -134,8 +142,6 @@ std::ostream& operator<<(std::ostream& os, const Scene& scene)
     os << "Imported Meshes:\n";
     for (const auto& obj : scene.m_meshes)
         os << obj->m_file_name << " [#f=" << obj->face_count() << "]\n";
-
-
 
     return os;
 }

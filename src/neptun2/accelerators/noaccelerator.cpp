@@ -34,8 +34,10 @@ void NoAccelerator::intersect1(RayHit& ray_hit) const
 			{
 				ray.max_t = bary.z;
 
-				hit.bary.x = bary.x;
-				hit.bary.y = bary.y;
+				hit.bary.x = (1 - bary.x - bary.y);
+				hit.bary.y = bary.x;
+
+				hit_index = i;
 			}
 		}
 	}
@@ -48,6 +50,11 @@ void NoAccelerator::intersect1(RayHit& ray_hit) const
 		hit.geometry_id = t.geometry_id;
 		hit.primitive_id = t.primitive_id;
 		hit.n = glm::normalize(glm::cross(t.v[1] - t.v[0], t.v[2] - t.v[1]));
+	}
+	else
+	{
+		hit.geometry_id = INVALID_GEOMETRY_ID;
+		hit.primitive_id = INVALID_PRIMITIVE_ID;
 	}
 }
 

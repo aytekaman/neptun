@@ -5,6 +5,8 @@
 #include <neptun2/accelerators/ray.h>
 #include <neptun2/accelerators/accelerator.h>
 #include <neptun2/main/scene_object.h>
+#include <neptun2/integrators/integrator.h>
+#include <neptun2/main/image.h>
 
 #include <glm/fwd.hpp>
 
@@ -50,6 +52,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Scene& scene);
 
+    // Fields
     Camera m_camera;
     std::vector<std::unique_ptr<SceneObject>> m_scene_objects;
     std::vector<std::unique_ptr<Mesh>> m_meshes;
@@ -58,6 +61,8 @@ public:
     std::string m_file_name;
 
     std::unique_ptr<Accelerator> m_accelerator; // TODO: Add support for multiple accelerators in one scene
+    std::unique_ptr<Integrator>  m_integrator;
+    std::unique_ptr<Image>       m_rendered_image;
 };
 
 } // end of namespace neptun
