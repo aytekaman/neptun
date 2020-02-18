@@ -59,8 +59,10 @@ void RayTracer::Render(Scene & scene, const bool is_diagnostic)
 
     int tet_index = 0;
 
-    if(scene.tet_mesh)
+    if (scene.tet_mesh) {
+        std::cout << "Here" << std::endl;
         tet_index = scene.tet_mesh->find_tet(cam_pos, source_tet);
+    }
 
 	std::cout << "Tet index: " << tet_index << std::endl;
 
@@ -237,6 +239,7 @@ void RayTracer::Raytrace_worker(Scene& scene, SourceTet source_tet, int thread_i
                         {
                             glm::vec3 to_light = glm::normalize(lightInfos[light_idx].pos - intersection_data.position);
                             float diffuse = glm::clamp(glm::dot(intersection_data.normal, to_light), 0.0f, 1.0f);
+                            //float diffuse = glm::clamp(glm::abs(glm::dot(intersection_data.normal, to_light)), 0.0f, 1.0f);
                             //diffuse = 1.0f;
                             color += lightInfos[light_idx].color * diffuse * lightInfos[light_idx].intensity;
                         }

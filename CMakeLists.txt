@@ -1,9 +1,9 @@
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.8)
 
 include(CheckFunctionExists)
 
-add_subdirectory(src/thirdparty/tetwild)
+add_subdirectory(src/thirdparty/fTetWild)
 
 if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
@@ -14,7 +14,6 @@ if(WIN32)
 else()
     project(neptun LANGUAGES C CXX)
 endif()
-
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 if(COMPILER_SUPPORTS_MARCH_NATIVE)
@@ -44,6 +43,7 @@ endif()
 
 FIND_PACKAGE(embree 3.4 REQUIRED)
 INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
+
 
 #include glfw
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
@@ -308,4 +308,4 @@ set_target_properties(
     PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY  "${CMAKE_SOURCE_DIR}/sandbox/bin/$(Configuration)")
 
 
-target_link_libraries(neptun libTetWild)
+target_link_libraries(neptun FloatTetwild)

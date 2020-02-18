@@ -273,6 +273,9 @@ int command_render_scene(const argparse::ArgumentData& args)
             return EXIT_FAILURE;
         }
 
+        std::cout << "wRITING TO FILE" << std::endl;
+        scene.tet_mesh->write_to_file();
+        std::cout << "done" << std::endl;
         ray_tracer.method = Method::Default;
 
         accelerator_size_in_bytes = scene.tet_mesh->get_size_in_bytes();

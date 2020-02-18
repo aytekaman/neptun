@@ -317,6 +317,10 @@ void Graphics::UpdateTetMeshData(const Scene* scene)
 
     for (int i = 0; i < tet_datas.size(); ++i)
     {
+        /*auto tmp = tet_mesh->m_tets[tet_datas[i].tet_idx].face_idx;
+
+        if (std::count(tmp, tmp + 4, -1) == 4) continue;
+        */
         unsigned int *idx = tet_mesh->m_tets[tet_datas[i].tet_idx].v;
 
         glm::vec3 p[4];

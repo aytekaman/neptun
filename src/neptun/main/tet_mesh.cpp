@@ -215,7 +215,7 @@ void TetMesh::build_from_scene(
         in_data.facet_markerlist[i] = i + 1;
         in_data.is_face_visible[i] = faces[i].is_visible;
     }
-
+    std::cout << "Mesher Method" << params.method << std::endl;
     if (params.method == TetGen && params.create_bounding_box){
         constexpr int face_indices[6][4] = {{0,1,3,2},  // bottom
                                             {4,5,7,6},  // top
@@ -281,6 +281,10 @@ void TetMesh::build_from_scene(
     m_tets = std::move(out_data.tets);
     m_air_region_id = out_data.air_region_id;
     m_constrained_face_count = out_data.constrained_face_count;
+
+    if (params.method == TetWild) {
+        write_to_file();
+    }
 
     Logger::Log("Tet Mesh is generated in %f seconds.", timer.seconds());
     Logger::Log("Air region ID: %d", m_air_region_id);
@@ -523,6 +527,7 @@ void TetMesh::perform_half_space_optimization()
 
     timer.stop();
     float duration = timer.seconds();
+
 
     Logger::Log("half space optimization is performed in %.2f seconds.", duration);
     Logger::Log("%d faces are optimized.", optimized_face_count);
