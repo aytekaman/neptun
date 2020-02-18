@@ -81,9 +81,16 @@ source_group ("thirdparty\\" FILES
 set (neptun2_sources
     src/neptun2/accelerators/accelerator.cpp
     src/neptun2/accelerators/accelerator.h
+    src/neptun2/accelerators/bvh_embree.h
+    src/neptun2/accelerators/bvh_embree.cpp
     src/neptun2/accelerators/noaccelerator.cpp
     src/neptun2/accelerators/noaccelerator.h
     src/neptun2/accelerators/ray.h
+    src/neptun2/integrators/integrator.h
+    src/neptun2/integrators/cast.cpp
+    src/neptun2/integrators/cast.h
+    src/neptun2/main/image.cpp
+    src/neptun2/main/image.h
     src/neptun2/main/scene.cpp
     src/neptun2/main/scene.h
     src/neptun2/main/scene_object.cpp
@@ -96,6 +103,7 @@ set (neptun2_sources
     src/neptun2/main/sceneio.cpp
     src/neptun2/main/sceneio.h
     src/neptun2/util/filesystem.h
+    src/neptun2/util/parallel.h
     src/neptun2/util/timer.h
 )
 
