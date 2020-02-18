@@ -61,8 +61,6 @@ public:
     std::string m_file_name;
 
     std::unique_ptr<Accelerator> m_accelerator; // TODO: Add support for multiple accelerators in one scene
-    std::unique_ptr<Integrator>  m_integrator;
-    std::unique_ptr<Image>       m_rendered_image;
 };
 
 } // end of namespace neptun
