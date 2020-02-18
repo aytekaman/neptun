@@ -53,5 +53,3 @@ public:
 };
 
 } // end of namespace neptun
-
-

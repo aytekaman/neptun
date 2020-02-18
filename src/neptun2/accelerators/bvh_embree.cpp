@@ -1,16 +1,15 @@
 #include "bvh_embree.h"
 
-
-
 namespace neptun
 {
+
 bool BvhEmbree::build(const Triangle* primitives, size_t primitive_count)
 {
-	RTCDevice rtc_device = rtcNewDevice("");
-	m_rtc_scene = rtcNewScene(rtc_device);
+    RTCDevice rtc_device = rtcNewDevice("");
+    m_rtc_scene = rtcNewScene(rtc_device);
 
-	RTCGeometry mesh = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
-	glm::vec3* vertices = (glm::vec3*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(glm::vec3), primitive_count * 3);
+    RTCGeometry mesh = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
+    glm::vec3* vertices = (glm::vec3*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(glm::vec3), primitive_count * 3);
 
 
     for (size_t i = 0; i < primitive_count; ++i)
@@ -59,7 +58,7 @@ bool BvhEmbree::build(const Triangle* primitives, size_t primitive_count)
     rtcCommitScene(m_rtc_scene);
     return true;
 }
-	
+    
 void BvhEmbree::intersect1(RayHit& ray_hit) const 
 {
     Ray& ray = ray_hit.ray;
@@ -104,12 +103,12 @@ void BvhEmbree::intersect1(RayHit& ray_hit) const
         hit.primitive_id = INVALID_PRIMITIVE_ID;
     }
 }
-	
+    
 const char* BvhEmbree::name() const 
 {
     return "Bvh Embree";
 }
-	
+    
 size_t BvhEmbree::get_size_in_bytes() const
 {
     return 0;
