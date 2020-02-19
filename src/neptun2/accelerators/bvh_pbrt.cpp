@@ -6,7 +6,6 @@
 
 namespace neptun
 {
-
 struct BvhPbrt::BVHPrimitiveInfo 
 {
     BVHPrimitiveInfo() = default;

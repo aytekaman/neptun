@@ -36,7 +36,7 @@ void parallel_for_2d(size_t num_threads, glm::u64vec2 work_size, size_t tile_siz
             while (index < total_tile_count)
             {
                 const glm::u64vec2 tile_start((index % tile_count.x) * tile_size, (index / tile_count.x) * tile_size);
-                const glm::u64vec2 tile_end = glm::min(tile_start + glm::u64vec2(tile_size, tile_size), work_size);
+                const glm::u64vec2 tile_end = glm::min(tile_start + tile_size, work_size);
 
                 func(tid, tile_start, tile_end, args...);
 

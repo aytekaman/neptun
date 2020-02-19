@@ -16,8 +16,8 @@ Transform::Transform() : m_tr(), m_inv_tr()
 }
 
 Transform::Transform(const glm::mat4& t, const glm::mat4& inv_t)
-    : m_tr(t),
-    m_inv_tr(inv_t)
+    : m_tr(t)
+    , m_inv_tr(inv_t)
 {
 }
 
@@ -75,12 +75,12 @@ glm::vec3 Transform::inv_transform_vector(const glm::vec3& v) const
 
 glm::vec3 Transform::transform_normal(const glm::vec3& n) const
 {
-    return glm::transpose(glm::mat3(m_inv_tr)) * n;
+    return glm::transpose(glm::mat4(m_inv_tr)) * glm::vec4(n, 0.f);
 }
 
 glm::vec3 Transform::inv_transform_normal(const glm::vec3& n) const
 {
-    return glm::transpose(glm::mat3(m_tr)) * n;
+    return glm::transpose(glm::mat4(m_tr)) * glm::vec4(n, 0.f);
 }
 
 

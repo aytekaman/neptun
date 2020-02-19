@@ -84,7 +84,7 @@ void Scene::build_accelerator(Accelerator* accelerator)
 
                 triangle.v[0] = tr.transform_point(mesh.m_vertices[i]);
                 triangle.v[1] = tr.transform_point(mesh.m_vertices[i + 1]);
-                triangle.v[2] = tr.transform_point(mesh.m_vertices[i + 2]);
+                triangle.v[2] = tr.transform_point(mesh.m_vertices[i + 2]) ;
 
                 triangles.push_back(triangle);
             }

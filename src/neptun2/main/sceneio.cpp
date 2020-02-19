@@ -93,7 +93,8 @@ std::unique_ptr<Mesh> load_mesh(const char* mesh_path, const char* file_name)
 
         for (size_t i = 0; i < vertices.size(); i += 3)
         {
-            glm::vec3 normal = glm::cross(vertices[i + 1] - vertices[i], vertices[i + 2] - vertices[i]);
+            glm::dvec3 v[3] = { vertices[i], vertices[i + 1], vertices[i + 2] };
+            glm::dvec3 normal = glm::cross(v[1] - v[0], v[2] - v[0]);
             normal = glm::normalize(normal);
 
             mesh->m_normals.push_back(normal);

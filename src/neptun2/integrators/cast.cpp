@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 
+#include <iostream>
 
 namespace neptun
 {
@@ -34,6 +35,7 @@ void CastIntegrator::render(const Scene& scene, Image& image, const RenderingMod
         }
     }
 
+  
     parallel_for_2d(m_num_threads, image.resolution(), m_tile_size,
         [&scene, &image, &rendering_mode, &lights](size_t thread_id, const glm::u64vec2& min_tile_index, const glm::u64vec2& max_tile_index)
         {
@@ -78,11 +80,13 @@ void CastIntegrator::render(const Scene& scene, Image& image, const RenderingMod
                             };
 
                             const glm::vec3 position = hit_object->m_transform.transform_point(p[0] * hit.bary.x + p[1] * hit.bary.y + p[2] * (1 - hit.bary.x - hit.bary.y));
-                            const glm::vec3 normal = hit_object->m_transform.transform_normal(n[0] * hit.bary.x + n[1] * hit.bary.y + n[2] * (1 - hit.bary.x - hit.bary.y));
-
+                            glm::vec3 normal = hit_object->m_transform.transform_normal(n[0] * hit.bary.x + n[1] * hit.bary.y + n[2] * (1 - hit.bary.x - hit.bary.y));
+                            normal = glm::normalize(normal);
+                            
                             for (const auto& light : lights)
                             {
                                 glm::vec3 to_light = glm::normalize(light.m_position - position);
+                                
                                 float diffuse = glm::clamp(glm::dot(normal, to_light), 0.0f, 1.0f);
                                 radiance += surface_diff * light.m_color * diffuse * light.m_intensity;
                             }
@@ -118,8 +122,9 @@ void CastIntegrator::render(const Scene& scene, Image& image, const RenderingMod
                                     hit_object->m_transform.transform_normal(mesh->m_normals[hit.primitive_id * 3 + 1]),
                                     hit_object->m_transform.transform_normal(mesh->m_normals[hit.primitive_id * 3 + 2]),
                             };
-                            const glm::vec3 normal = n[0] * hit.bary.x + n[1] * hit.bary.y + n[2] * (1 - hit.bary.x - hit.bary.y);
-                        
+                            glm::vec3 normal = n[0] * hit.bary.x + n[1] * hit.bary.y + n[2] * (1 - hit.bary.x - hit.bary.y);
+                            normal = glm::normalize(normal);
+                            
                             image(x, y) = normal * 0.5f + 0.5f;
                         }
                     }

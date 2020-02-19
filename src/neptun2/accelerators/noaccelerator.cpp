@@ -54,7 +54,6 @@ void NoAccelerator::intersect1(RayHit& ray_hit) const
     else
     {
         hit.geometry_id = INVALID_GEOMETRY_ID;
-        hit.primitive_id = INVALID_PRIMITIVE_ID;
     }
 }
 

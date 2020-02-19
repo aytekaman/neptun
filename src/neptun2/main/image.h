@@ -24,7 +24,7 @@ public:
     glm::vec3* ptr();
 
     bool save_as_png(const char* fname, bool normalize = false);
-
+    bool save_as_ppm(const char* fname, bool normalize = false);
 private:
     glm::vec3*	 m_data;
     glm::u64vec2 m_resolution;

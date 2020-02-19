@@ -7,6 +7,7 @@ bool BvhEmbree::build(const Triangle* primitives, size_t primitive_count)
 {
     RTCDevice rtc_device = rtcNewDevice("");
     m_rtc_scene = rtcNewScene(rtc_device);
+    rtcSetSceneFlags(m_rtc_scene, RTC_SCENE_FLAG_ROBUST);
 
     RTCGeometry mesh = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
     glm::vec3* vertices = (glm::vec3*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(glm::vec3), primitive_count * 3);
@@ -36,9 +37,9 @@ bool BvhEmbree::build(const Triangle* primitives, size_t primitive_count)
 
     struct Tri
     {
-        int v0;
-        int v1;
-        int v2;
+        unsigned int v0;
+        unsigned int v1;
+        unsigned int v2;
     };
 
     Tri* triangles = (Tri*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Tri), primitive_count);

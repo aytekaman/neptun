@@ -5,6 +5,7 @@
 #include "stb/stb_image_write.h"
 
 #include <memory>
+#include <fstream>
 #include <iostream>
 
 namespace neptun
@@ -99,7 +100,7 @@ bool Image::save_as_png(const char* fname, bool normalize)
     {
         for (size_t x = 0; x < m_resolution.x; ++x)
         {
-            pixels[index] = glm::u8vec3(glm::clamp(m_data[index] / max_color, { 0 }, { 1 }) * 255.f);
+            pixels[index] = glm::u8vec3(glm::clamp((m_data[index] / max_color) * 255.f, { 0.f }, { 255.f }));
             ++index;
         }
     }
@@ -107,6 +108,44 @@ bool Image::save_as_png(const char* fname, bool normalize)
     const int success = stbi_write_png(fname, m_resolution.x, m_resolution.y, 3, pixels.get(), 3 * m_resolution.x);
 
     return success != 0;
+}
+
+bool Image::save_as_ppm(const char* fname, bool normalize)
+{
+    glm::vec3 max_color(1.f);
+    if (normalize)
+    {
+        for (size_t i = 0; i < m_resolution.x * m_resolution.y; ++i)
+        {
+            max_color = glm::max(m_data[i], max_color);
+        }
+    }
+
+    std::ofstream ofs(fname);
+
+    if (ofs.is_open() == false)
+        return false;
+
+    constexpr size_t ppm_max_value = 65535;
+
+    ofs << "P3\n" << m_resolution.x << " " << m_resolution.y << "\n" << ppm_max_value << "\n";
+
+    size_t index = 0;
+    for (size_t y = 0; y < m_resolution.y; ++y)
+    {
+        for (size_t x = 0; x < m_resolution.x; ++x)
+        {
+            const glm::vec3 scaled_color = (m_data[index] / max_color) * float(ppm_max_value);
+            const glm::u64vec3 color = glm::u64vec3(glm::clamp(scaled_color, { 0.f }, { float(ppm_max_value) }));
+            
+            ofs << color.x << " " << color.y << " " << color.z << " ";
+            
+            ++index;
+        }
+        ofs << "\n";
+    }
+
+    return true;
 }
 
 } // end of namespace neptun

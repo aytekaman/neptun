@@ -85,6 +85,8 @@ set (neptun2_sources
     src/neptun2/accelerators/bvh_embree.cpp
     src/neptun2/accelerators/bvh_pbrt.cpp
     src/neptun2/accelerators/bvh_pbrt.h
+    src/neptun2/accelerators/kd_tree.cpp
+    src/neptun2/accelerators/kd_tree.h
     src/neptun2/accelerators/noaccelerator.cpp
     src/neptun2/accelerators/noaccelerator.h
     src/neptun2/accelerators/ray.h
