@@ -53,7 +53,7 @@ public:
         arg.ideal_edge_length_rel = params.ideal_edge_length;
         arg.max_its = params.max_passes;
         arg.is_quiet = true;
-        //floatTetWild::tetrahedralization(sf_mesh, arg, VO, TO);
+        floatTetWild::tetrahedralization(sf_mesh, arg, VO, TO);
         //tetwild::tetrahedralization(VI, FI, VO, TO, AO, arg);
         out.constrained_face_count = 0;
         parse_tetwild(out.points, out.tets, out.constrained_face_count, out.air_region_id);
