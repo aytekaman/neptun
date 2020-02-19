@@ -61,6 +61,10 @@ void CastIntegrator::render(const Scene& scene, Image& image, const RenderingMod
 
                             const SceneObject* const hit_object = scene.m_scene_objects[hit.geometry_id].get();
 
+                            glm::vec3 surface_diff(1.f);
+                            if (hit_object->m_material)
+                                surface_diff = hit_object->m_material->m_diffuse;
+
                             const glm::vec3 p[3] = {
                                 hit_object->m_mesh->m_vertices[hit.primitive_id * 3],
                                 hit_object->m_mesh->m_vertices[hit.primitive_id * 3 + 1],
@@ -80,7 +84,7 @@ void CastIntegrator::render(const Scene& scene, Image& image, const RenderingMod
                             {
                                 glm::vec3 to_light = glm::normalize(light.m_position - position);
                                 float diffuse = glm::clamp(glm::dot(normal, to_light), 0.0f, 1.0f);
-                                radiance += light.m_color * diffuse * light.m_intensity;
+                                radiance += surface_diff * light.m_color * diffuse * light.m_intensity;
                             }
                         }
 
@@ -88,7 +92,7 @@ void CastIntegrator::render(const Scene& scene, Image& image, const RenderingMod
                     }
                     else if (rendering_mode == RenderingMode::DEPTH)
                     {
-                        float depth = 30.f; // Max depth
+                        float depth = 50.f * glm::sqrt(3); // Max depth
 
                         if (rayhit.hit.geometry_id != INVALID_GEOMETRY_ID)
                         {

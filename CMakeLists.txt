@@ -83,6 +83,8 @@ set (neptun2_sources
     src/neptun2/accelerators/accelerator.h
     src/neptun2/accelerators/bvh_embree.h
     src/neptun2/accelerators/bvh_embree.cpp
+    src/neptun2/accelerators/bvh_pbrt.cpp
+    src/neptun2/accelerators/bvh_pbrt.h
     src/neptun2/accelerators/noaccelerator.cpp
     src/neptun2/accelerators/noaccelerator.h
     src/neptun2/accelerators/ray.h
@@ -95,14 +97,18 @@ set (neptun2_sources
     src/neptun2/main/scene.h
     src/neptun2/main/scene_object.cpp
     src/neptun2/main/scene_object.h
-    src/neptun2/math/transform.cpp
-    src/neptun2/math/transform.h
     src/neptun2/main/mesh.cpp
     src/neptun2/main/mesh.h
     src/neptun2/main/material.h
     src/neptun2/main/sceneio.cpp
     src/neptun2/main/sceneio.h
+    src/neptun2/math/bounds.cpp
+    src/neptun2/math/bounds.h
+    src/neptun2/math/transform.cpp
+    src/neptun2/math/transform.h
     src/neptun2/util/filesystem.h
+    src/neptun2/util/memory.cpp
+    src/neptun2/util/memory.h
     src/neptun2/util/parallel.h
     src/neptun2/util/timer.h
 )

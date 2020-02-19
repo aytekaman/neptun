@@ -198,7 +198,7 @@ bool SceneParser::parse_scene_object(const tinyxml2::XMLElement* element, Scene&
     if (!parse_attribute_optional(element, "position", "%f %f %f", "0 0 0", &obj->m_pos.x, &obj->m_pos.y, &obj->m_pos.z))
         return false;
 
-    if (!parse_attribute_optional(element, "rot", "%f %f %f", "0 0 0", &obj->m_rot.x, &obj->m_rot.y, &obj->m_rot.z))
+    if (!parse_attribute_optional(element, "rotation", "%f %f %f", "0 0 0", &obj->m_rot.x, &obj->m_rot.y, &obj->m_rot.z))
         return false;
 
     if (!parse_attribute_optional(element, "scale", "%f %f %f", "1 1 1", &obj->m_scale.x, &obj->m_scale.y, &obj->m_scale.z))

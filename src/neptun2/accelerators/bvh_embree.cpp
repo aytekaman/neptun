@@ -27,13 +27,11 @@ bool BvhEmbree::build(const Triangle* primitives, size_t primitive_count)
         vertices[3 * i + 2].z = primitives[i].v[2].z;
     }
     
-    m_geometry_ids.resize(primitive_count);
-    m_primitive_ids.resize(primitive_count);
+    m_primitives.resize(primitive_count);
 
     for (size_t i = 0; i < primitive_count; ++i)
     {
-        m_geometry_ids[i] = primitives[i].geometry_id;
-        m_primitive_ids[i] = primitives[i].primitive_id;
+        m_primitives[i] = primitives[i];
     }
 
     struct Tri
@@ -87,8 +85,9 @@ void BvhEmbree::intersect1(RayHit& ray_hit) const
 
     if (rtc_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
     {
-        hit.geometry_id = m_geometry_ids[rtc_hit.hit.geomID];
-        hit.primitive_id = m_primitive_ids[rtc_hit.hit.primID];
+        const Triangle& t = m_primitives[rtc_hit.hit.primID];
+        hit.geometry_id = t.geometry_id;
+        hit.primitive_id = t.primitive_id;
 
         hit.bary.x = 1 - rtc_hit.hit.u - rtc_hit.hit.v;
         hit.bary.y = rtc_hit.hit.u;

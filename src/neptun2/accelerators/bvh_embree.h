@@ -24,8 +24,7 @@ public:
 
 private:
     RTCScene m_rtc_scene;
-    std::vector<size_t> m_geometry_ids;
-    std::vector<size_t> m_primitive_ids;
+    std::vector<Triangle> m_primitives;
 };
 
 } // end of namespace neptun
