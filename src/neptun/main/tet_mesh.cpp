@@ -2875,12 +2875,17 @@ bool TetMesh80::intersect_stats(const Ray & ray, const SourceTet & tet, Intersec
     //    m_vertices[idVertex + 2],
     //    m_vertices[idVertex + 3]).side(plRay)) < 0.f;
 
-    idEntryFace = (m_vertices[idVertex + 2][0] * plRay.m_Pi[3] +
-                   m_vertices[idVertex + 2][1] * plRay.m_Pi[4] +
-                   m_vertices[idVertex + 2][2] * plRay.m_Pi[5] +
-                   m_vertices[idVertex + 3][0] * plRay.m_Pi[0] +
-                   m_vertices[idVertex + 3][1] * plRay.m_Pi[1] +
-                   m_vertices[idVertex + 3][2] * plRay.m_Pi[2]) < 0.0f;
+    glm::vec3 a(m_vertices[idVertex + 2].x, m_vertices[idVertex + 2].y, m_vertices[idVertex + 2].z);
+    glm::vec3 b(m_vertices[idVertex + 3].x, m_vertices[idVertex + 3].y, m_vertices[idVertex + 3].z);
+    glm::vec3 dir = glm::normalize(b - a);
+    glm::vec3 vv = glm::cross(a, b);
+
+    idEntryFace = (dir[0] * plRay.m_Pi[3] +
+        dir[1] * plRay.m_Pi[4] +
+        dir[2] * plRay.m_Pi[5] +
+        vv[0] * plRay.m_Pi[0] +
+        vv[1] * plRay.m_Pi[1] +
+        vv[2] * plRay.m_Pi[2]) < 0.0f;
 
 
     //==============================================================
