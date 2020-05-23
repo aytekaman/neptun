@@ -4,8 +4,6 @@
 
 //========= Device data =========
 Ray* d_rays;
-IntersectionData* d_intersectdata;
-
 unsigned int* d_face_indices;
 
 glm::vec3* d_points;
@@ -1400,13 +1398,11 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 	if (old_size != rays_size)
 	{
 		check_cuda(cudaFree(d_rays));
-		check_cuda(cudaFree(d_intersectdata));
 
 		check_cuda(cudaFree(d_face_indices));
 
 		check_cuda(cudaFree(d_res));
 		check_cuda(cudaMalloc(&d_rays, rays_size * sizeof(Ray)));
-		check_cuda(cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData)));
 
 		check_cuda(cudaMalloc(&d_face_indices, rays_size * sizeof(unsigned int)));
 

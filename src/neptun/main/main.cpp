@@ -900,6 +900,7 @@ void cpu_gpu_comparison()
 				tetsctp_cpu_render_t = glm::min(ray_tracer.last_render_time, tetsctp_cpu_render_t);
 			}
 		}
+		free_gpu();
 	}
 
     //non_simd_fps /= N;
@@ -1070,6 +1071,7 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
 					break;
 			}
         }
+		free_gpu();
     }
 	std::cout << "---------------------" << scene_name << "---------------------" << std::endl;
     std::cout << "-------Tet32 :-------" << std::endl << "FPS: " << tet32_fps << std::endl 
@@ -1179,6 +1181,7 @@ void cuda_benchmark(int tetmesh_type = 2)
 		ray_tracer.method = tetmesh_type < 3 ? Method::Default_gpu : (tetmesh_type  == 3 ? Method::ScTP_gpu : Method::Tet96_gpu);
 		ray_tracer.render_gpu(scene);
 	}
+	free_gpu();
 }
 
 void simd_comparison()
