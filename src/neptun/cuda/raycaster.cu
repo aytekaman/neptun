@@ -1230,8 +1230,10 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 	const size_t size_tets = num_int2_d_tets * sizeof(int2);
 	const size_t size_vertices = num_float4_d_vertices * sizeof(float4);
 
+	check_cuda(cudaFree(d_tet96s));
 	check_cuda(cudaMalloc(&d_tet96s, size_tets));
 	check_cuda(cudaMemcpy(d_tet96s, h_tets, size_tets, cudaMemcpyHostToDevice));
+	check_cuda(cudaFree(d_vertices));
 	check_cuda(cudaMalloc(&d_vertices, size_vertices));
 	check_cuda(cudaMemcpy(d_vertices, h_vertices, size_vertices, cudaMemcpyHostToDevice));
 
@@ -1276,6 +1278,17 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 	printf("TetMesh96 size: %d MB\n",
 		(size_tets + size_vertices + tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace)) / (1024 * 1024));
 }
+
+//-------------------------------- Methods to free GPU memory -------------------------------------
+void free_gpu()
+{
+	check_cuda(cudaFree(d_tet32s));
+	check_cuda(cudaFree(d_tet20s));
+	check_cuda(cudaFree(d_tet16s));
+	check_cuda(cudaFree(d_tetSctps));
+	check_cuda(cudaFree(d_tet96s));
+}
+
 
 //================================= Traversal of rays initialized at CPU =================================
 /*void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output)
