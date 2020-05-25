@@ -41,6 +41,7 @@ KdTree::KdTree(Scene& scene,
     emptyBonus(emptyBonus_)
     {
         Timer timer;
+        timer.start();
 
         scene_ptr = &scene;
 
