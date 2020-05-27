@@ -117,8 +117,9 @@ void Scene::load_from_file(const std::string& scene_file_path)
 
 void Scene::save_to_file(const std::string & file_name)
 {
-    std::string inputfile = AssetImporter::assets_folder_path;
+    std::string inputfile = ".\\..\\scenes\\";
     inputfile.append(file_name);
+
     std::ofstream o(inputfile);
 
     o << "MyScene" << std::endl;
