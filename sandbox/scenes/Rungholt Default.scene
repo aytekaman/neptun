@@ -1,0 +1,31 @@
+rungholt.tetmesh
+0.41 0.4608 235.376
+-8.85859 -1.07662 18.8963
+4
+Light
+160.601 79.1822 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+torus_input
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+rungholt.obj
+Dummy
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#

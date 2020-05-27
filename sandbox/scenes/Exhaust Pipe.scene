@@ -1,0 +1,23 @@
+exhaust_pipe.tetmesh
+0.52 1.2308 20
+0 0 0
+2
+Light
+6 10 8
+0 0 0
+1 1 1
+#Light
+1 1 1
+1
+#Material
+1 1 1
+#
+torus_input
+0 0 0
+0 0 0
+1 1 1
+#
+#Material
+1 1 1
+#Mesh
+exhaust_pipe.obj
