@@ -659,27 +659,27 @@ void Editor::DrawTetGen()
         if (current_tet_mesh_type == 0)
         {
             scene->tet_mesh = new TetMesh32(*scene);
-            Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            Logger::Log("TetMesh32 size: %f MB", scene->tet_mesh->get_size_in_bytes() / (1024. * 1024));
         }
         else if (current_tet_mesh_type == 1)
         {
             scene->tet_mesh = new TetMesh20(*scene);
-            Logger::Log("TetMesh20 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            Logger::Log("TetMesh20 size: %f MB", scene->tet_mesh->get_size_in_bytes() / (1024. * 1024));
         }
         else if (current_tet_mesh_type == 2)
         {
             scene->tet_mesh = new TetMesh16(*scene);
-            Logger::Log("TetMesh16 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            Logger::Log("TetMesh16 size: %f MB", scene->tet_mesh->get_size_in_bytes() / (1024. * 1024));
         }
         else if (current_tet_mesh_type == 3)
         {
             scene->tet_mesh = new TetMesh80(*scene);
-            Logger::Log("TetMesh80 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            Logger::Log("TetMesh80 size: %f MB", scene->tet_mesh->get_size_in_bytes() / (1024. * 1024));
         }
         else if (current_tet_mesh_type == 4)
         {
             scene->tet_mesh = new TetMeshSctp(*scene);
-            Logger::Log("TetMeshSctp size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
+            Logger::Log("TetMeshSctp size: %f MB", scene->tet_mesh->get_size_in_bytes() / (1024. * 1024));
         }
 
         //Logger::Log("TetMesh32 size: %d MB", scene->tet_mesh->get_size_in_bytes() / (1024 * 1024));
