@@ -2781,11 +2781,38 @@ bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, Intersect
     glm::vec3 vv = glm::cross(a, b);
 
     idEntryFace = (dir[0] * plRay.m_Pi[3] +
-                   dir[1] * plRay.m_Pi[4] +
-                   dir[2] * plRay.m_Pi[5] +
-                   vv[0] * plRay.m_Pi[0] +
-                   vv[1] * plRay.m_Pi[1] +
-                   vv[2] * plRay.m_Pi[2]  ) < 0.0f;
+        dir[1] * plRay.m_Pi[4] +
+        dir[2] * plRay.m_Pi[5] +
+        vv[0] * plRay.m_Pi[0] +
+        vv[1] * plRay.m_Pi[1] +
+        vv[2] * plRay.m_Pi[2]) < 0.0f;
+
+    idEntryFace = 0;
+
+    const glm::vec3 p0 = glm::vec3(m_vertices[idVertex + 0]) - ray.origin;
+    const glm::vec3 p1 = glm::vec3(m_vertices[idVertex + 1]) - ray.origin;
+    const glm::vec3 p2 = glm::vec3(m_vertices[idVertex + 2]) - ray.origin;
+    const glm::vec3 p3 = glm::vec3(m_vertices[idVertex + 3]) - ray.origin;
+
+    const float QAB = glm::dot(ray.dir, glm::cross(p0, p1)); // A B
+    const float QBC = glm::dot(ray.dir, glm::cross(p1, p2)); // B C
+    const float QAC = glm::dot(ray.dir, glm::cross(p0, p2)); // A C
+    const float QAD = glm::dot(ray.dir, glm::cross(p0, p3)); // A D
+    const float QBD = glm::dot(ray.dir, glm::cross(p1, p3)); // B D
+    const float QCD = glm::dot(ray.dir, glm::cross(p2, p3)); // C D
+
+    int face_idx = 0;
+
+    if (QAB <= 0.0f && QAC >= 0.0f && QBC <= 0.0f)
+        idEntryFace = 3;
+    else if (QAB >= 0.0f && QAD <= 0.0f && QBD >= 0.0f)
+        idEntryFace = 2;
+    else if (QAD >= 0.0f && QAC <= 0.0f && QCD <= 0.0f)
+        idEntryFace = 1;
+    else if (QBC >= 0.0f && QBD <= 0.0f && QCD >= 0.0f)
+        idEntryFace = 0;
+    else
+        return false;
 
 
     //==============================================================
@@ -2908,6 +2935,33 @@ bool TetMesh80::intersect_stats(const Ray & ray, const SourceTet & tet, Intersec
         vv[0] * plRay.m_Pi[0] +
         vv[1] * plRay.m_Pi[1] +
         vv[2] * plRay.m_Pi[2]) < 0.0f;
+
+    idEntryFace = 0;
+
+    const glm::vec3 p0 = glm::vec3(m_vertices[idVertex + 0]) - ray.origin;
+    const glm::vec3 p1 = glm::vec3(m_vertices[idVertex + 1]) - ray.origin;
+    const glm::vec3 p2 = glm::vec3(m_vertices[idVertex + 2]) - ray.origin;
+    const glm::vec3 p3 = glm::vec3(m_vertices[idVertex + 3]) - ray.origin;
+
+    const float QAB = glm::dot(ray.dir, glm::cross(p0, p1)); // A B
+    const float QBC = glm::dot(ray.dir, glm::cross(p1, p2)); // B C
+    const float QAC = glm::dot(ray.dir, glm::cross(p0, p2)); // A C
+    const float QAD = glm::dot(ray.dir, glm::cross(p0, p3)); // A D
+    const float QBD = glm::dot(ray.dir, glm::cross(p1, p3)); // B D
+    const float QCD = glm::dot(ray.dir, glm::cross(p2, p3)); // C D
+
+    int face_idx = 0;
+
+    if (QAB <= 0.0f && QAC >= 0.0f && QBC <= 0.0f)
+        idEntryFace = 3;
+    else if (QAB >= 0.0f && QAD <= 0.0f && QBD >= 0.0f)
+        idEntryFace = 2;
+    else if (QAD >= 0.0f && QAC <= 0.0f && QCD <= 0.0f)
+        idEntryFace = 1;
+    else if (QBC >= 0.0f && QBD <= 0.0f && QCD >= 0.0f)
+        idEntryFace = 0;
+    else
+        return false;
 
 
     //==============================================================
