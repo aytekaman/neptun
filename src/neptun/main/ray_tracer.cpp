@@ -1059,6 +1059,12 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     end = std::chrono::steady_clock::now();
     last_render_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / 1e3f;
     Stats::add_render_time(last_render_time);
+
+    static int frame_count = 0;
+    frame_count++;
+
+    if(frame_count == 128)
+        std::cout << Stats::gpu_best_kernel_time << std::endl;
     //--------------------------------------------
 
     avg_test_count = 0;

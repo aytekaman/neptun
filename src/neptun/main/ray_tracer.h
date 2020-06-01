@@ -147,7 +147,7 @@ public:
     Matrix<int> stats;
 
     std::atomic<int> job_index{ 0 };
-    glm::ivec2 m_resolution = glm::ivec2(640, 480);
+    glm::ivec2 m_resolution = glm::ivec2(1920, 1440);
     glm::ivec2 m_old_res = glm::ivec2();
     IntersectionData* m_intersect_data;
 

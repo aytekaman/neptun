@@ -1,5 +1,11 @@
 #include "stats.h"
 
+void Stats::add_gpu_kernel_time(float gpu_render_time)
+{
+    if (gpu_render_time < gpu_best_kernel_time)
+        gpu_best_kernel_time = gpu_render_time;
+}
+
 void Stats::add_render_time(float render_time)
 {
     last_render_time = render_time;
@@ -33,6 +39,7 @@ float Stats::last_build_time;
 float Stats::last_render_time;
 
 float Stats::best_render_time = 1024.0f;
+float Stats::gpu_best_kernel_time = 1024.0f;
 
 float Stats::gpu_kernel_time;
 float Stats::gpu_copy_time;

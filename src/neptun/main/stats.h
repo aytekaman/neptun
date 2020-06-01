@@ -5,6 +5,7 @@
 class Stats
 {
 public:
+    static void  add_gpu_kernel_time(float gpu_render_time);
     static void  add_render_time(float render_time);
     static float get_avg_render_time(int frame_count);
 
@@ -17,6 +18,7 @@ public:
 
     static float ray_prep_time;
     static float gpu_copy_time;
+    static float gpu_best_kernel_time;
     static float gpu_kernel_time;
     static float gpu_copy_back_time;
     static float draw_time;
