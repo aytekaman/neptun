@@ -865,7 +865,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 		}
 		else
 		{
-			//output[i].hit = false;
+			face_indices[i] = -1;
 			return;
 		}
 
@@ -954,6 +954,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 
 		int index;
 
+#pragma unroll
 		for (int j = 0; j < 4; j++)
 		{
 			id[j] = ray.source_tet.v[j];
@@ -989,11 +990,12 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 		}
 		else
 		{
-			//output[i].hit = false;
+			//output[outputindex].hit = false;
 			return;
 		}
 
 		int nx = ray.source_tet.idx;
+		int idx, idx2;
 
 		while (index >= 0)
 		{
@@ -1003,19 +1005,19 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 			p[3].x = glm::dot(right, newPoint);
 			p[3].y = glm::dot(up, newPoint);
 
-			const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
+			idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
-			if (idx != 0)
-				nx ^= tets[index].n[idx - 1];
+			if (idx != 3)
+				nx ^= tets[index].n[idx];
 
-			if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
+			if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here? 
 			{
 				if (p[3].x * p[2].y >= p[3].y * p[2].x)
 				{
 					const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
 
-					if (idx2 != 0)
-						nx ^= tets[index].n[idx2 - 1];
+					if (idx2 != 3)
+						nx ^= tets[index].n[idx2];
 
 					id[1] = id[3];
 					p[1] = p[3];
@@ -1024,8 +1026,8 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 				{
 					const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
-					if (idx2 != 0)
-						nx ^= tets[index].n[idx2 - 1];
+					if (idx2 != 3)
+						nx ^= tets[index].n[idx2];
 
 					id[0] = id[3];
 					p[0] = p[3];
@@ -1035,8 +1037,8 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 			{
 				const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
 
-				if (idx2 != 0)
-					nx ^= tets[index].n[idx2 - 1];
+				if (idx2 != 3)
+					nx ^= tets[index].n[idx2];
 
 				id[2] = id[3];
 				p[2] = p[3];
@@ -1045,8 +1047,8 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 			{
 				const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
 
-				if (idx2 != 0)
-					nx ^= tets[index].n[idx2 - 1];
+				if (idx2 != 3)
+					nx ^= tets[index].n[idx2];
 
 				id[0] = id[3];
 				p[0] = p[3];
@@ -1054,7 +1056,6 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 
 			swap(nx, index);
 		}
-
 		face_indices[i] = index;
 	}
 }

@@ -588,38 +588,8 @@ void RayTracer::draw_intersectiondata(Scene& scene, int thread_idx, std::vector<
 						method != Method::Tet96_gpu ? (m_gpu_face_indices[rays_index + idx * tile_size * tile_size] & 0x7FFFFFFF) :
 						(m_gpu_face_indices[rays_index + idx * tile_size * tile_size]) - 1;
 
-					color = glm::vec3();
-
-					//---------------Generate Ray-------------
-					const glm::vec3 camTarget = scene.camTarget;
-					glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
-
-					dir = dir * glm::cos(scene.camOrbitX);
-					dir.y = glm::sin(scene.camOrbitX);
-
-					glm::vec3 cam_pos = camTarget + dir * scene.camDist;
-
-					const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
-					const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
-					const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
-
-					const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
-
-					const float aspect = (float)m_resolution.x / m_resolution.y;
-					const float scale_y = glm::tan(glm::pi<float>() / 8);
-
-					const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
-					const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)m_resolution.y;
-
-					const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
-					const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
-					const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)m_resolution.y;
-
-					glm::ivec2 pixel_coords = glm::ivec2(idx % (m_resolution.x), idx / (m_resolution.x));
-
-					Ray ray;
-					ray.origin = cam_pos;
-					ray.dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray.origin);
+					//---------------Get Ray-------------
+					Ray ray = m_rays[rays_index + idx * tile_size * tile_size];
 
 					//calculate face data
 					const Face& face = method != Method::Tet96_gpu ?
@@ -664,34 +634,12 @@ void RayTracer::draw_intersectiondata(Scene& scene, int thread_idx, std::vector<
 
                 glm::ivec2 p_idx(i, j);
 
-                /*if (is_diagnostic)
-                {
-                    if (scene.tet_mesh)
-                    {
-                        total_L1_hit_count += diagnostic_data.L1_hit_count;
-
-                        stats.set(p_idx, diagnostic_data.visited_node_count);
-
-                        float avg_locality = diagnostic_data.total_tet_distance / diagnostic_data.visited_node_count;
-                        float scaled_avg_locality = (avg_locality / scene.tet_mesh->m_tets.size()) * 2.0f;
-                        glm::vec3 avg_locality_color = Color::jet(scaled_avg_locality);
-                    }
-
-                    float scaled_visited_tet_count = diagnostic_data.visited_node_count / 256.0f;
-                    glm::vec3 visited_tet_count_color = Color::jet(scaled_visited_tet_count);
-                    m_visited_tets_image->set_pixel(i, j, visited_tet_count_color * 255.0f);
-
-                    total_test_count += diagnostic_data.visited_node_count;
-                }*/
-
                 m_rendered_image->set_pixel(p_idx.x, p_idx.y, glm::vec3(color.z, color.y, color.x) * 255.0f);
                 rays_index++;
             }
         }
         idx = job_index++;
     }
-    /*traversed_tetra_count[thread_idx] = total_test_count / ((m_resolution.x * m_resolution.y) / (float)thread_count);
-    L1_hit_count[thread_idx] = total_L1_hit_count;*/
 }
 
 void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<LightInfo> lightInfos)
@@ -1021,7 +969,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             else if (dynamic_cast<TetMesh16 *>(scene.tet_mesh) != nullptr)
                 tetmesh_type = 2;
 
-            //traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, m_intersect_data);
+            traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, tetmesh_type, m_gpu_face_indices);
 
             threads = new std::thread*[thread_count];
             job_index = thread_count;
