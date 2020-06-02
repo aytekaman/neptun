@@ -4,7 +4,7 @@
 
 //========= Device data =========
 Ray* d_rays;
-unsigned int* d_face_indices;
+int* d_face_indices;
 
 glm::vec3* d_points;
 TetMesh32::Tet32* d_tet32s;
@@ -181,7 +181,7 @@ inline int init_ray(Scene& scene, glm::ivec2& resolution, int tile_size, int idx
 //----------------------------------------- For TetMeshScTP -------------------------------------------------
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-	glm::vec3* points, TetMeshSctp::TetSctp* tets, unsigned int* face_indices)
+	glm::vec3* points, TetMeshSctp::TetSctp* tets, int* face_indices)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -314,7 +314,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-	glm::vec3* points, TetMesh32::Tet32* tets, unsigned int* face_indices)
+	glm::vec3* points, TetMesh32::Tet32* tets, int* face_indices)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -408,7 +408,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-	glm::vec3* points, TetMesh20::Tet20* tets, unsigned int* face_indices)
+	glm::vec3* points, TetMesh20::Tet20* tets, int* face_indices)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -526,7 +526,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-	glm::vec3* points, TetMesh16::Tet16* tets, unsigned int* face_indices)
+	glm::vec3* points, TetMesh16::Tet16* tets, int* face_indices)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -659,7 +659,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 __global__
 void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
 	/*float4* vertices, int2* tets,*/ cudaTextureObject_t vertices, cudaTextureObject_t tets,  /*ConstrainedFace* cons_faces,
-	Face* faces,*/ unsigned int* face_indices)
+	Face* faces,*/ int* face_indices)
 {
 	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -729,7 +729,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 __global__
 void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* points, TetMesh32::Tet32* tets,
-	ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
+	/*ConstrainedFace* cons_faces, Face* faces,*/ int* face_indices)
 {
 	int i = offset + blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < rays_size)
@@ -770,7 +770,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 		}
 		else
 		{
-			output[i].hit = false;
+			//output[i].hit = false;
 			return;
 		}
 
@@ -812,33 +812,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 				index = tets[index].n[3];
 		}
 
-		if (index != -1)
-		{
-			index = (index & 0x7FFFFFFF);
-			const Face& face = faces[cons_faces[index].face_idx];
-
-			const glm::vec3* v = face.vertices;
-			const glm::vec3* n = face.normals;
-			const glm::vec2* t = face.uvs;
-
-			const glm::vec3 e1 = v[1] - v[0];
-			const glm::vec3 e2 = v[2] - v[0];
-			const glm::vec3 s = ray.origin - v[0];
-			const glm::vec3 q = glm::cross(s, e1);
-			const glm::vec3 p = glm::cross(ray.dir, e2);
-			const float f = 1.0f / glm::dot(e1, p);
-			const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
-
-			output[i].position = ray.origin + f * glm::dot(e2, q) * ray.dir;//***
-			output[i].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];//***
-			output[i].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0]; //***
-			output[i].tet_idx = cons_faces[index].tet_idx;
-			output[i].neighbor_tet_idx = cons_faces[index].other_tet_idx;
-
-			output[i].hit = true;
-		}
-		else
-			output[i].hit = false;
+		face_indices[i] = index;
 	}
 }
 
@@ -846,7 +820,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 
 __global__
 void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* points, TetMesh20::Tet20* tets,
-	ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
+	/*ConstrainedFace* cons_faces, Face* faces,*/ int* face_indices)
 {
 	int i = offset + blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < rays_size)
@@ -891,7 +865,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 		}
 		else
 		{
-			output[i].hit = false;
+			//output[i].hit = false;
 			return;
 		}
 
@@ -953,32 +927,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 			//index = m_tet20s[index].n[idx];
 		}
 
-		if (index != -1)
-		{
-			index = (index & 0x7FFFFFFF);
-			const Face& face = faces[cons_faces[index].face_idx];
-
-			const glm::vec3* v = face.vertices;
-			const glm::vec3* n = face.normals;
-			const glm::vec2* t = face.uvs;
-
-			const glm::vec3 e1 = v[1] - v[0];
-			const glm::vec3 e2 = v[2] - v[0];
-			const glm::vec3 s = ray.origin - v[0];
-			const glm::vec3 q = glm::cross(s, e1);
-			const glm::vec3 p = glm::cross(ray.dir, e2);
-			const float f = 1.0f / glm::dot(e1, p);
-			const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
-			output[i].position = ray.origin + f * glm::dot(e2, q) * ray.dir;
-			output[i].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
-			output[i].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
-			output[i].tet_idx = cons_faces[index].tet_idx;
-			output[i].neighbor_tet_idx = cons_faces[index].other_tet_idx;
-
-			output[i].hit = true;
-		}
-		else
-			output[i].hit = false;
+		face_indices[i] = index;
 	}
 }
 
@@ -986,7 +935,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 
 __global__
 void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* points, TetMesh16::Tet16* tets,
-	ConstrainedFace* cons_faces, Face* faces, IntersectionData* output)
+	/*ConstrainedFace* cons_faces, Face* faces,*/ int* face_indices)
 {
 	int i = offset + blockIdx.x * blockDim.x + threadIdx.x;
 	if (i < rays_size)
@@ -1040,7 +989,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 		}
 		else
 		{
-			output[i].hit = false;
+			//output[i].hit = false;
 			return;
 		}
 
@@ -1106,32 +1055,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 			swap(nx, index);
 		}
 
-		if (index != -1)
-		{
-			index = (index & 0x7FFFFFFF);
-			const Face& face = faces[cons_faces[index].face_idx];
-
-			const glm::vec3* v = face.vertices;
-			const glm::vec3* n = face.normals;
-			const glm::vec2* t = face.uvs;
-
-			const glm::vec3 e1 = v[1] - v[0];
-			const glm::vec3 e2 = v[2] - v[0];
-			const glm::vec3 s = ray.origin - v[0];
-			const glm::vec3 q = glm::cross(s, e1);
-			const glm::vec3 p = glm::cross(ray.dir, e2);
-			const float f = 1.0f / glm::dot(e1, p);
-			const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
-			output[i].position = ray.origin + f * glm::dot(e2, q) * ray.dir;
-			output[i].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
-			output[i].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
-			output[i].tet_idx = cons_faces[index].tet_idx;
-			output[i].neighbor_tet_idx = cons_faces[index].other_tet_idx;
-
-			output[i].hit = true;
-		}
-		else
-			output[i].hit = false;
+		face_indices[i] = index;
 	}
 }
 
@@ -1289,15 +1213,21 @@ void free_gpu()
 
 
 //================================= Traversal of rays initialized at CPU =================================
-/*void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, IntersectionData* output)
+void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_type, int* face_indices)
 {
 	// Allocate space for device copy of data
 	if (old_size != rays_size)
 	{
 		check_cuda(cudaFree(d_rays));
-		check_cuda(cudaFree(d_intersectdata));
+
+		check_cuda(cudaFree(d_face_indices));
+
+		check_cuda(cudaFree(d_res));
 		check_cuda(cudaMalloc(&d_rays, rays_size * sizeof(Ray)));
-		check_cuda(cudaMalloc(&d_intersectdata, rays_size * sizeof(IntersectionData)));
+
+		check_cuda(cudaMalloc(&d_face_indices, rays_size * sizeof( int)));
+
+		check_cuda(cudaMalloc(&d_res, sizeof(glm::ivec2)));
 		old_size = rays_size;
 	}
 
@@ -1319,15 +1249,15 @@ void free_gpu()
 	if (tet_mesh_type == 0)
 	{
 		//raycast_kernel <<< stream_size / t, t,  0, streams[i]>>> (d_rays, rays_size, offset, d_points, d_tet32s, d_cons_faces, d_faces, d_intersectdata);
-		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tet32s, d_cons_faces, d_faces, d_intersectdata);
+		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tet32s,/* d_cons_faces, d_faces,*/ d_face_indices);
 	}
 	else if (tet_mesh_type == 1)
 	{
-		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tet20s, d_cons_faces, d_faces, d_intersectdata);
+		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tet20s,/* d_cons_faces, d_faces,*/ d_face_indices);
 	}
 	else if (tet_mesh_type == 2)
 	{
-		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tet16s, d_cons_faces, d_faces, d_intersectdata);
+		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tet16s,/* d_cons_faces, d_faces,*/ d_face_indices);
 	}
 	check_cuda(cudaDeviceSynchronize());
 
@@ -1336,12 +1266,12 @@ void free_gpu()
 	Stats::gpu_kernel_time = kernel_time;
 
 	start = std::chrono::steady_clock::now();
-	check_cuda(cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost));
+	check_cuda(cudaMemcpy(face_indices, d_face_indices, rays_size * sizeof(int), cudaMemcpyDeviceToHost));
 	end = std::chrono::steady_clock::now();
 	Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
 	//print_cuda_error("copyback");
 
-}*/
+}
 
 //------------------------------------- Asynch ray traversal ---------------------------------------------
 /*void traverse_rays_gpu(Ray* rays, unsigned int rays_size, int num_streams, unsigned int tet_mesh_type, int id_s, IntersectionData* output)
@@ -1391,7 +1321,7 @@ void free_gpu()
 
 //============================== Initialization and traversal of rays in GPU =========================================
 
-void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, unsigned int* face_indices/*IntersectionData* output*/)
+void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int tile_size, unsigned int tet_mesh_type, int* face_indices/*IntersectionData* output*/)
 {
 	unsigned int rays_size = resolution.x * resolution.y;
 	// Allocate space for device copy of data
@@ -1404,7 +1334,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 		check_cuda(cudaFree(d_res));
 		check_cuda(cudaMalloc(&d_rays, rays_size * sizeof(Ray)));
 
-		check_cuda(cudaMalloc(&d_face_indices, rays_size * sizeof(unsigned int)));
+		check_cuda(cudaMalloc(&d_face_indices, rays_size * sizeof(int)));
 
 		check_cuda(cudaMalloc(&d_res, sizeof(glm::ivec2)));
 		old_size = rays_size;
@@ -1474,7 +1404,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
 
 	start = std::chrono::steady_clock::now();
 	//check_cuda(cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost));
-	check_cuda(cudaMemcpy(face_indices, d_face_indices, rays_size * sizeof(unsigned int), cudaMemcpyDeviceToHost));
+	check_cuda(cudaMemcpy(face_indices, d_face_indices, rays_size * sizeof(int), cudaMemcpyDeviceToHost));
 	end = std::chrono::steady_clock::now();
 	Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
 }

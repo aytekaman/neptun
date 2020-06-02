@@ -553,7 +553,7 @@ void RayTracer::prepare_rays_gpu(Scene & scene, SourceTet source_tet, int thread
     }
 }
 
-void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lightInfos)
+void RayTracer::draw_intersectiondata(Scene& scene, int thread_idx, std::vector<LightInfo> lightInfos)
 {
 
     const int tile_count_x = (m_resolution.x + tile_size - 1) / tile_size;
@@ -579,9 +579,71 @@ void RayTracer::draw_intersectiondata(int thread_idx, std::vector<LightInfo> lig
         {
             for (int i = rect_min.x; i < rect_max.x; i++)
             {
-                glm::vec3 color;
-                if (m_intersect_data[rays_index + idx * tile_size * tile_size].hit)
-                {
+				glm::vec3 color;
+				bool hit = method != Method::Tet96_gpu ? (m_gpu_face_indices[rays_index + idx * tile_size * tile_size] != -1) :
+					(m_gpu_face_indices[rays_index + idx * tile_size * tile_size] > 0);
+				if (hit)
+				{
+					m_gpu_face_indices[rays_index + idx * tile_size * tile_size] = 
+						method != Method::Tet96_gpu ? (m_gpu_face_indices[rays_index + idx * tile_size * tile_size] & 0x7FFFFFFF) :
+						(m_gpu_face_indices[rays_index + idx * tile_size * tile_size]) - 1;
+
+					color = glm::vec3();
+
+					//---------------Generate Ray-------------
+					const glm::vec3 camTarget = scene.camTarget;
+					glm::vec3 dir = glm::vec3(glm::cos(scene.camOrbitY), 0, glm::sin(scene.camOrbitY));
+
+					dir = dir * glm::cos(scene.camOrbitX);
+					dir.y = glm::sin(scene.camOrbitX);
+
+					glm::vec3 cam_pos = camTarget + dir * scene.camDist;
+
+					const glm::vec3 cam_forward = glm::normalize(scene.camTarget - cam_pos);
+					const glm::vec3 cam_right = -glm::normalize(glm::cross(glm::vec3(0, 1, 0), cam_forward));
+					const glm::vec3 cam_down = glm::cross(cam_forward, cam_right);
+
+					const glm::vec3 cam_up = glm::cross(cam_forward, cam_right);
+
+					const float aspect = (float)m_resolution.x / m_resolution.y;
+					const float scale_y = glm::tan(glm::pi<float>() / 8);
+
+					const glm::vec3 bottom_left = cam_pos + cam_forward - cam_up * scale_y - cam_right * scale_y * aspect;
+					const glm::vec3 up_step = (cam_up * scale_y * 2.0f) / (float)m_resolution.y;
+
+					const glm::vec3 top_left = cam_pos + cam_forward - cam_down * scale_y - cam_right * scale_y * aspect;
+					const glm::vec3 right_step = (cam_right * scale_y * 2.0f * aspect) / (float)m_resolution.x;
+					const glm::vec3 down_step = (cam_down * scale_y * 2.0f) / (float)m_resolution.y;
+
+					glm::ivec2 pixel_coords = glm::ivec2(idx % (m_resolution.x), idx / (m_resolution.x));
+
+					Ray ray;
+					ray.origin = cam_pos;
+					ray.dir = glm::normalize(top_left + right_step * (float)pixel_coords.x + down_step * (float)pixel_coords.y - ray.origin);
+
+					//calculate face data
+					const Face& face = method != Method::Tet96_gpu ?
+						*(scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[rays_index + idx * tile_size * tile_size]].face) :
+						scene.tet_mesh->faces[m_gpu_face_indices[rays_index + idx * tile_size * tile_size]];
+					const glm::vec3* v = face.vertices;
+					const glm::vec3* n = face.normals;
+					const glm::vec2* t = face.uvs;
+
+					const glm::vec3 e1 = v[1] - v[0];
+					const glm::vec3 e2 = v[2] - v[0];
+					const glm::vec3 s = ray.origin - v[0];
+					const glm::vec3 q = glm::cross(s, e1);
+					const glm::vec3 p = glm::cross(ray.dir, e2);
+					const float f = 1.0f / glm::dot(e1, p);
+					const glm::vec2 bary(f * glm::dot(s, p), f * glm::dot(ray.dir, q));
+
+					m_intersect_data[rays_index + idx * tile_size * tile_size].position = ray.origin + f * glm::dot(e2, q) * ray.dir;
+					m_intersect_data[rays_index + idx * tile_size * tile_size].normal = bary.x * n[1] + bary.y * n[2] + (1 - bary.x - bary.y) * n[0];
+					m_intersect_data[rays_index + idx * tile_size * tile_size].uv = bary.x * t[1] + bary.y * t[2] + (1 - bary.x - bary.y) * t[0];
+					m_intersect_data[rays_index + idx * tile_size * tile_size].tet_idx = 
+						scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[rays_index + idx * tile_size * tile_size]].tet_idx;
+					m_intersect_data[rays_index + idx * tile_size * tile_size].neighbor_tet_idx = 
+						scene.tet_mesh->m_constrained_faces[m_gpu_face_indices[rays_index + idx * tile_size * tile_size]].other_tet_idx;
                     color = glm::vec3();
                     //color = glm::vec3(1.0f, 1.0f, 1.0f);
 
@@ -859,10 +921,9 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     if (m_old_res != m_resolution)
     {
 		if (!m_intersect_data)
-		{
             delete[] m_intersect_data;
-			//delete[] m_gpu_face_indices;
-		}
+		if (!m_gpu_face_indices)
+			delete[] m_gpu_face_indices;
 		if (!m_rays)
 		{
             delete[] m_rays;
@@ -870,7 +931,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 
         m_rays = new Ray[m_resolution.x * m_resolution.y];
         m_intersect_data = new IntersectionData[m_resolution.x * m_resolution.y];
-		m_gpu_face_indices = new unsigned int[m_resolution.x * m_resolution.y];
+		m_gpu_face_indices = new int[m_resolution.x * m_resolution.y];
         m_old_res = m_resolution;
     }
     //--------------------------------------------
@@ -970,8 +1031,8 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
             //--------------------------------------------
             for (int i = 0; i < thread_count; i++)
             {
-                void (RayTracer::*mem_funct)(int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata;
-                threads[i] = new std::thread(mem_funct, this, i, lightInfos);
+                void (RayTracer::*mem_funct)(Scene&, int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata;
+                threads[i] = new std::thread(mem_funct, this, scene, i, lightInfos);
             }
 
             for (int i = 0; i < thread_count; i++)
