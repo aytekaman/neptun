@@ -580,16 +580,16 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 #define BLIM 8
 
-__global__
+__global__ 
 void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
     cudaTextureObject_t points, cudaTextureObject_t tet16s, unsigned int* __restrict__ face_indices)
 {
-    __shared__ float basis[512 * BLIM];
+    __shared__ float basis[256 * BLIM];
     //__shared__ unsigned int ray_origins[512 * 4];
     //__shared__ float ps[512 * 8];
     //__shared__ unsigned int ids[512 * 4];
 
-    int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
+    const int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
     //if (idx < resolution.x * resolution.y)
     {
@@ -603,7 +603,7 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
         //unsigned int* id = &ids[threadIdx.x * 4];
         //glm::vec2* p = ((glm::vec2*)&ps[threadIdx.x * 8]);
         unsigned int id[4];
-        glm::vec2 p[4];
+        float2 p[4];
 
         const float sign = copysignf(1.0f, ray_dir.z);
 
@@ -662,7 +662,9 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
         else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
         {
             swap(id[0], id[1]);
-            swapvec2(p[0], p[1]);
+            float2 temp = p[0];
+            p[0] = p[1];
+            p[1] = temp;
 
             index = source_tet.n[3];
         }
@@ -1600,7 +1602,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
     std::chrono::high_resolution_clock::time_point start, end;
 
     // Launch kernel on GPU
-    int t = 512;
+    int t = 256;
 
     start = std::chrono::high_resolution_clock::now();
     if (tet_mesh_type == 0)
