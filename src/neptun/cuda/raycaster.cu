@@ -593,8 +593,8 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
 
     //if (idx < resolution.x * resolution.y)
     {
-        glm::vec3 ray_dir;
-        const int outputindex = init_ray(scene, resolution, tile_size, idx, &basis[threadIdx.x * BLIM + 0], ray_dir);
+        glm::vec3 ray_origin, ray_dir;
+        const int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
 
         //basis[threadIdx.x * 9 + 0] = ray_origin.x;
         //basis[threadIdx.x * 9 + 1] = ray_origin.y;
@@ -610,16 +610,22 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
         const float a = -1.0f / (sign + ray_dir.z);
         //const float b = ray_dir.x * ray_dir.y * a;
 
-        //const glm::vec3 right(1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x);
-        //const glm::vec3 up(b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y);
+        //float4 right = { 1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x, 0.0f };
+        //float4 up = {b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y, 0.0f};
 
-        basis[threadIdx.x * BLIM + 3] = 1.0f + sign * ray_dir.x * ray_dir.x * a;
-        basis[threadIdx.x * BLIM + 4] = sign * (ray_dir.x * ray_dir.y * a);
-        basis[threadIdx.x * BLIM + 5] = -sign * ray_dir.x;
+        basis[threadIdx.x * BLIM + 0] = 1.0f + sign * ray_dir.x * ray_dir.x * a;
+        basis[threadIdx.x * BLIM + 1] = sign * (ray_dir.x * ray_dir.y * a);
+        basis[threadIdx.x * BLIM + 2] = -sign * ray_dir.x;
 
-        basis[threadIdx.x * BLIM + 6] = ray_dir.x * ray_dir.y * a;
-        basis[threadIdx.x * BLIM + 7] = sign + ray_dir.y * ray_dir.y * a;
-        //basis[threadIdx.x * BLIM + 8] = -ray_dir.y;
+        basis[threadIdx.x * BLIM + 4] = ray_dir.x * ray_dir.y * a;
+        basis[threadIdx.x * BLIM + 5] = sign + ray_dir.y * ray_dir.y * a;
+        basis[threadIdx.x * BLIM + 6] = -ray_dir.y;
+
+        //const float ro = -glm::dot(right, ray_origin);
+        //const float uo = -glm::dot(up, ray_origin);
+
+        basis[threadIdx.x * BLIM + 3] = -(basis[threadIdx.x * BLIM + 0] * ray_origin.x + basis[threadIdx.x * BLIM + 1] * ray_origin.y + basis[threadIdx.x * BLIM + 2] * ray_origin.z);
+        basis[threadIdx.x * BLIM + 7] = -(basis[threadIdx.x * BLIM + 4] * ray_origin.x + basis[threadIdx.x * BLIM + 5] * ray_origin.y + basis[threadIdx.x * BLIM + 6] * ray_origin.z);
 
         int index;
 
@@ -628,17 +634,20 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
         {
             id[j] = source_tet.v[j];
 
-            float4 new_point = tex1Dfetch<float4>( points, id[j] );
+            const float4 point = tex1Dfetch<float4>( points, id[j] );
 
-            const glm::vec3 point(
-                new_point.x - basis[threadIdx.x * BLIM + 0], 
-                new_point.y - basis[threadIdx.x * BLIM + 1],
-                new_point.z - basis[threadIdx.x * BLIM + 2]);
-            //p[j].x = glm::dot(right, point);
-            //p[j].y = glm::dot(up, point);
+            //const glm::vec3 point(
+            //    new_point.x, 
+            //    new_point.y,
+            //    new_point.z);
+            //p[j].x = new_point.x * right.x + new_point.y * right.y + new_point.z * right.z + right.w;
+            //p[j].y = new_point.x * up.x + new_point.y * up.y + new_point.z * up.z + up.w;
             //
-            p[j].x = basis[threadIdx.x * BLIM + 3] * point.x + basis[threadIdx.x * BLIM + 4] * point.y + basis[threadIdx.x * BLIM + 5] * point.z;
-            p[j].y = basis[threadIdx.x * BLIM + 6] * point.x + basis[threadIdx.x * BLIM + 7] * point.y - ray_dir.y * point.z;
+            //p[j].x = basis[threadIdx.x * BLIM + 3] * point.x + basis[threadIdx.x * BLIM + 4] * point.y + basis[threadIdx.x * BLIM + 5] * point.z;
+            //p[j].y = basis[threadIdx.x * BLIM + 6] * point.x + basis[threadIdx.x * BLIM + 7] * point.y - ray_dir.y * point.z;
+
+            p[j].x = basis[threadIdx.x * BLIM + 0] * point.x + basis[threadIdx.x * BLIM + 1] * point.y + basis[threadIdx.x * BLIM + 2] * point.z + basis[threadIdx.x * BLIM + 3];
+            p[j].y = basis[threadIdx.x * BLIM + 4] * point.x + basis[threadIdx.x * BLIM + 5] * point.y + basis[threadIdx.x * BLIM + 6] * point.z + basis[threadIdx.x * BLIM + 7];
         }
 
         if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
@@ -679,20 +688,20 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
 
         while (index >= 0)
         {
-            int4 tet = tex1Dfetch<int4>( tet16s, index );
+            const int4 tet = tex1Dfetch<int4>( tet16s, index );
 
             id[3] = tet.x ^ id[0] ^ id[1] ^ id[2];
-            const float4 new_point = tex1Dfetch<float4>( points, id[3] );
-            const glm::vec3 newPoint(
-                new_point.x - basis[threadIdx.x * BLIM + 0],
-                new_point.y - basis[threadIdx.x * BLIM + 1],
-                new_point.z - basis[threadIdx.x * BLIM + 2]);
+            const float4 point = tex1Dfetch<float4>( points, id[3] );
 
-            //p[3].x = glm::dot(right, newPoint);
-            //p[3].y = glm::dot(up, newPoint);
 
-            p[3].x = basis[threadIdx.x * BLIM + 3] * newPoint.x + basis[threadIdx.x * BLIM + 4] * newPoint.y + basis[threadIdx.x * BLIM + 5] * newPoint.z;
-            p[3].y = basis[threadIdx.x * BLIM + 6] * newPoint.x + basis[threadIdx.x * BLIM + 7] * newPoint.y + -ray_dir.y * newPoint.z;
+            //p[3].x = new_point.x * right.x + new_point.y * right.y + new_point.z * right.z + right.w;
+            //p[3].y = new_point.x * up.x + new_point.y * up.y + new_point.z * up.z + up.w;
+
+            //p[3].x = basis[threadIdx.x * BLIM + 3] * newPoint.x + basis[threadIdx.x * BLIM + 4] * newPoint.y + basis[threadIdx.x * BLIM + 5] * newPoint.z;
+            //p[3].y = basis[threadIdx.x * BLIM + 6] * newPoint.x + basis[threadIdx.x * BLIM + 7] * newPoint.y + -ray_dir.y * newPoint.z;
+
+            p[3].x = basis[threadIdx.x * BLIM + 0] * point.x + basis[threadIdx.x * BLIM + 1] * point.y + basis[threadIdx.x * BLIM + 2] * point.z + basis[threadIdx.x * BLIM + 3];
+            p[3].y = basis[threadIdx.x * BLIM + 4] * point.x + basis[threadIdx.x * BLIM + 5] * point.y + basis[threadIdx.x * BLIM + 6] * point.z + basis[threadIdx.x * BLIM + 7];
 
             const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
 
@@ -1330,10 +1339,11 @@ void copy_to_gpu(TetMesh16& tet_mesh)
     res_desc2.res.linear.desc = cudaCreateChannelDesc<int4>();
     res_desc2.res.linear.sizeInBytes = sizeof(int4) * tet_mesh.m_tets.size();
 
+
     cudaTextureDesc tex_desc2;
     memset(&tex_desc2, 0, sizeof(tex_desc2));
     tex_desc2.readMode = cudaReadModeElementType;
-
+    tex_desc2.filterMode = cudaFilterModePoint;
     check_cuda(cudaCreateTextureObject(&t_tet16s, &res_desc2,
         &tex_desc2, NULL));
 
