@@ -589,12 +589,12 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
     //__shared__ float ps[512 * 8];
     //__shared__ unsigned int ids[512 * 4];
 
-    const int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
+    //const int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
     //if (idx < resolution.x * resolution.y)
-    {
+    //{
         glm::vec3 ray_origin, ray_dir;
-        const int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
+        const int outputindex = init_ray(scene, resolution, tile_size, offset + blockIdx.x * blockDim.x + threadIdx.x, ray_origin, ray_dir);
 
         //basis[threadIdx.x * 9 + 0] = ray_origin.x;
         //basis[threadIdx.x * 9 + 1] = ray_origin.y;
@@ -684,11 +684,11 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
         }
 
         int nx = source_tet.idx;
-        int idx2;
+        //int idx2;
 
         while (index >= 0)
         {
-            const int4 tet = tex1Dfetch<int4>( tet16s, index );
+            const int1 tet = tex1Dfetch<int1>( tet16s, index * 4 );
 
             id[3] = tet.x ^ id[0] ^ id[1] ^ id[2];
             const float4 point = tex1Dfetch<float4>( points, id[3] );
@@ -703,31 +703,33 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
             p[3].x = basis[threadIdx.x * BLIM + 0] * point.x + basis[threadIdx.x * BLIM + 1] * point.y + basis[threadIdx.x * BLIM + 2] * point.z + basis[threadIdx.x * BLIM + 3];
             p[3].y = basis[threadIdx.x * BLIM + 4] * point.x + basis[threadIdx.x * BLIM + 5] * point.y + basis[threadIdx.x * BLIM + 6] * point.z + basis[threadIdx.x * BLIM + 7];
 
-            const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]);
+            const int idx = (id[3] > id[0]) + (id[3] > id[1]) + (id[3] > id[2]) + 1;
 
-            const int* tn = &(tet.y);
+            //const int* tn = &(tet.y);
 
-            if (idx != 3)
-                nx ^= tn[idx];
+            if (idx != 4)
+                nx ^= tex1Dfetch<int1>(tet16s, 4 * index + idx).x;
+
+            int idx2;
 
             if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here? 
             {
                 if (p[3].x * p[2].y >= p[3].y * p[2].x)
                 {
-                    const int idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
+                    idx2 = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]) + 1;
 
-                    if (idx2 != 3)
-                        nx ^= tn[idx2];
+                    //if (idx2 != 3)
+                    //    nx ^= tex1Dfetch<int1>(tet16s, 4 * index + idx2 + 1).x;
 
                     id[1] = id[3];
                     p[1] = p[3];
                 }
                 else
                 {
-                    const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+                    idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]) + 1;
 
-                    if (idx2 != 3)
-                        nx ^= tn[idx2];
+                    //if (idx2 != 3)
+                    //    nx ^= tex1Dfetch<int1>(tet16s, 4 * index + idx2 + 1).x;
 
                     id[0] = id[3];
                     p[0] = p[3];
@@ -735,29 +737,35 @@ void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolut
             }
             else if (p[3].x * p[1].y < p[3].y * p[1].x)
             {
-                const int idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
+                idx2 = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]) + 1;
 
-                if (idx2 != 3)
-                    nx ^= tn[idx2];
+                //if (idx2 != 3)
+                //    nx ^= tex1Dfetch<int1>(tet16s, 4 * index + idx2 + 1).x;
 
                 id[2] = id[3];
                 p[2] = p[3];
             }
             else
             {
-                const int idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+                idx2 = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]) + 1;
 
-                if (idx2 != 3)
-                    nx ^= tn[idx2];
+
 
                 id[0] = id[3];
                 p[0] = p[3];
             }
 
-            swap(nx, index);
+            const int temp = index;
+
+            if (idx2 != 4)
+                index = nx ^ tex1Dfetch<int1>(tet16s, 4 * index + idx2).x;
+            else
+                index = nx;
+
+            nx = temp;
         }
         face_indices[outputindex] = index;
-    }
+    //}
 }
 
 //---------------------------------------- For TetMesh96 --------------------------------------------------
@@ -1336,7 +1344,7 @@ void copy_to_gpu(TetMesh16& tet_mesh)
     memset(&res_desc2, 0, sizeof(res_desc2));
     res_desc2.resType = cudaResourceTypeLinear;
     res_desc2.res.linear.devPtr = d_tet16s;
-    res_desc2.res.linear.desc = cudaCreateChannelDesc<int4>();
+    res_desc2.res.linear.desc = cudaCreateChannelDesc<int1>();
     res_desc2.res.linear.sizeInBytes = sizeof(int4) * tet_mesh.m_tets.size();
 
 
