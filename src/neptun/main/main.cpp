@@ -935,7 +935,7 @@ void gpu_tetmesh_type_comparison(bool sort_tet = 1, const std::string scene_name
 	TetMesh80* tet80;
     scene.load_from_file(builtin_scenes_folder_path + scene_name + ".scene");
 
-    ray_tracer.set_resoultion(glm::ivec2(1920, 720));
+    ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
     tet32 = new TetMesh32(scene);
     tet20 = new TetMesh20(scene);
     tet16 = new TetMesh16(scene);
@@ -1433,7 +1433,7 @@ int run_command_line(int argc, char const* argv[])
     }
     else if (command.name == "gpu_benchmark")
     {
-        gpu_tetmesh_type_comparison(true, "soup");
+        gpu_tetmesh_type_comparison(true, "mix");
     }
 	else if (command.name == "lagae_gpu_benchmark")
 	{
