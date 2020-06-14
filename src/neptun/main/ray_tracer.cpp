@@ -1063,7 +1063,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     static int frame_count = 0;
     frame_count++;
 
-    if(frame_count == 128)
+    if(frame_count == 64)
         std::cout << Stats::gpu_best_kernel_time << std::endl;
     //--------------------------------------------
 

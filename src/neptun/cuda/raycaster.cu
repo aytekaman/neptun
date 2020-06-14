@@ -13,6 +13,7 @@ TetMesh16::Tet16* d_tet16s;
 TetMeshSctp::TetSctp* d_tetSctps;
 
 cudaTextureObject_t t_tet16s;
+cudaTextureObject_t t_tet20s;
 cudaTextureObject_t t_points;
 
 //--------- Tet96 data------------
@@ -458,127 +459,282 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
     }
 }
 
+#define BLIM 8
+
 //----------------------------------------- For TetMesh20 -------------------------------------------------
 
 __global__
-void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
-    glm::vec3* points, TetMesh20::Tet20* tets, unsigned int* face_indices)
+void ray_cast_kernel_20(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
+    cudaTextureObject_t points, cudaTextureObject_t tet20s, unsigned int* __restrict__ face_indices)
 {
-    int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
+    //int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx < resolution.x * resolution.y)
+    //if (idx < resolution.x * resolution.y)
+    //{
+    //    glm::vec3 ray_origin, ray_dir;
+    //    int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
+
+    //    unsigned int id[4];
+    //    glm::vec2 p[4];
+
+    //    //int prev_index;
+    //    signed short outIdx = -1;
+
+    //    const float sign = copysignf(1.0f, ray_dir.z);
+
+    //    const float a = -1.0f / (sign + ray_dir.z);
+    //    const float b = ray_dir.x * ray_dir.y * a;
+
+    //    const glm::vec3 right(1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x);
+    //    const glm::vec3 up(b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y);
+    //    const glm::vec3 origin(ray_origin.x, ray_origin.y, ray_origin.z);
+
+    //    const int mask = 0xE1;
+
+    //    for (int j = 0; j < 4; j++)
+    //    {
+    //        id[j] = source_tet.v[j];
+    //        const glm::vec3 point = points[id[j]] - ray_origin;
+    //        p[j].x = glm::dot(right, point);
+    //        p[j].y = glm::dot(up, point);
+    //    }
+
+    //    if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
+    //        outIdx = 0;
+    //    else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
+    //        outIdx = 1;
+    //    else if (p[0].x * p[3].y <= p[0].y * p[3].x && p[3].x * p[1].y <= p[3].y * p[1].x && p[1].x * p[0].y <= p[1].y * p[0].x)
+    //        outIdx = 2;
+    //    else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
+    //    {
+    //        outIdx = 3;
+    //        swap(id[0], id[1]);
+    //        swapvec2(p[0], p[1]);
+    //    }
+    //    else
+    //    {
+    //        //face_indices[outputindex] = -1;
+    //        return;
+    //    }
+
+    //    int index = source_tet.n[outIdx];
+    //    id[outIdx] = id[3];
+    //    p[outIdx] = p[3];
+
+    //    while (index >= 0)
+    //    {
+    //        id[3] = tets[index].x ^ id[0] ^ id[1] ^ id[2];
+    //        const glm::vec3 newPoint = points[id[3]] - ray_origin;
+
+    //        p[3].x = glm::dot(right, newPoint);
+    //        p[3].y = glm::dot(up, newPoint);
+
+    //        //p[3] = basis.project(newPoint);
+
+    //        if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
+    //        {
+    //            if (p[3].x * p[2].y >= p[3].y * p[2].x)
+    //            {
+    //                index = tets[index].n[(id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3])];
+    //                //outIdx = 1;
+    //                id[1] = id[3];
+    //                p[1] = p[3];
+    //            }
+    //            else
+    //            {
+    //                index = tets[index].n[(id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3])];
+    //                //outIdx = 0;
+    //                id[0] = id[3];
+    //                p[0] = p[3];
+    //            }
+    //        }
+    //        else if (p[3].x * p[1].y < p[3].y * p[1].x)
+    //        {
+    //            index = tets[index].n[(id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3])];
+    //            //outIdx = 2;
+    //            id[2] = id[3];
+    //            p[2] = p[3];
+    //        }
+    //        else
+    //        {
+    //            index = tets[index].n[(id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3])];
+    //            //outIdx = 0;
+    //            id[0] = id[3];
+    //            p[0] = p[3];
+    //        }
+
+    //        //prev_index = index;
+
+    //        //int idx = 0;
+    //        //for (int i = 0; i < 4; ++i)
+    //        //{
+    //        //    if (id[outIdx] > id[i])
+    //        //        idx++;
+    //        //}
+
+    //        //index = m_tet20s[index].n[idx];
+    //    }
+
+    //    face_indices[outputindex] = index;
+    //}
+
+    __shared__ float basis[256 * BLIM];
+    //__shared__ unsigned int ray_origins[512 * 4];
+    //__shared__ float ps[512 * 8];
+    //__shared__ unsigned int ids[512 * 4];
+
+    //const int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
+
+    //if (idx < resolution.x * resolution.y)
+    //{
+    glm::vec3 ray_origin, ray_dir;
+    const int outputindex = init_ray(scene, resolution, tile_size, offset + blockIdx.x * blockDim.x + threadIdx.x, ray_origin, ray_dir);
+
+    //basis[threadIdx.x * 9 + 0] = ray_origin.x;
+    //basis[threadIdx.x * 9 + 1] = ray_origin.y;
+    //basis[threadIdx.x * 9 + 2] = ray_origin.z;
+
+    //unsigned int* id = &ids[threadIdx.x * 4];
+    //glm::vec2* p = ((glm::vec2*)&ps[threadIdx.x * 8]);
+    unsigned int id[4];
+    float2 p[4];
+
+    const float sign = copysignf(1.0f, ray_dir.z);
+
+    const float a = -1.0f / (sign + ray_dir.z);
+    //const float b = ray_dir.x * ray_dir.y * a;
+
+    //float4 right = { 1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x, 0.0f };
+    //float4 up = {b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y, 0.0f};
+
+    basis[threadIdx.x * BLIM + 0] = 1.0f + sign * ray_dir.x * ray_dir.x * a;
+    basis[threadIdx.x * BLIM + 1] = sign * (ray_dir.x * ray_dir.y * a);
+    basis[threadIdx.x * BLIM + 2] = -sign * ray_dir.x;
+
+    basis[threadIdx.x * BLIM + 4] = ray_dir.x * ray_dir.y * a;
+    basis[threadIdx.x * BLIM + 5] = sign + ray_dir.y * ray_dir.y * a;
+    basis[threadIdx.x * BLIM + 6] = -ray_dir.y;
+
+    //const float ro = -glm::dot(right, ray_origin);
+    //const float uo = -glm::dot(up, ray_origin);
+
+    basis[threadIdx.x * BLIM + 3] = -(basis[threadIdx.x * BLIM + 0] * ray_origin.x + basis[threadIdx.x * BLIM + 1] * ray_origin.y + basis[threadIdx.x * BLIM + 2] * ray_origin.z);
+    basis[threadIdx.x * BLIM + 7] = -(basis[threadIdx.x * BLIM + 4] * ray_origin.x + basis[threadIdx.x * BLIM + 5] * ray_origin.y + basis[threadIdx.x * BLIM + 6] * ray_origin.z);
+
+    int index;
+
+#pragma unroll
+    for (int j = 0; j < 4; j++)
     {
-        glm::vec3 ray_origin, ray_dir;
-        int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
+        id[j] = source_tet.v[j];
 
-        unsigned int id[4];
-        glm::vec2 p[4];
+        const float4 point = tex1Dfetch<float4>(points, id[j]);
 
-        //int prev_index;
-        signed short outIdx = -1;
+        //const glm::vec3 point(
+        //    new_point.x, 
+        //    new_point.y,
+        //    new_point.z);
+        //p[j].x = new_point.x * right.x + new_point.y * right.y + new_point.z * right.z + right.w;
+        //p[j].y = new_point.x * up.x + new_point.y * up.y + new_point.z * up.z + up.w;
+        //
+        //p[j].x = basis[threadIdx.x * BLIM + 3] * point.x + basis[threadIdx.x * BLIM + 4] * point.y + basis[threadIdx.x * BLIM + 5] * point.z;
+        //p[j].y = basis[threadIdx.x * BLIM + 6] * point.x + basis[threadIdx.x * BLIM + 7] * point.y - ray_dir.y * point.z;
 
-        const float sign = copysignf(1.0f, ray_dir.z);
+        p[j].x = basis[threadIdx.x * BLIM + 0] * point.x + basis[threadIdx.x * BLIM + 1] * point.y + basis[threadIdx.x * BLIM + 2] * point.z + basis[threadIdx.x * BLIM + 3];
+        p[j].y = basis[threadIdx.x * BLIM + 4] * point.x + basis[threadIdx.x * BLIM + 5] * point.y + basis[threadIdx.x * BLIM + 6] * point.z + basis[threadIdx.x * BLIM + 7];
+    }
 
-        const float a = -1.0f / (sign + ray_dir.z);
-        const float b = ray_dir.x * ray_dir.y * a;
+    if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
+    {
+        index = source_tet.n[0];
+        id[0] = id[3];
+        p[0] = p[3];
+    }
+    else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
+    {
+        index = source_tet.n[1];
+        id[1] = id[3];
+        p[1] = p[3];
+    }
+    else if (p[0].x * p[3].y <= p[0].y * p[3].x && p[3].x * p[1].y <= p[3].y * p[1].x && p[1].x * p[0].y <= p[1].y * p[0].x)
+    {
+        index = source_tet.n[2];
+        id[2] = id[3];
+        p[2] = p[3];
+    }
+    else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
+    {
+        swap(id[0], id[1]);
+        float2 temp = p[0];
+        p[0] = p[1];
+        p[1] = temp;
 
-        const glm::vec3 right(1.0f + sign * ray_dir.x * ray_dir.x * a, sign * b, -sign * ray_dir.x);
-        const glm::vec3 up(b, sign + ray_dir.y * ray_dir.y * a, -ray_dir.y);
-        const glm::vec3 origin(ray_origin.x, ray_origin.y, ray_origin.z);
+        index = source_tet.n[3];
+    }
+    else
+    {
+        //output[outputindex].hit = false;
+        return;
+    }
 
-        const int mask = 0xE1;
+    while (index >= 0)
+    {
 
-        for (int j = 0; j < 4; j++)
+        id[3] = tex1Dfetch<int1>(tet20s, index * 5).x ^ id[0] ^ id[1] ^ id[2];
+        const float4 point = tex1Dfetch<float4>(points, id[3]);
+
+
+        //p[3].x = new_point.x * right.x + new_point.y * right.y + new_point.z * right.z + right.w;
+        //p[3].y = new_point.x * up.x + new_point.y * up.y + new_point.z * up.z + up.w;
+
+        //p[3].x = basis[threadIdx.x * BLIM + 3] * newPoint.x + basis[threadIdx.x * BLIM + 4] * newPoint.y + basis[threadIdx.x * BLIM + 5] * newPoint.z;
+        //p[3].y = basis[threadIdx.x * BLIM + 6] * newPoint.x + basis[threadIdx.x * BLIM + 7] * newPoint.y + -ray_dir.y * newPoint.z;
+
+        p[3].x = basis[threadIdx.x * BLIM + 0] * point.x + basis[threadIdx.x * BLIM + 1] * point.y + basis[threadIdx.x * BLIM + 2] * point.z + basis[threadIdx.x * BLIM + 3];
+        p[3].y = basis[threadIdx.x * BLIM + 4] * point.x + basis[threadIdx.x * BLIM + 5] * point.y + basis[threadIdx.x * BLIM + 6] * point.z + basis[threadIdx.x * BLIM + 7];
+
+        
+
+        if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here? 
         {
-            id[j] = source_tet.v[j];
-            const glm::vec3 point = points[id[j]] - ray_origin;
-            p[j].x = glm::dot(right, point);
-            p[j].y = glm::dot(up, point);
-        }
-
-        if (p[2].x * p[1].y <= p[2].y * p[1].x && p[1].x * p[3].y <= p[1].y * p[3].x && p[3].x * p[2].y <= p[3].y * p[2].x)
-            outIdx = 0;
-        else if (p[2].x * p[3].y <= p[2].y * p[3].x && p[3].x * p[0].y <= p[3].y * p[0].x && p[0].x * p[2].y <= p[0].y * p[2].x)
-            outIdx = 1;
-        else if (p[0].x * p[3].y <= p[0].y * p[3].x && p[3].x * p[1].y <= p[3].y * p[1].x && p[1].x * p[0].y <= p[1].y * p[0].x)
-            outIdx = 2;
-        else if (p[0].x * p[1].y <= p[0].y * p[1].x && p[1].x * p[2].y <= p[1].y * p[2].x && p[2].x * p[0].y <= p[2].y * p[0].x)
-        {
-            outIdx = 3;
-            swap(id[0], id[1]);
-            swapvec2(p[0], p[1]);
-        }
-        else
-        {
-            //face_indices[outputindex] = -1;
-            return;
-        }
-
-        int index = source_tet.n[outIdx];
-        id[outIdx] = id[3];
-        p[outIdx] = p[3];
-
-        while (index >= 0)
-        {
-            id[3] = tets[index].x ^ id[0] ^ id[1] ^ id[2];
-            const glm::vec3 newPoint = points[id[3]] - ray_origin;
-
-            p[3].x = glm::dot(right, newPoint);
-            p[3].y = glm::dot(up, newPoint);
-
-            //p[3] = basis.project(newPoint);
-
-            if (p[3].x * p[0].y < p[3].y * p[0].x) // copysignf here?
+            if (p[3].x * p[2].y >= p[3].y * p[2].x)
             {
-                if (p[3].x * p[2].y >= p[3].y * p[2].x)
-                {
-                    index = tets[index].n[(id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3])];
-                    //outIdx = 1;
-                    id[1] = id[3];
-                    p[1] = p[3];
-                }
-                else
-                {
-                    index = tets[index].n[(id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3])];
-                    //outIdx = 0;
-                    id[0] = id[3];
-                    p[0] = p[3];
-                }
-            }
-            else if (p[3].x * p[1].y < p[3].y * p[1].x)
-            {
-                index = tets[index].n[(id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3])];
-                //outIdx = 2;
-                id[2] = id[3];
-                p[2] = p[3];
+                const int idx = (id[1] > id[0]) + (id[1] > id[2]) + (id[1] > id[3]);
+                index = tex1Dfetch<int1>(tet20s, 5 * index + idx + 1).x;
+                id[1] = id[3];
+                p[1] = p[3];
             }
             else
             {
-                index = tets[index].n[(id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3])];
-                //outIdx = 0;
+                const int idx = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+                index = tex1Dfetch<int1>(tet20s, 5 * index + idx + 1).x;
                 id[0] = id[3];
                 p[0] = p[3];
             }
-
-            //prev_index = index;
-
-            //int idx = 0;
-            //for (int i = 0; i < 4; ++i)
-            //{
-            //    if (id[outIdx] > id[i])
-            //        idx++;
-            //}
-
-            //index = m_tet20s[index].n[idx];
+        }
+        else if (p[3].x * p[1].y < p[3].y * p[1].x)
+        {
+            const int idx = (id[2] > id[0]) + (id[2] > id[1]) + (id[2] > id[3]);
+            index = tex1Dfetch<int1>(tet20s, 5 * index + idx + 1).x;
+            id[2] = id[3];
+            p[2] = p[3];
+        }
+        else
+        {
+            const int idx = (id[0] > id[1]) + (id[0] > id[2]) + (id[0] > id[3]);
+            index = tex1Dfetch<int1>(tet20s, 5 * index + idx + 1).x;
+            id[0] = id[3];
+            p[0] = p[3];
         }
 
-        face_indices[outputindex] = index;
+        
     }
+    face_indices[outputindex] = index;
 }
 
 //---------------------------------------- For TetMesh16 --------------------------------------------------
 
-#define BLIM 8
+
 
 __global__ 
 void ray_cast_kernel_16(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, int offset, int tile_size,
@@ -1329,6 +1485,21 @@ void copy_to_gpu(TetMesh20& tet_mesh)
     check_cuda(cudaMalloc(&d_tet20s, tet_mesh.m_tets.size() * sizeof(TetMesh20::Tet20)));
     check_cuda(cudaMemcpy(d_tet20s, tet_mesh.m_tet20s.data(), tet_mesh.m_tets.size() * sizeof(TetMesh20::Tet20), cudaMemcpyHostToDevice));
 
+    cudaResourceDesc res_desc2;
+    memset(&res_desc2, 0, sizeof(res_desc2));
+    res_desc2.resType = cudaResourceTypeLinear;
+    res_desc2.res.linear.devPtr = d_tet20s;
+    res_desc2.res.linear.desc = cudaCreateChannelDesc<int1>();
+    res_desc2.res.linear.sizeInBytes = 5 * sizeof(int) * tet_mesh.m_tets.size();
+
+
+    cudaTextureDesc tex_desc2;
+    memset(&tex_desc2, 0, sizeof(tex_desc2));
+    tex_desc2.readMode = cudaReadModeElementType;
+    tex_desc2.filterMode = cudaFilterModePoint;
+    check_cuda(cudaCreateTextureObject(&t_tet20s, &res_desc2,
+        &tex_desc2, NULL));
+
     print_cuda_error("CUDA copy Tet20 to GPU");
 }
 
@@ -1629,7 +1800,7 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
     }
     else if (tet_mesh_type == 1)
     {
-        ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tet20s, /*d_cons_faces, d_faces,*/ d_face_indices/*d_intersectdata*/);
+        ray_cast_kernel_20 << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, t_points, t_tet20s, /*d_cons_faces, d_faces,*/ d_face_indices/*d_intersectdata*/);
     }
     else if (tet_mesh_type == 2)
     {
@@ -1648,6 +1819,8 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
     end = std::chrono::high_resolution_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
     Stats::add_gpu_kernel_time(kernel_time);
+
+    //std::cout << kernel_time << std::endl;
 
     start = std::chrono::high_resolution_clock::now();
     //check_cuda(cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost));
