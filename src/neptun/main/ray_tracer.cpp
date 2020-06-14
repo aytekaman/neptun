@@ -1060,6 +1060,48 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
 			Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
 			//--------------------------------------------
 		}
+		else
+		{  //--------------------------------------------
+			std::chrono::steady_clock::time_point start_2 = std::chrono::steady_clock::now();
+			//--------------------------------------------
+			for (int i = 0; i < thread_count; i++)
+				threads[i] = new std::thread(&RayTracer::prepare_rays_gpu, this, std::ref(scene), source_tet, i, is_diagnostic);
+
+			for (int i = 0; i < thread_count; i++)
+			{
+				threads[i]->join();
+				delete threads[i];
+			}
+			//--------------------------------------------
+			std::chrono::steady_clock::time_point end_2 = std::chrono::steady_clock::now();
+			Stats::ray_prep_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+			//--------------------------------------------
+
+			if (dynamic_cast<TetMesh80*>(scene.tet_mesh) != nullptr)
+				traverse_rays_gpu(m_rays, m_resolution.x * m_resolution.y, 4, m_gpu_face_indices);
+
+			threads = new std::thread * [thread_count];
+			job_index = thread_count;
+
+			//--------------------------------------------
+			start_2 = std::chrono::steady_clock::now();
+			//--------------------------------------------
+			for (int i = 0; i < thread_count; i++)
+			{
+				void (RayTracer:: * mem_funct)(Scene&, int, std::vector<LightInfo>) = &RayTracer::draw_intersectiondata;
+				threads[i] = new std::thread(mem_funct, this, scene, i, lightInfos);
+			}
+
+			for (int i = 0; i < thread_count; i++)
+			{
+				threads[i]->join();
+				delete threads[i];
+			}
+			//--------------------------------------------
+			end_2 = std::chrono::steady_clock::now();
+			Stats::draw_time = std::chrono::duration_cast<std::chrono::microseconds>(end_2 - start_2).count() / 1e3;
+			//--------------------------------------------
+		}
 	}
 
     delete[] threads;

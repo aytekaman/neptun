@@ -1061,6 +1061,73 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset, glm::vec3* point
 	}
 }
 
+//---------------------------------------- For TetMesh96 --------------------------------------------------
+
+__global__
+void ray_traversal_kernel(Ray* rays, int rays_size, int offset,
+	/*float4* vertices, int2* tets,*/ cudaTextureObject_t vertices, cudaTextureObject_t tets,  /*ConstrainedFace* cons_faces,
+	Face* faces,*/ int* face_indices)
+{
+	int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (idx < rays_size)
+	{
+		TetMesh80::Plucker pl_ray = make_plucker_from_ray(rays[idx].origin, rays[idx].dir);
+
+		long long id_tetra;
+		int id_vertex, id_entry_face;
+		int id_exit;
+		int semantic;
+		int2 tetra;
+
+		// Get first tetra 
+		id_tetra = rays[idx].source_tet.idx * 4;
+
+		tetra = LOAD_TETRA(id_tetra);
+
+		glm::vec3 a(((float4)LOAD_VERTEX(id_tetra + 2)).x, ((float4)LOAD_VERTEX(id_tetra + 2)).y, ((float4)LOAD_VERTEX(id_tetra + 2)).z);
+		glm::vec3 b(((float4)LOAD_VERTEX(id_tetra + 3)).x, ((float4)LOAD_VERTEX(id_tetra + 3)).y, ((float4)LOAD_VERTEX(id_tetra + 3)).z);
+		glm::vec3 dir = glm::normalize(b - a);
+		glm::vec3 vv = glm::cross(a, b);
+
+		id_entry_face = (dir[0] * pl_ray.m_Pi[3] +
+			dir[1] * pl_ray.m_Pi[4] +
+			dir[2] * pl_ray.m_Pi[5] +
+			vv[0] * pl_ray.m_Pi[0] +
+			vv[1] * pl_ray.m_Pi[1] +
+			vv[2] * pl_ray.m_Pi[2]) < 0.0f;
+
+		//============================================================== 
+		// Now begin traversal 
+		//============================================================== 
+		int cpt = 0;
+		do {
+			if (cpt++ == 5000) { // In case of numeric error 
+				semantic = TCDT_MAGIC_ERROR;
+				break;
+			}
+
+			id_exit = get_exit_face(pl_ray, id_tetra, id_entry_face, vertices);
+
+			tetra = LOAD_TETRA(id_tetra + id_exit);
+			semantic = tetra.y;
+
+			if (semantic >= 0)
+			{
+				break;
+			}
+
+			// Update data for next tetra 
+			id_tetra = GET_NEXT_TETRA(tetra.x) * 4ll;
+			id_entry_face = GET_NEXT_FACE(tetra.x);
+
+		} while (true);
+
+		face_indices[idx] = semantic;
+
+	}
+}
+
 //==================================== Copies tetmesh to device memory ======================================
 
 void copy_to_gpu_helper(TetMesh& tet_mesh)
@@ -1260,6 +1327,10 @@ void traverse_rays_gpu(Ray* rays, unsigned int rays_size, unsigned int tet_mesh_
 	else if (tet_mesh_type == 2)
 	{
 		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, d_points, d_tet16s,/* d_cons_faces, d_faces,*/ d_face_indices);
+	}
+	else if (tet_mesh_type == 4)
+	{
+		ray_traversal_kernel << < rays_size / t, t >> > (d_rays, rays_size, 0, t_vertices, /*d_vertices,*/ t_tet96s, /*d_tet96s,*/ d_face_indices);
 	}
 	check_cuda(cudaDeviceSynchronize());
 
