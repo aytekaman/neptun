@@ -670,7 +670,8 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 
 		TetMesh80::Plucker pl_ray = make_plucker_from_ray(ray_origin, ray_dir);
 
-		int id_tetra, id_vertex, id_entry_face;
+		long long id_tetra, 
+		int id_vertex, id_entry_face;
 		int id_exit;
 		int semantic;
 		int2 tetra;
@@ -713,7 +714,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			}
 
 			// Update data for next tetra 
-			id_tetra = GET_NEXT_TETRA(tetra.x) * 4;
+			id_tetra = GET_NEXT_TETRA(tetra.x) * 4ll;
 			id_entry_face = GET_NEXT_FACE(tetra.x);
 
 		} while (true);
