@@ -667,9 +667,11 @@ void RayTracer::draw_intersectiondata(int set_start, int set_end, std::vector<Li
 		{
 			for (int i = rect_min.x; i < rect_max.x; i++)
 			{
-				glm::vec3 color;
-				if (m_intersect_data[rays_index + idx * tile_size * tile_size].hit)
+				glm::vec3 color; 
+				bool hit = method != Method::Tet96_gpu ? (m_gpu_face_indices[idx] != -1) : (m_gpu_face_indices[idx] > 0);
+				if (hit)
 				{
+					m_gpu_face_indices[idx] = method != Method::Tet96_gpu ? (m_gpu_face_indices[idx] & 0x7FFFFFFF) : (m_gpu_face_indices[idx]) - 1;
 					color = glm::vec3();
 					//color = glm::vec3(1.0f, 1.0f, 1.0f);
 
