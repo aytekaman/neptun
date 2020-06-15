@@ -679,10 +679,16 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 		// Get first tetra 
 		id_tetra = source_tet.idx * 4;
 
+		id_vertex = id_tetra; // I know this looks counter-intuitive but id_vertex is redundat for gpu code anyways this is the only part it is required
 		tetra = LOAD_TETRA(id_tetra);
 
-		glm::vec3 a(((float4)LOAD_VERTEX(id_tetra + 2)).x, ((float4)LOAD_VERTEX(id_tetra + 2)).y, ((float4)LOAD_VERTEX(id_tetra + 2)).z);
-		glm::vec3 b(((float4)LOAD_VERTEX(id_tetra + 3)).x, ((float4)LOAD_VERTEX(id_tetra + 3)).y, ((float4)LOAD_VERTEX(id_tetra + 3)).z);
+		float4 v0 = LOAD_VERTEX(id_tetra + 0);
+		float4 v1 = LOAD_VERTEX(id_tetra + 1);
+		float4 v2 = LOAD_VERTEX(id_tetra + 2);
+		float4 v3 = LOAD_VERTEX(id_tetra + 3);
+
+		glm::vec3 a(v2.x, v2.y, v2.z);
+		glm::vec3 b(v3.x, v3.y, v3.z);
 		glm::vec3 dir = glm::normalize(b - a);
 		glm::vec3 vv = glm::cross(a, b);
 
@@ -692,6 +698,34 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			vv[0] * pl_ray.m_Pi[0] +
 			vv[1] * pl_ray.m_Pi[1] +
 			vv[2] * pl_ray.m_Pi[2]) < 0.0f;
+
+
+		id_entry_face = 0;
+
+		const glm::vec3 p0 = glm::vec3(v0.x, v0.y, v0.z) - ray_origin;
+		const glm::vec3 p1 = glm::vec3(v1.x, v1.y, v1.z) - ray_origin;
+		const glm::vec3 p2 = a - ray_origin;
+		const glm::vec3 p3 = b - ray_origin;
+
+		const float QAB = glm::dot(ray_dir, glm::cross(p0, p1)); // A B
+		const float QBC = glm::dot(ray_dir, glm::cross(p1, p2)); // B C
+		const float QAC = glm::dot(ray_dir, glm::cross(p0, p2)); // A C
+		const float QAD = glm::dot(ray_dir, glm::cross(p0, p3)); // A D
+		const float QBD = glm::dot(ray_dir, glm::cross(p1, p3)); // B D
+		const float QCD = glm::dot(ray_dir, glm::cross(p2, p3)); // C D
+
+		int face_idx = 0;
+
+		if (QAB <= 0.0f && QAC >= 0.0f && QBC <= 0.0f)
+			id_entry_face = 3;
+		else if (QAB >= 0.0f && QAD <= 0.0f && QBD >= 0.0f)
+			id_entry_face = 2;
+		else if (QAD >= 0.0f && QAC <= 0.0f && QCD <= 0.0f)
+			id_entry_face = 1;
+		else if (QBC >= 0.0f && QBD <= 0.0f && QCD >= 0.0f)
+			id_entry_face = 0;
+		else
+			return;
 
 		//============================================================== 
 		// Now begin traversal 
@@ -716,6 +750,7 @@ void ray_cast_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution
 			// Update data for next tetra 
 			id_tetra = GET_NEXT_TETRA(tetra.x) * 4ll;
 			id_entry_face = GET_NEXT_FACE(tetra.x);
+			//id_vertex = id_tetra * 4;
 
 		} while (true);
 
@@ -1077,16 +1112,22 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset,
 		long long id_tetra;
 		int id_vertex, id_entry_face;
 		int id_exit;
-		int semantic;
+		int semantic = -1;
 		int2 tetra;
 
 		// Get first tetra 
 		id_tetra = rays[idx].source_tet.idx * 4;
 
+		id_vertex = id_tetra; // I know this looks counter-intuitive but id_vertex is redundat for gpu code anyways this is the only part it is required
 		tetra = LOAD_TETRA(id_tetra);
 
-		glm::vec3 a(((float4)LOAD_VERTEX(id_tetra + 2)).x, ((float4)LOAD_VERTEX(id_tetra + 2)).y, ((float4)LOAD_VERTEX(id_tetra + 2)).z);
-		glm::vec3 b(((float4)LOAD_VERTEX(id_tetra + 3)).x, ((float4)LOAD_VERTEX(id_tetra + 3)).y, ((float4)LOAD_VERTEX(id_tetra + 3)).z);
+		float4 v0 = LOAD_VERTEX(id_tetra + 0);
+		float4 v1 = LOAD_VERTEX(id_tetra + 1);
+		float4 v2 = LOAD_VERTEX(id_tetra + 2);
+		float4 v3 = LOAD_VERTEX(id_tetra + 3);
+
+		glm::vec3 a(v2.x, v2.y, v2.z);
+		glm::vec3 b(v3.x, v3.y, v3.z);
 		glm::vec3 dir = glm::normalize(b - a);
 		glm::vec3 vv = glm::cross(a, b);
 
@@ -1096,6 +1137,34 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset,
 			vv[0] * pl_ray.m_Pi[0] +
 			vv[1] * pl_ray.m_Pi[1] +
 			vv[2] * pl_ray.m_Pi[2]) < 0.0f;
+
+
+		id_entry_face = 0;
+
+		const glm::vec3 p0 = glm::vec3(v0.x, v0.y, v0.z) - rays[idx].origin;
+		const glm::vec3 p1 = glm::vec3(v1.x, v1.y, v1.z) - rays[idx].origin;
+		const glm::vec3 p2 = a - rays[idx].origin;
+		const glm::vec3 p3 = b - rays[idx].origin;
+
+		const float QAB = glm::dot(rays[idx].dir, glm::cross(p0, p1)); // A B
+		const float QBC = glm::dot(rays[idx].dir, glm::cross(p1, p2)); // B C
+		const float QAC = glm::dot(rays[idx].dir, glm::cross(p0, p2)); // A C
+		const float QAD = glm::dot(rays[idx].dir, glm::cross(p0, p3)); // A D
+		const float QBD = glm::dot(rays[idx].dir, glm::cross(p1, p3)); // B D
+		const float QCD = glm::dot(rays[idx].dir, glm::cross(p2, p3)); // C D
+
+		int face_idx = 0;
+
+		if (QAB <= 0.0f && QAC >= 0.0f && QBC <= 0.0f)
+			id_entry_face = 3;
+		else if (QAB >= 0.0f && QAD <= 0.0f && QBD >= 0.0f)
+			id_entry_face = 2;
+		else if (QAD >= 0.0f && QAC <= 0.0f && QCD <= 0.0f)
+			id_entry_face = 1;
+		else if (QBC >= 0.0f && QBD <= 0.0f && QCD >= 0.0f)
+			id_entry_face = 0;
+		else
+			return;
 
 		//============================================================== 
 		// Now begin traversal 
@@ -1120,6 +1189,7 @@ void ray_traversal_kernel(Ray* rays, int rays_size, int offset,
 			// Update data for next tetra 
 			id_tetra = GET_NEXT_TETRA(tetra.x) * 4ll;
 			id_entry_face = GET_NEXT_FACE(tetra.x);
+			//id_vertex = id_tetra * 4;
 
 		} while (true);
 
