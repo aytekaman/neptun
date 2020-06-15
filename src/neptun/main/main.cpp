@@ -1120,7 +1120,7 @@ void lagae_scenes_gpu_tetmesh_comparison()
 		gpu_tetmesh_type_comparison(false, scene);
 }
 
-void cuda_benchmark(int tetmesh_type = 2)
+void cuda_benchmark(int tetmesh_type = 4)
 {
 	bool sort_tet = true;
 	RayTracer ray_tracer;
@@ -1132,14 +1132,14 @@ void cuda_benchmark(int tetmesh_type = 2)
 	TetMesh80* tet80;
 	scene.load_from_file(builtin_scenes_folder_path + "mix" + ".scene");
 
-	ray_tracer.set_resoultion(glm::ivec2(1920, 1440));
-	tet32 = new TetMesh32(scene);
-	tet20 = new TetMesh20(scene);
-	tet16 = new TetMesh16(scene);
-	tetSctp = new TetMeshSctp(scene);
+	ray_tracer.set_resoultion(glm::ivec2(1920*2, 1440*2));
+	//tet32 = new TetMesh32(scene);
+	//tet20 = new TetMesh20(scene);
+	//tet16 = new TetMesh16(scene);
+	//tetSctp = new TetMeshSctp(scene);
 	tet80 = new TetMesh80(scene);
 
-	int N = 50;
+	int N = 256;
 
 	switch (tetmesh_type)
 	{

@@ -933,7 +933,7 @@ void ray_cast96_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resoluti
 {
     int idx = offset + blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx < resolution.x * resolution.y)
+    //if (idx < resolution.x * resolution.y)
     {
         glm::vec3 ray_origin, ray_dir;
         int outputindex = init_ray(scene, resolution, tile_size, idx, ray_origin, ray_dir);
@@ -994,7 +994,7 @@ void ray_cast96_kernel(Scene& scene, SourceTet& source_tet, glm::ivec2& resoluti
         //============================================================== 
 
         do {
-            if (cpt++ == 5000) { // In case of numeric error 
+            if (cpt++ == 400) { // In case of numeric error 
                 semantic = 0;
                 break;
             }
@@ -1619,7 +1619,7 @@ void copy_to_gpu(TetMesh80& tet_mesh)
 #endif
     delete[] h_tets;
     delete[] h_vertices;
-    print_cuda_error("CUDA copy Tet80 as Tet96 to GPU");
+    //print_cuda_error("CUDA copy Tet80 as Tet96 to GPU");
 
     printf("TetMesh96 size: %d MB\n",
         (size_tets + size_vertices + tet_mesh.m_constrained_faces.size() * sizeof(ConstrainedFace)) / (1024 * 1024));
@@ -1788,12 +1788,12 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
     float kernel_time = 0;
     Stats::gpu_copy_time = 0.0f;
 
-    std::chrono::high_resolution_clock::time_point start, end;
+    std::chrono::system_clock::time_point start, end;
 
     // Launch kernel on GPU
     int t = 256;
 
-    start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::system_clock::now();
     if (tet_mesh_type == 0)
     {
         ray_cast_kernel << < rays_size / t, t >> > (*d_scene, *d_source_tet, *d_res, 0, tile_size, d_points, d_tet32s, /*d_cons_faces, d_faces,*/ d_face_indices/*d_intersectdata*/);
@@ -1816,17 +1816,18 @@ void cast_rays_gpu(Scene& scene, SourceTet& source_tet, glm::ivec2& resolution, 
     }
     check_cuda(cudaDeviceSynchronize());
 
-    end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::system_clock::now();
     kernel_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
     Stats::add_gpu_kernel_time(kernel_time);
+    //printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
+    std::cout << kernel_time << std::endl;
 
-    //std::cout << kernel_time << std::endl;
-
-    start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::system_clock::now();
     //check_cuda(cudaMemcpy(output, d_intersectdata, rays_size * sizeof(IntersectionData), cudaMemcpyDeviceToHost));
     check_cuda(cudaMemcpy(face_indices, d_face_indices, rays_size * sizeof(unsigned int), cudaMemcpyDeviceToHost));
-    end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::system_clock::now();
     Stats::gpu_copy_back_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e3;
+    //std::cout << Stats::gpu_copy_back_time << std::endl;
 }
 
 //---------------------------------- Asynch ray casting ------------------------------------------

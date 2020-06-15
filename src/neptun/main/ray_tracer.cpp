@@ -36,6 +36,7 @@ RayTracer::RayTracer()
     stats.set_size(m_resolution);
 
     thread_count = std::thread::hardware_concurrency();
+    thread_count = 1;
     Logger::Log("Number of threads: %d", thread_count);
     m_stream_count = thread_count;
 }
@@ -836,6 +837,8 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     if (tet_index < 0)
         return;
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
     std::vector<LightInfo> lightInfos;
 
     for (int i = 0; i < scene.sceneObjects.size(); i++)
@@ -1064,7 +1067,7 @@ void RayTracer::render_gpu(Scene & scene, const bool is_diagnostic)
     frame_count++;
 
     if(frame_count == 64)
-        std::cout << Stats::gpu_best_kernel_time << std::endl;
+        std::cout << "time: " << Stats::gpu_best_kernel_time << std::endl;
     //--------------------------------------------
 
     avg_test_count = 0;
