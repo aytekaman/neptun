@@ -2832,19 +2832,41 @@ void TetMesh80::init_acceleration_data()
 	delete[] m_vertices;
 	m_vertices = new  glm::vec4[m_tets.size() * 4];
 
+	int p[4] = { 3, 2, 0, 1 };
+
 	for (int i = 0; i < m_tets.size(); i++)
 	{
-		std::swap(m_tets[i].v[0], m_tets[i].v[3]);
-		std::swap(m_tets[i].v[2], m_tets[i].v[3]);
-		std::swap(m_tets[i].v[1], m_tets[i].v[3]);
+		int temp[4];
 
-		std::swap(m_tets[i].n[0], m_tets[i].n[3]);
-		std::swap(m_tets[i].n[2], m_tets[i].n[3]);
-		std::swap(m_tets[i].n[1], m_tets[i].n[3]);
+		for (int j = 0; j < 4; j++)
+			temp[j] = m_tets[i].v[j];
 
-		std::swap(m_tets[i].face_idx[0], m_tets[i].face_idx[3]);
-		std::swap(m_tets[i].face_idx[2], m_tets[i].face_idx[3]);
-		std::swap(m_tets[i].face_idx[1], m_tets[i].face_idx[3]);
+		for (int j = 0; j < 4; j++)
+			m_tets[i].v[j] = temp[p[j]];
+
+		for (int j = 0; j < 4; j++)
+			temp[j] = m_tets[i].n[j];
+
+		for (int j = 0; j < 4; j++)
+			m_tets[i].n[j] = temp[p[j]];
+
+		for (int j = 0; j < 4; j++)
+			temp[j] = m_tets[i].face_idx[j];
+
+		for (int j = 0; j < 4; j++)
+			m_tets[i].face_idx[j] = temp[p[j]];
+
+		//std::swap(m_tets[i].v[0], m_tets[i].v[3]);
+		//std::swap(m_tets[i].v[2], m_tets[i].v[3]);
+		//std::swap(m_tets[i].v[1], m_tets[i].v[3]);
+
+		//std::swap(m_tets[i].n[0], m_tets[i].n[3]);
+		//std::swap(m_tets[i].n[2], m_tets[i].n[3]);
+		//std::swap(m_tets[i].n[1], m_tets[i].n[3]);
+
+		//std::swap(m_tets[i].face_idx[0], m_tets[i].face_idx[3]);
+		//std::swap(m_tets[i].face_idx[2], m_tets[i].face_idx[3]);
+		//std::swap(m_tets[i].face_idx[1], m_tets[i].face_idx[3]);
 	}
 
 
@@ -2891,8 +2913,8 @@ void TetMesh80::init_acceleration_data()
 				m_constrained_faces.push_back(cf);
 
 				//m_tetSctps[i].n[j] = (m_constrained_faces.size() - 1) | (1 << 31);
-
 				m_tet80s[i].m_semantics[j] = m_tets[i].face_idx[j];
+				//m_tet80s[i].m_semantics[j] = 1;
 			}
 			else
 			{
