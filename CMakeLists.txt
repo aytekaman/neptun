@@ -303,3 +303,63 @@ endif()
 set_target_properties(
     neptun
     PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY  "${CMAKE_SOURCE_DIR}/sandbox/bin/$(Configuration)")
+
+
+option(ENABLE_CODE_ANALYSIS "Perform code analysis when building" OFF)
+
+if (ENABLE_CODE_ANALYSIS)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    add_library(analysis-target OBJECT
+        ${main_sources}
+        ${math_sources}
+    )
+
+    #CLANG TIDY
+    find_program(
+        CLANG_TIDY_EXE
+        NAMES "clang-tidy"
+        DOC "Path to clang-tidy executable"
+    )
+
+    if(NOT CLANG_TIDY_EXE)
+        message(STATUS "clang-tidy not found.")
+    else()
+        message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+        set(RUN_CLANG_TIDY
+            "${CLANG_TIDY_EXE}"
+            "-checks=performance-*,bugprone-*,clang-analyzer-*"
+            "-p=${CMAKE_BINARY_DIR}"
+        )
+        set_target_properties(
+            analysis-target PROPERTIES
+            CXX_CLANG_TIDY "${CLANG_TIDY_EXE}"
+        )
+    endif()
+
+    #CPP CHECK
+    find_program(
+        CPPCHECK_EXE
+        NAMES "cppcheck"
+        DOC "Path to cppcheck executable"
+    )
+
+    if(NOT CPPCHECK_EXE)
+        message(STATUS "cppcheck not found.")
+    else()
+        message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
+        set(RUN_CPPCHECK
+            "${CPPCHECK_EXE}"
+            "--project=compile_commands.json"
+            "--enable=all"
+            "--output-file=${CMAKE_CURRENT_BINARY_DIR}/cppcheck.txt" 
+            "--quiet"
+        )
+
+        add_custom_target(run-cppcheck ALL
+            COMMAND ${RUN_CPPCHECK} 
+            COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "Cppcheck result is in ${CMAKE_CURRENT_BINARY_DIR}/cppcheck.txt" 
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Running cppcheck"
+        )
+    endif()
+endif()
