@@ -32,13 +32,6 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release)
 include_directories(src)
 include_directories(src/thirdparty)
 
-if(UNIX)
-    # Ideally, We should use config dependent path here.
-    SET(embree_DIR "${NEPTUN_DEPS_STAGE_DIR}/linux/embree/lib/cmake/embree-3.4.0")
-else()
-    SET(embree_DIR "${NEPTUN_DEPS_STAGE_DIR}/embree-release")
-endif()
-
 
 FIND_PACKAGE(embree 3.4 REQUIRED)
 INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})

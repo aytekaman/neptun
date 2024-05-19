@@ -468,7 +468,7 @@ public:
 
     void intersect4_simd(TetRayHit4& tet_ray_hit);
 
-    int get_exit_face(const Plucker& pl_ray, const int id_vertex, const int id_entry_face);
+    int get_exit_face(const Plucker& pl_ray, const int id_vertex, const int id_entry_face) const;
 
     Tet80* m_tet80s = nullptr;
     glm::vec4* m_vertices = nullptr;

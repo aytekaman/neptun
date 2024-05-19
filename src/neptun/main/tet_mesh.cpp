@@ -2738,7 +2738,6 @@ int TetMesh80::find_tet(const glm::vec3& point, SourceTet& tet)
     return index;
 }
 
-__forceinline
 bool TetMesh80::intersect(const Ray& ray, const SourceTet& source_tet, IntersectionData& intersection_data)
 {
     // Compute ray Plucker 
@@ -3000,8 +2999,7 @@ bool TetMesh80::intersect_stats(const Ray & ray, const SourceTet & tet, Intersec
         return false;
 }
 
-__forceinline
-int TetMesh80::get_exit_face(const Plucker& plRay, const int idVertex, const int idEntryFace)
+int TetMesh80::get_exit_face(const Plucker& plRay, const int idVertex, const int idEntryFace) const
 {
     int idExit;
 
