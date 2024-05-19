@@ -9,8 +9,28 @@
 #include <vector>
 #include <string>
 
+
+
 class Material;
 class Scene;
+
+enum MesherMethod {
+    TetGen,
+    TetWild
+};
+
+struct TetParams {
+    bool preserveTriangles = true;
+    bool half_space_optimization = false;
+    bool process_light_sources = false;
+    bool create_bounding_box = true;
+    float quality = 5.0f;
+
+    float ideal_edge_length = 50.f;
+    int max_passes = 5;
+
+    MesherMethod method = TetGen;
+};
 
 struct Tet
 {
@@ -93,10 +113,7 @@ public:
     TetMesh(const Scene &scene);
     TetMesh(
         const Scene &scene,
-        const bool preserve_triangles,
-        const bool create_bbox,
-        const float quality = 5.0f,
-        const bool half_space_optimization = false);
+        TetParams params);
 
     TetMesh(const TetMesh& tet_mesh)
     {
@@ -113,9 +130,7 @@ public:
 
     void build_from_scene(
         const Scene &scene,
-        bool preserve_triangles,
-        bool create_bbox,
-        float quality = 5.0f);
+        TetParams params);
 
     void sort(
         const SortingMethod sorting_method,
@@ -227,10 +242,7 @@ public:
 
     TetMesh32(
         const Scene &scene,
-        const bool preserve_triangles,
-        const bool create_bbox,
-        const float quality = 5.0f,
-        const bool half_space_optimization = false);
+        const TetParams params);
 
     TetMesh32(const Scene &scene);
 
@@ -294,9 +306,7 @@ public:
 
     TetMesh20(
         const Scene &scene,
-        const bool preserve_triangles,
-        const bool create_bbox,
-        const float quality = 5.0f);
+        TetParams params);
 
     TetMesh20(const Scene &scene);
 
@@ -349,9 +359,7 @@ public:
 
     TetMesh16(
         const Scene &scene,
-        const bool preserve_triangles,
-        const bool create_bbox,
-        const float quality = 5.0f);
+        TetParams params);
 
     TetMesh16(const Scene &scene);
 
@@ -422,9 +430,7 @@ public:
 
     TetMesh80(
         const Scene &scene,
-        const bool preserve_triangles,
-        const bool create_bbox,
-        const float quality = 5.0f);
+        TetParams params);
 
     TetMesh80(const Scene &scene);
 
@@ -488,9 +494,7 @@ public:
 
     TetMeshSctp(
         const Scene &scene,
-        const bool preserve_triangles,
-        const bool create_bbox,
-        const float quality = 5.0f);
+        TetParams params);
 
     TetMeshSctp(const Scene &scene);
 

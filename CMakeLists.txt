@@ -1,7 +1,9 @@
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.8)
 
 include(CheckFunctionExists)
+
+add_subdirectory(src/thirdparty/fTetWild)
 
 if(WIN32)
     #add_compile_options("-d2SSAOptimizer-")
@@ -12,7 +14,6 @@ if(WIN32)
 else()
     project(neptun LANGUAGES C CXX)
 endif()
-
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 if(COMPILER_SUPPORTS_MARCH_NATIVE)
@@ -35,6 +36,7 @@ include_directories(src/thirdparty)
 
 FIND_PACKAGE(embree 3.4 REQUIRED)
 INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
+
 
 #include glfw
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
@@ -167,6 +169,7 @@ set (main_sources
     src/neptun/tet_mesh/tet_mesh_builder_factory.h
     src/neptun/tet_mesh/tet_mesh_builder.h
     src/neptun/tet_mesh/tetgen_tet_mesh_builder.h
+    src/neptun/tet_mesh/tetwild_tet_mesh_builder.h
     src/neptun/util/timer.h
 )
 
@@ -296,3 +299,6 @@ endif()
 set_target_properties(
     neptun
     PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY  "${CMAKE_SOURCE_DIR}/sandbox/bin/$(Configuration)")
+
+
+target_link_libraries(neptun FloatTetwild)

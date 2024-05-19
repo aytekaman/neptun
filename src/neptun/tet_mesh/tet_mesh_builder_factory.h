@@ -7,6 +7,7 @@
 
 #include "tet_mesh_builder.h"
 #include "tetgen_tet_mesh_builder.h"
+#include "tetwild_tet_mesh_builder.h"
 
 // Singleton class that stores all of the available TetMesh builders 
 // NOTE: Available tetmesh builders must be registered inside initialize function
@@ -70,7 +71,10 @@ private:
         TetgenTetMeshBuilder* tetgen_builder = new TetgenTetMeshBuilder();
         register_builder("TetGen", tetgen_builder);
 
-        m_default_builder = tetgen_builder;
+		TetwildTetMeshBuilder* tetwild_builder = new TetwildTetMeshBuilder(TetParams());
+        register_builder("TetWild", tetwild_builder);
+
+        m_default_builder = tetwild_builder;
     }
 
     BuilderMapType m_builders;
