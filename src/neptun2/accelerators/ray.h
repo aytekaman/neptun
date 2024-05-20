@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <cstddef>
 #include <vector>
 #include <limits>
@@ -61,13 +63,11 @@ public:
     float org_x[N];
     float org_y[N];
     float org_z[N];
+    float max_t[N];
 
     float dir_x[N];
     float dir_y[N];
     float dir_z[N];
-
-    // Union?
-    float max_t[N];
     int   tet_id[N];
 };
 
@@ -75,16 +75,10 @@ template <>
 struct alignas(4) Ray_<1>
 {
 public:
-    float org_x;
-    float org_y;
-    float org_z;
-
-    float dir_x;
-    float dir_y;
-    float dir_z;
-
-    // Union?
+    glm::vec3 org;
     float max_t;
+
+    glm::vec3 dir;
     int   tet_id;
 };
 
@@ -92,13 +86,12 @@ template <size_t N>
 struct alignas(4 * N) Hit_
 {
 public:
-    float u[N];
-    float v[N];
-
-    // Not needed?
     float nx[N];
     float ny[N];
     float nz[N];
+
+    float bary_x[N];
+    float bary_y[N];
 
     unsigned int primitive_id[N];
     unsigned int geometry_id[N];
@@ -108,14 +101,8 @@ template <>
 struct alignas(4) Hit_<1>
 {
 public:
-    float u;
-    float v;
-
-    // Not needed?
-    float nx;
-    float ny;
-    float nz;
-
+    glm::vec3 n;
+    glm::vec2 bary;
     unsigned int primitive_id;
     unsigned int geometry_id;
 };
@@ -150,91 +137,4 @@ static_assert(alignof(Ray8) == 32, "Alignment error");
 static_assert(alignof(Hit8) == 32, "Alignment error");
 static_assert(alignof(Ray16) == 64, "Alignment error");
 static_assert(alignof(Hit16) == 64, "Alignment error");
-
-// Utility functions
-
-// Copy functions is used to extract/store information for packed ray, hit, and stats types.
-template <size_t N>
-inline void ray_cpy(const Ray_<N>& src, Ray& dst, size_t src_index)
-{
-    assert(src_index < N);
-
-    dst.org_x = src.org_x[src_index];
-    dst.org_y = src.org_y[src_index];
-    dst.org_z = src.org_z[src_index];
-
-    dst.dir_x = src.dir_x[src_index];
-    dst.dir_y = src.dir_y[src_index];
-    dst.dir_z = src.dir_z[src_index];
-
-    dst.max_t = src.max_t[src_index];
-    dst.tet_id = src.tet_id[src_index];
-}
-
-template <size_t N>
-inline void ray_cpy(const Ray& src, Ray_<N>& dst, size_t dst_index)
-{
-    assert(dst_index < N);
-
-    dst.org_x[dst_index] = src.org_x;
-    dst.org_y[dst_index] = src.org_y;
-    dst.org_z[dst_index] = src.org_z;
-
-    dst.dir_x[dst_index] = src.dir_x;
-    dst.dir_y[dst_index] = src.dir_y;
-    dst.dir_z[dst_index] = src.dir_z;
-
-    dst.max_t[dst_index] = src.max_t;
-    dst.tet_id[dst_index] = src.tet_id;
-}
-
-template <size_t N>
-inline void hit_cpy(const Hit_<N>& src, Hit& dst, size_t src_index)
-{
-    assert(src_index < N);
-
-    dst.u = src.u[src_index];
-    dst.v = src.v[src_index];
-
-    dst.nx = src.nx[src_index];
-    dst.ny = src.ny[src_index];
-    dst.nz = src.nz[src_index];
-
-    dst.primitive_id = src.primitive_id[src_index];
-    dst.geometry_id = src.geometry_id[src_index];
-}
-
-template <size_t N>
-inline void hit_cpy(const Hit& src, Hit_<N>& dst, size_t dst_index)
-{
-    assert(dst_index < N);
-
-    dst.u[dst_index] = src.u;
-    dst.v[dst_index] = src.v;
-
-    dst.nx[dst_index] = src.nx;
-    dst.ny[dst_index] = src.ny;
-    dst.nz[dst_index] = src.nz;
-
-    dst.primitive_id[dst_index] = src.primitive_id;
-    dst.geometry_id[dst_index] = src.geometry_id;
-}
-
-template <size_t N>
-inline void stats_cpy(const Stats_<N>& src, Stats& dst, size_t src_index)
-{
-    assert(src_index < N);
-
-    dst.traversal_count = src.traversal_count[src_index];
-    dst.hit_test_count = src.hit_test_count[src_index];
-}
-
-template <size_t N>
-inline void stats_cpy(const Stats& src, Stats_<N>& dst, size_t dst_index)
-{
-    assert(dst_index < N);
-
-    dst.traversal_count[dst_index] = src.traversal_count;
-    dst.hit_test_count[dst_index] = src.hit_test_count;
-}
 } // end of namespace neptun
